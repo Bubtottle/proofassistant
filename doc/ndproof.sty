@@ -1,0 +1,135 @@
+% NDProof Package
+
+\ProvidesPackage{ndproof}
+
+\RequirePackage{tikz}
+\RequirePackage{xkeyval}
+\RequirePackage{ifthen}
+\RequirePackage{calc}
+
+% Prepare for Options
+\newcommand{\jdistance}{5}
+\DeclareOptionX{jdistance}[5]{\renewcommand{\jdistance}{#1}}
+
+\newcommand{\ldistance}{0.75}
+\DeclareOptionX{ldistance}[0.75]{\renewcommand{\ldistance}{#1}}
+
+\newcommand{\scopewidth}{0.2}
+\DeclareOptionX{scopewidth}[0.2]{\renewcommand{\scopewidth}{#1}}
+
+\newcommand{\illegalflag}{!}
+\DeclareOptionX{illegalflag}[!]{\renewcommand{\illegalflag}{#1}}
+
+\ProcessOptionsX
+
+\define@key{ndsizes}{jdistance}[5]{\renewcommand{\jdistance}{#1}}
+\define@key{ndsizes}{ldistance}[0.75]{\renewcommand{\ldistance}{#1}}
+\define@key{ndsizes}{scopewidth}[0.2]{\renewcommand{\scopewidth}{#1}}
+\define@key{ndsizes}{illegalflag}[!]{\renewcommand{\illegalflag}{#1}}
+\savekeys{ndsizes}{jdistance,ldistance,scopewidth,illegalflag}
+
+% Make sure equalities are prefixed
+\newcommand{\eq}[2]{#1\ensuremath{=}#2}
+\newcommand{\noteq}[2]{#1\ensuremath{\neq}#2}
+
+% Create the NDProof Environment
+\newenvironment{NDProof}[1][]{\setcounter{linenum}{0}\setcounter{asslevel}{0}\setcounter{scopenum}{0}\setkeys{ndsizes}{#1}\begin{tikzpicture}[trim left]}{\end{tikzpicture}}
+
+% Set Up Counters
+\newcounter{linenum}
+\newcounter{asslevel}
+\newcounter{scopenum}
+
+
+
+% Create the \NDLine Command
+\newcommand{\NDLine}[3]
+{% Create the line number node
+\path (0,-\thelinenum\baselineskip) node[above right](line\thelinenum) {#1\vphantom{p}} 
+ % Create the line contents node
+ (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#2\vphantom{p}}
+ % Create the justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {#3\vphantom{p}};
+ \stepcounter{linenum}
+}
+
+% Create the \NDAssStart Command
+\newcommand{\NDAssStart}[2]
+{\addtocounter{asslevel}{1} 
+% Create the line number node
+\path (0,-\thelinenum\baselineskip) node[above right](ass\theasslevel) {#1\vphantom{p}}
+ % Create the line contents node
+ (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#2\vphantom{p}}
+ % Create the Ass justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {\textbf{Ass\vphantom{p}}};
+ % Create ass node for assumption scope line
+ \stepcounter{linenum}
+ % Prepare for the scope line width
+ \ifthenelse{\thescopenum<1}{}{\addtocounter{scopenum}{-1}}
+}
+
+% Create the \NDAssEnd Command
+% Used for the last line of an assumption
+\newcommand{\NDAssEnd}[4][\thescopenum]
+{% Create the line number node
+\path (0,-\thelinenum\baselineskip) node[above right](line\thelinenum) {#2\vphantom{p}} 
+ % Create the line contents node
+ (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#3\vphantom{p}}
+ % Create the justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {#4\vphantom{p}};
+ % Draw line from assumption to correct ass node, line from ass node to base of justification node
+ \addtocounter{scopenum}{1}
+ \path (-\scopewidth*#1,-\thelinenum\baselineskip+\baselineskip) coordinate(ass\theasslevel{ass});
+ \draw (ass\theasslevel) -| (ass\theasslevel{ass}) |- (\jdistance,-\thelinenum\baselineskip+0.2\baselineskip); 
+ \addtocounter{asslevel}{-1} \stepcounter{linenum}
+}
+
+\newcommand{\NDOneLineAss}[3][1]
+{% Create the line number node
+\path (0,-\thelinenum\baselineskip) node[above right](line\thelinenum) {#2\vphantom{p}}
+ % Create the line contents node
+ (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#3\vphantom{p}}
+ % Create the Ass justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {\textbf{Ass\vphantom{p}}};
+ \addtocounter{asslevel}{1} 
+ % Create ass node for assumption scope line
+ \path (-#1*\scopewidth,-\thelinenum\baselineskip+0.2\baselineskip) coordinate(line\thelinenum{ass}); 
+ \draw (line\thelinenum) -| (line\thelinenum{ass}) |- (\jdistance,-\thelinenum\baselineskip+0.2\baselineskip); 
+ \stepcounter{linenum}
+}
+
+\newcommand{\IBoxStart}[2]
+{% Create the line number node
+\path (0,-\thelinenum\baselineskip) node[above right](line\thelinenum) {#1\vphantom{p}}
+ % Create the line contents node
+ (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#2\vphantom{p}}
+ % Create the default Ass(=) node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {\textbf{Ass}($=$)\vphantom{p}};
+ % Create a coordinate to join the box to. Set up command (\identstart) to connect to this coordinate
+ \edef\identstart{identitybox\thelinenum}
+ \path (0.5,-\thelinenum\baselineskip + \baselineskip) coordinate(\identstart);
+ % Draw the top line of the box
+ \draw (\jdistance,-\thelinenum\baselineskip+1.2\baselineskip) -| (\identstart);
+ \stepcounter{linenum}
+}
+
+\newcommand{\IBoxLine}[2]
+{% Create the line contents node (no line number)
+\path (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#1\vphantom{p}}
+ % Create the justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {#2\vphantom{p}};
+ \stepcounter{linenum}
+}
+
+\newcommand{\IBoxEnd}[2]
+{% Create the line contents node (no line number)
+\path (\ldistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p2}) {#1\vphantom{p}}
+ % Create the justification node
+ (\jdistance, -\thelinenum\baselineskip) node[above right](line\thelinenum{p3}) {#2\vphantom{p}};
+ % Draw the remainder of the identity box, undefine \identstart
+ \draw (\identstart) |- (\jdistance,-\thelinenum\baselineskip+0.2\baselineskip);
+ \let\identstart\undefined
+ \stepcounter{linenum}
+}
+
+\endinput

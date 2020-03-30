@@ -1,0 +1,575 @@
+\documentclass[a4paper]{article}
+
+\usepackage[UKenglish]{babel} 
+\usepackage{listings}
+\usepackage{hyperref}
+\lstset{frame=none, numbers=none}
+\lstMakeShortInline[flexiblecolumns=false, basicstyle=\small];
+
+\title{Proof Assistant Documentation}
+\author{Declan Thompson}
+\date{Version 4.0\\
+			\today}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+This document aims to explain how the proof assistant works from a programming perspective. It has been written in an attempt to facilitate understanding of the code, in case anyone wants to change, add or fix anything.
+
+I will begin by giving an overview of how the proof assistant works in general. This will be followed by an explanation of the major classes and their functions. I will give general directions on adding more rules. Finally, I will present a series appendices which may be of use to anyone hoping to change the program.
+
+I have written proof assistant over a number of months and my algorithms for completing various tasks have been refined as I go. As such, you may be horrified by the apparent complexity of early-implemented rules (like equivalence elimination), especially compared with the (comparative) elegance of the later rules (like the box rules). You are also likely to come across a huge amount of superfluous code. Some of this forms remnants of previous algorithms, some is in preparation for an (as yet) unimplemented feature, some is and always has been useless.
+
+\subsection{To the Reader}
+I am writing this document in the hope that it is of use. Unfortunately, I am running out of time to provide complete and all-encompassing documentation. As such, there may be errors and grammatical/spelling mistakes within this work. Please excuse them. I created an initial version of this document a number of months ago. It was an incomplete but close description of the proof assistant at that time. It is now out of date but may still contain some useful information. For this purpose, I have included it as Appendices \ref{appendixStart} onwards. Use this information with extreme caution.
+
+
+\section{Overview}
+\subsection{Driving Ideas}
+What a horrible section title.
+
+In this section I hope to give you an idea of how I intend the proof assistant to work overall. It currently does not quite live up to this ideal, but it would be nice if any changes took it into account.
+
+\subsubsection{Proof Methods}
+This class should be where the proof itself is stored and manipulated. All the rules should be present as methods, as well as their helpers. This class should be the ``backend'' of the proof assistant - the user interface can interact with it, but the user never has direct access to the Proof Methods class.
+
+This allows for the possibility of a variety of user interfaces, all with the same underlying functionality. I have barely looked into it, but this may allow for easier implementation of an Android app, for example.
+
+While this is a nice theory, I have not adhered entirely to it. In particular, I use Swing dialogs to request further information from the user, or to present errors.
+
+\subsubsection{Proof Panel, Proof Frame}
+The proof panel and proof frame are implementations of an interface. The proof panel was designed to match as closely to the pen and paper proof method as was reasonable. For this reason, lines a give specified places and a layout manager is not used.
+
+The interface has been designed to require as few clicks from the user as possible. Prettiness has come far behind functionality and simplicity.
+
+
+\subsection{Human Readable and Longer}
+Here I'll try to explain how the proof assistant actually works.
+
+\subsubsection{NDLines and The Proof Itself}
+The NDLine class defines the NDLine object. These represent a line of a proof. There is a lot of information contained within each NDLine and a massive number of methods. The main pieces of information contained, however, are the line number, the line contents and the justification.
+
+The line number is a non-zero integer. A positive line number will be displayed on screen. A negative line number will not. If a line number is negative, but the NDLine has a SpecialNum, then that will be displayed as the line's line number. This is to accommodate axioms.
+
+The line contents is the actual formula, \emph{stored in {\TeX} code format}. From this formula, the main operator, first argument, second argument, parsed line and more are all divined.
+
+The justification contains an NDJustification object. This will be one of the numerous Just\dots.
+
+NDLines are also given a type, which can be specified when they are created. Types are used to determine, among other things, which justification to create the line with, the contents of the line and the location of scope lines. A summary of the types can be found in Table \ref{tab:NDLineTypes}.
+
+The proof itself is stored as an array of NDLines in the Proof Methods class. The index before an unjustified NDLine should always be a blank NDLine. The proofArray is stored in the Proof Methods class, as well as in the Globals class. Be careful - the array in the Globals class is not always up to date.
+
+\subsubsection{Applications of Rules}
+Rules are all present as methods in the Proof Methods class (hence the name). Rules are given a goal and a resource. They act upon the proofArray as required by the rule, creating a replacement array that matches the rule's result.
+
+Note that the rules themselves are rather dumb - they do not consider what operator the goal/resource has. Rather, the apply their rule, assuming the goal/resource has the correct operator. It is up to the interface to ensure that a goal with main operator \& does not have negation introduction applied to it.
+
+
+\subsection{Technical and Brief}
+ProofAssistant creates a new ProofFrame.
+
+If proofArray exists, ProofFrame creates a new ProofPanel. ProofFrame provides general options. If a user creates a new proof, a new ProofPanel is created and Globals.assist is instantiated to a new ProofMethods.
+
+ProofMethods handles the proof itself. Any rule applications occur in ProofMethods. It provides the TeX code output and the text output.
+
+ProofPanel displays the proof and handles user interaction.
+
+NDLine represents a line in the proof. It contains methods for finding the main operator of the line, the arguments, parsing the line, getting the line number and getting the line justification.
+
+NDJustification represents a justification for a line. The base class provides accessor methods. NDJustification is extended for each type of justification, to set the required parameters.
+
+\section{Major Classes}
+In this section, I will explain the features of the major classes, and going into detail in some of the tricker areas.
+
+\subsection{ProofAssistant}
+This class contains the ;main; method of the application. It sets up the GUI.
+
+The ;createAndShowGUI(); method does as it's named and deals with the differing types of command line arguments that may be supplied. The method creates a new ;ProofFrame; and, in one case, a new ;ProofMethods;.
+
+\subsection{ProofFrame}
+This class extends ;JFrame; and creates the main application window. Only one of these is created, and it is assigned as ;Globals.frame;.
+
+The main content area of the frame is given a ;BorderLayout;, with a ;ProofPanel; in the centre and a ;StatusBar; south. The ;myInit(); method sets the look and feel to the system default, creates file choosers and sets the size and location of the window. The ;reviewSetup(); method reviews the \texttt{.config} file, which is created by the ;saveSetup(); method.
+
+The ;inputIsGood; and ;lineInputIsGood; methods check that inputted phrases are correct before they are passed to other classes.
+
+
+The ;setListOfSystems; method adds the default presets to the preset list. It should probably be moved out of ;ProofFrame; to somewhere more relevant (;Globals; perhaps?).
+
+The remaining methods are (hopefully) fairly straightfoward. ;actionPerformed; deals with events from the menu. If you change anything with ``newProof'', be sure to change it with ``newProofFromTeX''. I've customarily used ``aboutApp'' as a place to test out new features. ;actionPerformed; is also where the file opening and closing occurs for Save and Open. ;saveProof; and ;openProof; basically mirror each other. They should be fairly straightforward, but quite long.
+
+\subsection{ProofMethods}
+Herein lies the guts of the application - this is where the deduction actually happens. There are two constructors - the one that takes a ;String[]; is the most frequently used - the other is used only when opening a proof. As you will see, they are almost identical.
+
+The ;setRulesAllowed; method does nothing it would seem. ;readInArgs;, however, creates the proofArray itself, including any extra lines. There are a large number of methods used as helpers to the numerous rules present here.
+
+\subsubsection{General Rule Structure}
+As you will note, all rules take two arguments - a goal and a resource. I have set the methods up like this for consistency. Even though some methods (like conjunction introduction) only use one of their arguments, both are required. If a current resource is not selected, the current goal is supplied as both arguments.
+
+
+\subsection{NDLine}
+
+\subsection{Globals}
+The ;Globals; class was born out of a desire to have a global line number variable, so that each newly created ;NDLine; would have a sequentially increasing line number. A lot has been put into the class since, and it should probably be converted to use non-static methods, and have instances.
+
+\section{Adding More Rules}
+Herein I attempt to present a guide to adding new rules. The steps do not need to be done sequentially, but doing so will avoid the error messages many IDEs give if a method does not yet exist. I make limited attempts to explain the purpose of each step.
+
+This guide assumes you are creating both introduction and elimination rules for a new operator. If this is not the case, you should be able to adapt the guide to your needs.
+
+\subsection{Initial Considerations}
+Before adding a rule, you will need to consider a number of things.
+
+First, you will need a unique name identifier for your operator. Conjunction is assigned the identifier ;con;, as an example. For a list of the current name identifiers, see Table \ref{tab:NameIdentifiers}. This identifier will be the name used for correctly parsing a symbol and selecting a rule. By convention, I have used this name in rule method names, for example ;conIntro; and ;conElim;.
+
+Second, you will need a symbol to use for the operator. This is what will be displayed onscreen, and what you will be required to input in the New Proof dialog.
+
+Finally, give some consideration to what ``category'' of rules this fits (Basic Rules, Special Rules, Hybrid Logic...).
+
+\subsection{Additions in Globals}
+\label{subsec:AddInGlobals}
+You will need to make two additions in the Globals class.
+
+Under ;setDefaultOps(); and ;setNonAucklandOps();, add an appropriate line. These assign characters to the operator names. The format of the lines to add should be abundantly clear.
+
+Under ;setDefaultRulesAllowed(); and ;setRulesAllows;, add appropriate lines. These methods govern changes in rule presets. The rules set in ;setDefaultRulesAllowed(); are by convention those supported by NJ.
+
+\subsection{Additions in Proof Methods}
+Add appropriate methods for elimination and introduction in an appropriate section. You may wish to create a new section.
+
+If you wish for ``pointers'' on how a rule can be structured, look to the existing introduction and elimination rules. The ;else; of ;atIntro;  provides a nice template.
+
+You also need to add lines under ;mMIntroActions; and ;mMElimActions;. These again should be straightforward. These are used to help Magic Mode to run.
+
+\subsection{Additions in Proof Panel}
+You need to add lines under ;introActions; and ;elimActions;, similarly to those in ;mMIntroActions; and ;mMElimActions;. You do not need to worry about the buttons themselves - they access the ;operators; hashmap, and so the symbols here have been set in Globals.
+
+\subsection{Additions in the Rule Palette}
+I used Netbeans IDE to create the proof assistant, and used the GUI builder to create the rule palette.
+
+You need to add a new checkbox (and possible a new category) for each new rule. Set its ;itemStateChanged; as per the other ;itemStateChanged;s. Set the checkbox's ;setSelected; to ;Globals.rulesAllowed.get(name);, where ;name; is the rule name, as specified in Section \ref{subsec:AddInGlobals}.
+
+Add appropriate lines in ;savePresetButtonActionPerformed; and ;presetComboBoxActionPerformed;.
+
+\subsection{Additions for Friendly Input}
+\emph{Friendly Input} is the name I have used for the graphical input options (as opposed to the {\TeX} input options). You will want to set your symbol up so that it can be parsed correctly.
+
+There are two friendly inputs, ;FriendlyInput; and ;FriendlyLineInput;, however both use the same parser, which is located in ;MyOptionPane;. In this class, under ;processSequent; and ;processLine; are two identical sections, setting up two HashMaps ;binOps; and ;preOps;. Depending on whether your symbol is prefix or infix notation, add it to the correct hashmap. You may wish to add special code in ;parseLine;.
+
+Both ;FriendlyInput; and ;FriendlyLineInput; also use the same ;SymbolSelectorPanel;. If your symbol is not easily accessible on the keyboard, you may wish to add it here. You may also wish to add a keyboard shortcut. This can be achieved by adding appropriate lines under ;myInit; in ;FriendlyInput; and ;FriendlyLineInput;.
+
+
+\appendix
+\section{Useful Tables}
+In writing the proof assistant, I ended up with a number of pieces of paper scattered around upon which I relied. I preserve them digitally here.
+
+\begin{table}[htbp]
+	\centering
+		\begin{tabular}{c l}
+			0 & Standard line\\
+			1 & Assumption start line\\
+			2 & Assumption end line\\
+			3 & One line assumption\\
+			4 & Premise\\
+			5 & Blank Line\\
+			6 & Used solely for find the first and second arguments\\
+			7 & Proof Box start line\\
+			8 & Proof Box intermediate line\\
+			9 & Proof Box end line\\
+			10 & Proof Box start line (equivalence introduction)\\
+			11 & Axiom
+		\end{tabular}
+	\caption{NDLine Types}
+	\label{tab:NDLineTypes}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+		\begin{tabular}{c l}
+			;con; & Conjunction\\
+			;dis; & Disjunction\\
+			;imp; & Implication\\
+			;equ; & Equivalence\\
+			;neg; & Negation\\
+			;qe; & Existential Quantifier\\
+			;qa; & Universal Quantifier\\
+			;eq; & Identity\\
+			;box; & Box (Modal Logic)\\
+			;dia; & Diamond (Modal Logic)\\
+			;at; & @ (Hybrid Logic)\\
+			;nom; & Nominal (Hybrid Logic)\\
+			;self; & @ Self-reference (Hybrid Logic)
+		\end{tabular}
+	\caption{Name Identifiers}
+	\label{tab:NameIdentifiers}
+\end{table}
+
+
+\section{Proposed Further Features}
+There are a number of features that were not implemented due to lack of time and importance. However, I present them here in case some one has time in the future. I also give some thoughts on how they might be implemented.
+
+\subsection{Related to Proofs}
+\begin{description}
+	\item[Collapse identical lines] Allow one of two identical lines in scope of one another to be removed. This will require updating the justifications of any lines justified by the removed line, which may take some doing. All the NDJustification extensions have mutator methods for line numbers, but this would still be tricky. Furthermore, all line numbers greater than the removed line's number would need to be decremented.
+	\item[Q7 in Q, not PA] There are actually 7 Q axioms. The one missing from the proof assistant can be obtained through induction under PA. This feature would show the 7th if we are in Q but not in PA. This could be implemented as an extra line added after Q, similarly to how the Q axioms themselves are implemented.
+	\item[Convert current goal to general case] In some cases it is easier to prove the general case. This feature would allow the current goal to be converted to the general case (which would allow for induction, for example). The current goal would be justified by the general case line. It is possible to do this currently using Cut, but not automatically. Perhaps the term selector panel could be rigged such that the user selects which terms should be generalised.
+	\item[Set the list for generated parameters] Currently, parameters are generated from a list (described in the TermStore class). This feature would allow the user to set this list, and could be implemented in a similar method to the arity list options.
+	\item[List of historical proofs] This feature would maintain a list of the proofs a user has completed. At any point in a proof, they could bring up the list. It would should sequents relevant to the current proof. The user could then use these sequents as rules. The methods required for this would be like for implication elimination.
+	\item[Line Shortcuts] Some common types of line (like R is reflexive, R is transitive...) could be inputted in plain text. This has already (secretively) been implemented for some phrases in New Proof from TeX code. However, the lines do not show up as they might. Needs further development.
+\end{description}
+
+\subsection{Related to Interface}
+\begin{description}
+	\item[Integrated Help] I have already written a basic help file \texttt{proofassistanthelp}. This feature would add integrated help, I would suggest in the form of an onscreen character (``Fitchy'' maybe) who would offer advice like ``Looks like you're trying to prove the Law of Excluded Middle. Need some help with that?'' and who would be animated, often tapping the screen or deforming into a bike. Or it could just be more tooltips.
+	\item[Beamer Support] Possibly entirely useless, this feature would be similar to the animated GIF output, but generate {\TeX} code suitable for beamer.
+	\item[More bracket options] Currently, the user can choose to show no brackets or too many brackets. This option would allow the user to show an intermediate number of brackets.
+	\item[Pinch to zoom] This feature would add pinch to zoom support on touchscreens and trackpads. mt4j may be a good starting point.
+	\item[Platform-specific distributables] Create .app and .exe files. This will allow icons (!) and to associate .ndp and .ndu files with the proof assistant.
+	\item[Method to browse and launch sequents] The user would be able to browse through sequents in some format and then launch the proof assistant with the sequents loaded. This could (maybe) be done with links in pdfs - if .ndp and .ndu files are associated with the proof assistant, they could form the links. This method would tie in with the previous item.
+\end{description}
+
+
+\subsection{Related to Code}
+\begin{description}
+	\item[Smarter parsing] Allow a broader range of inputs. This task is never ending.
+	\item[Tidy code] I admit that it's pretty bad.
+	\item[Instantiate Globals] You'll notice that Globals is a static class. It might make sense to change this, so that more than one proof can be in play at once.
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{ProofAssistant}
+\label{appendixStart}
+This is the main class of the program. It contains two methods.
+
+\subsection{\texttt{main}}
+This method is called when the program starts. It creates an awt event queue which runs the other method in ProofAssistant, \texttt{createAndShowGUI}.
+
+\subsection{\texttt{createAndShowGUI}}
+This method is called by \texttt{main}.
+
+It creates a new ProofFrame called \texttt{frame}, using the NDLine[] array Globals.proofArray. \texttt{frame} is set to be visible and  Globals.frame is set to frame.
+
+\section{ProofFrame}
+This class extends the JFrame class. It forms the main Proof Assistant window and has methods for dealing with menubar items and setting the Look and Feel of the program.
+
+\subsection{\texttt{ProofFrame}}
+This is the constructor method of ProofFrame. It sets the title of the frame to ``Proof Assistant''. 
+
+It then checks if the \texttt{proofArray} has been instantiated. If it has, it creates a new ProofPanel called \texttt{panel}. Note that initially, this class is called by ProofAssistant, and in that case \texttt{proofArray} is \texttt{Globals.proofArray}.
+
+The size of the frame is determined based on \texttt{Globals.proofWidth} and \texttt{Globals.proofHeight}. The following lines ensure the frame appears in the middle of the screen when initialised.
+
+Finally, the default close operation is set to exit, and \texttt{setMenus} is run.
+
+\subsection{\texttt{setLAF}}
+This method sets the look and feel of the program to the System look and feel. It is not called in version 1.0.
+
+\subsection{\texttt{setMenus}}
+This method creates the menubar \texttt{menuBar} for the frame.
+
+\subsubsection{\texttt{file}}
+A JMenu called \texttt{file} is created. This has the mnemonic F.
+
+Three menu items are add to \texttt{file}. They are \texttt{newItem}, \texttt{exportItem} and \texttt{closeItem}. These are used as would be expected (\texttt{exportItem} exports the proof to TeX code).
+
+\subsubsection{\texttt{options}}
+A JMenu called \texttt{options} is created. This has the mnemonic O.
+
+One checkbox item is added to \texttt{options}. This is \texttt{greyScopesItem} and is initially unchecked. This controls whether or not out-of-scope lines are greyed out.
+
+\subsection{\texttt{actionPerformed} and \texttt{itemStateChanged}}
+These methoda are called when a menu item is chosen. They carry out the required actions.
+
+
+\section{NDLine}
+This class represents a line in a natural deduction proof.
+
+An NDLine object is one of five types:
+\begin{center}
+	\begin{tabular}{c l}
+		0 & Standard Line\\
+		1 & Assumption Opening Line \\
+		2 & Assumption Closing Line \\
+		3 & One line assumption \\
+		4 & Premise \\
+		5 & Blank Line\\
+	\end{tabular}
+\end{center}
+
+\subsection{\texttt{NDLine}}
+There are three constructor methods.
+
+The first takes a string \texttt{macro} and an integer \texttt{type} as arguments. This constructor can be used with any type of line. The \texttt{line} is set to \texttt{macro}, the \texttt{mainOp}, \texttt{firstArg}, \texttt{secondArg} and \texttt{parsedLine} are found. The \texttt{lineNum} is selected by incrementing \texttt{Globals.lineNum}. The \texttt{type} is set. The \texttt{type} is checked and an appropriate NDJustification created. 
+
+The second takes only a string \texttt{macro} as an argument. This constructor should only be used to create NDLines of type 0 (Standard Lines). The \texttt{line} is set to \texttt{macro}, the \texttt{mainOp}, \texttt{firstArg}, \texttt{secondArg} and \texttt{parsedLine} are found. The \texttt{lineNum} is selected by incrementing \texttt{Globals.lineNum}. The \texttt{type} is set to 0. A blank NDJustification is created.
+
+The first takes only an integer \texttt{type} as an argument. This constructor should only be used to create blank NDLines (type 5). The \texttt{line}, \texttt{mainOp}, \texttt{firstArg}, \texttt{secondArg} and \texttt{parsedLine} are all set to ``''. The \texttt{lineNum} is set to 0. The \texttt{type} is set to 5. A blank NDJustification is created.
+
+\subsection{Private Methods}
+
+\subsubsection{\texttt{findMainOp}}
+This method returns the main operator of the line. It takes a string \texttt{line} as its only argument.
+
+The index of the first instance of ``\{'' in \texttt{line} is searched for. If the result is -1 (i.e. the bracket is not found), ``'' is returned. Otherwise, a substring stripping the first character (which should be $\backslash$) and stopping before the first \{ is returned.
+
+\subsubsection{\texttt{findFirstArg}}
+This method returns the first argument of the line, if it exists. If the first argument does not exist, it returns the empty string. It takes a string \texttt{line} as its only argument.t.
+
+The method first checks whether or not the mainOp exists. If it does not, the empty string is returned.
+
+Otherwise a bracket count is started. When the number of open brackets matches the number of close brackets, the end of the first argument has been found. The substring from the first open bracket to the relevant close bracket is returned.
+
+\subsubsection{\texttt{findSecondArg}}
+This method returns the second argument of the line, if it exists. If the second argument does not exist, it returns the empty string. It takes a string \texttt{line} as its only argument.
+
+The method first checks whether or not the mainOp exists. If it does not, the empty string is returned. If the mainOp is ``neg'' (a unary operator), the empty string is returned.
+
+Otherwise a similar bracket count to \texttt{findFirstArg} occurs. However the substring returned is from the relevant open bracket to the last close bracket of the line.
+
+\subsubsection{\texttt{parseTheLine}}
+This method returns the line, parsed to unicode output. It calls itself recursively and takes a string \texttt{line} as its only argument.
+
+The main operator of \texttt{line} is found. If the line is exactly ``$\backslash$falsum'', the line is sent to \texttt{convertOp}. If the main operator does not exist, the line is returned.
+
+Otherwise, the main operator does exist. The method checks whether a second argument exists in the line. If it does not (i.e. the line has a unary operator), the method sends the operator to \texttt{convertOp}, applied \texttt{parseTheLine} to the first argument and returns the result.
+
+If a second argument does exist, the method checks whether the main operator is a quantifier. If it is, the method sends the operator to \texttt{convertOp}, applies \texttt{parseTheLine} to the second argument, and returns a string conforming to the correct style.
+
+If a second argument exists and the main operator is not a quantifier, the method sends the operator to \texttt{convertOp} and parses both arguments, then returns a string conforming to the correct style.
+
+\subsubsection{\texttt{convertOp}}
+This method returns the unicode character for a logical symbol. It takes a string \texttt{op} as its only argument.
+
+The string is checked in each conditional. If it matches one, that value is returned. Otherwise, \texttt{op} is returned.
+
+\subsection{Mutator Methods}
+ \subsubsection{\texttt{setJustification}}
+This method takes an NDJustification \texttt{just} as its only argument. It sets the justification of the line to \texttt{just}.
+
+\subsection{Accessor Methods}
+
+\subsubsection{\texttt{get}...}
+These methods behave as would be expected. They take no arguments and return and object conforming to the request.
+
+\subsubsection{\texttt{parseMainOp}}
+This simple method returns the main operator of the line, parsed to unicode as a string.
+
+If the line is falsum, the line is sent to \texttt{convertOp}. Otherwise, the main operator is sent to \texttt{convertOp}. The result is returned.
+
+
+\subsubsection{\texttt{parseFirstArg()} and \texttt{parseSecondArg()}}
+These return strings containing their respective arguments, parsed.
+
+\subsubsection{\texttt{getTeX}}
+This converts the line to TeX code, using the ndproof.sty style. It checks the line type to ensure the correct LaTeX command is used. The final return statement should never occur.
+
+\subsubsection{\texttt{isInScopeOf}}
+This method returns true if the current line can ``see'' another line in a particular array of NDLines. It takes two arguments, the other line \texttt{anotherLine} and the array of NDLines \texttt{anArray}.
+
+The index of the current line in \texttt{anArray} is found. A counter \texttt{scopes} is created, to be incremented if any assumption end lines are encountered. A boolean \texttt{inScope} is created and set to false.
+
+Starting at the line above the current line, each line in \texttt{anArray} is inspected. If it is of type 2 or 3 (the close of an assumption), \texttt{scopes} is incremented. 
+
+If \texttt{scopes} is exactly 0 and the line matches the \texttt{lineNum} of \texttt{anotherLine}, \texttt{inScope} is set to true. That is, we have found \texttt{anotherLine} in \texttt{anArray} and it is in scope. 
+
+Finally, if the line is of type 1 or 3 (the open of an assumption), \texttt{scopes} is decremented, but not below 0.
+
+The value of \texttt{inScope} is returned.
+
+\subsubsection{\texttt{indexIn}}
+This method returns the index of the current line in the NDLine[] array \texttt{anArray}. It takes an NDLine[] array \texttt{anArray} as its only argument.
+
+The \texttt{lineNum} of the current line is found. This is compared against the \texttt{lineNum} of each index in \texttt{anArray}. If it is found to match, the index is returned. If no match is found, -1 is returned.
+
+
+\section{Globals}
+This class holds variables to be used for global purposes. They are accessed by other classes using \texttt{Global.[variable name]}.
+
+\subsection{\texttt{lineNum}}
+This represents the line number of each line in the proof. Each NDLine object should have a unique \texttt{lineNum}, as this is what is used for finding the index of a line in an array of NDLines.
+
+\section{ProofPanel}
+This class is the panel through which the user interacts with the proof itself. It extends JPanel.
+
+\subsection{\texttt{ProofPanel}}
+The constructor method takes one argument, an NDLine[] array \texttt{proofArray}. The layout manager of the ProofPanel is set to null. 
+
+\texttt{printLines} is called and a mouse listener is added to the panel.
+
+\subsection{\texttt{paintComponent}}
+This method is the paint component section of the class. It draws all the ScopeLines in the array \texttt{theScopes}.
+
+\subsection{\texttt{printLines}}
+This method prints the lines and buttons on the ProofPanel. This occurs in two sections.
+
+\subsubsection{Preparation for Printing Lines}
+In order that assumption scope lines may be printed correctly, it must be established how many scopes line will run concurrently. This information is also needed to determine the x-location for the line numbers and, consequently, the line contents and justifications.
+
+The length of the longest line is required to determine the x-location of the justifications.
+
+\texttt{proofArray} is looped through. At each index, the length of the line is checked against \texttt{longestLine}. \texttt{longestLine} is set to the maximum of these. The number of concurrent scope lines is counted, and \texttt{deepestJust} updated accordingly.
+
+An array is created to hold the ScopeLines, the x-positions of the various labels is calculated and a stack is created to hold the indices of the scope beginnings.
+
+\section{ExportFrame}
+
+\section{NDJustification}
+This class represents the justification of an NDLine. The class contains the constructor method and two accessor methods.
+
+The constructor method takes no arguments and sets both \texttt{teXJustification} and \texttt{javaJustification} to the empty string. The boolean \texttt{blank} is left true.
+
+The two accessor methods retrieve \texttt{teXJustification} and \texttt{javaJustification} as expected.
+
+\subsection{Just...}
+These classes extend the NDJustification class. They take various numbers of arguments depending on how what they are justifying. These arguments will always be line numbers.
+
+Each class sets \texttt{teXJustification} and \texttt{javaJustification} to the relevant description, and sets \texttt{blank} to false.
+
+Each class also includes mutator methods for setting the various line numbers.
+
+\section{ScopeLine}
+
+
+\section{Documentation of Individual Features}
+
+\subsection{New}
+The new feature allows a new proof to be created.
+
+\subsubsection{Overview of Implementation}
+The new feature is called from the menu item in the ProofFrame class. As such, most of the work is done within the ProofFrame class.
+
+The user inputs a string to find the initial state of the proof. From this, a new ProofMethods is created, in \texttt{Globals.assist}. A new ProofPanel is created and the size of the ProofFrame set.
+
+ProofMethods parses the string to an NDLine[] and prepares for the rest of the proof.
+
+\subsubsection{Implementation in ProofFrame}
+The JMenuItem \texttt{newItem} is declared and set in the \texttt{setMenus} method, where it is added to the \texttt{file} menu.
+
+When the \texttt{newItem} is called in \texttt{actionPerformed}, a dialog box is shown to the user. This asks for sequents to be inputted. The input is sent to a string \texttt{s}.
+
+If the string is of the sequent form, a type 6 NDLine called \texttt{temp} is created. This line is created solely to gain access to the \texttt{parseTheLine} method. An array called \texttt{tempArray} is created to hold the premises of the input. An array called \texttt{argumentArray} is created to hold the proof itself.
+
+\texttt{tempArray} is iterated through. Each element has any initial spaces removed and is added to \texttt{argumentArray}. The remaining two spaces in \texttt{argumentArray} are filled by \texttt{-c} and the conclusion sequent.
+
+The following occurs whatever the form of the input. The \texttt{Globals.lineNum} is set to 0, a new ProofMethods is created, and a new ProofPanel is created and set to the ProofFrame.
+
+\subsubsection{Implementation in ProofMethods}
+The ProofMethods class is called and takes a String[] as input. This input is immediately sent to the method \texttt{readInArgs}, the result of which the private variable \texttt{proofArray} is set to.
+
+The \texttt{readInArgs} method iterates through the String[] of arguments. For all elements but the last two, a type 4 NDLine is created (a premise line). For the second to last element, a type 5 NDLine is created (a blank line). For the last element, a type 0 NDLine is created (a standard line).
+
+\subsubsection{Implementation in ProofPanel}
+The ProofPanel class is created with the \texttt{Globals.proofArray}, which has been set to the \texttt{proofArray} of ProofMethods. 
+
+The private variable of ProofPanel \texttt{proofArray} is set to the input \texttt{proofArray}. The layout of the ProofPanel is set to null, as we wish to place the items in specific locations. The \texttt{printLines} method is called and a mouse listener added to the panel.
+
+The \texttt{printLines} method has reasonable complexity.
+
+Initially, everything in the ProofPanel is removed. Four counters are initialised. These are used to determine the x positions of the various columns required for the proof. The \texttt{numScopes} counter is used in the creation of the ScopeLine[], which should not be needed when no assumptions are present.
+
+The x positions for the line number column, the line contents column and the line justification column are calculated.
+
+The \texttt{proofArray} is iterated through. If a line is type 5, it is ignored. Otherwise, for each line, labels \texttt{lineNum}, \texttt{lineContents} and \texttt{justification} are created, positioned, coloured and added.
+
+If the index of the line is the same as the current goal's index, the text colour is set to blue and various rule buttons are added. If the index matches the current resource, the text colour is set to red. If \texttt{outOfScopeIsGrey}, the line is coloured grey if is it out of scope of the goal. Other lines are coloured black.
+
+If a line is type 1 (ass start), a scope start index is pushed. If it is type 2 (ass end), the scope line is created.
+
+Finally, \texttt{Globals.proofHeight} and \texttt{Globals.proofWidth} are set and the \texttt{paint component} is called.
+
+The \texttt{paintComponent} method simply draws each element of the ScopeLine[] \texttt{theScopes}.
+
+\subsubsection{Implementation in NDLine}
+The NDLine constructor is overloaded to deal with different types of NDLines.
+
+The most specified constructor takes a string \texttt{macro} and int \texttt{type} argument. The \texttt{macro} must be in the form outlined in \texttt{mylogicv02}. This is set to \texttt{line}. \texttt{line} is parsed for the main operator and the first and second arguments.  The line is also parsed for java output (unless it is type 6 - which is used solely for finding first and second arguments). A justification is created depending on the type of the line.
+
+The next constructor takes only a string as its argument. This constructor creates a line of type 0.
+
+The third constructor takes only an integer as its argument. This constructor creates a blank line of the type supplied. It should only be used when 5 is supplied as the argument.
+
+
+\subsection{Undo}
+The undo feature allows for steps in a proof to be undone. It can be used to reverse any rule use in the proof.
+
+\subsubsection{Overview of Implementation}
+The undo command is called from the menu item, and so the bulk of the feature is implemented in the ProofFrame class. Here, the menu item is added and the action performed commands are presented. The basic implementation is as follows.
+
+Globals contains four stacks for use in the undo feature, \texttt{proofsForUndo}, \texttt{goalsForUndo}, \texttt{resourcesForUndo} and \texttt{lineNumsForUndo}. When a rule is applied in the ProofPanel class, the current state of the proof is pushed to these stacks.
+
+When the undo feature is activated (from within ProofFrame), the top item of each stack is popped and used to recreate the proof as it was one step earlier.
+
+This implementation allows for infinite undos (while previous steps still exist).
+
+\subsubsection{Implementation in ProofFrame}
+The JMenuItem \texttt{undoItem} is declared at the beginning of the ProofFrame class as a private variable. It is initialised as a JMenuItem in the \texttt{setMenus} method, where it is given the shortcut key Ctrl+Z. The stack \texttt{proofsForUndo} is checked to see if it is empty. This result is used to determine whether or not \texttt{undoItem} is enabled.
+
+When \texttt{undoItem} is selected, the top NDLine[] on the \texttt{proofsForUndo} stack is popped, and named \texttt{prior}. \texttt{Globals.assist} is set to a new ProofMethods using \texttt{prior} as a starting point. The \texttt{Globals.currentGoalIndex}, \texttt{Globals.currentResourceIndex}, \texttt{Globals.lineNum}, \texttt{Globals.proofArray} and the \texttt{panel}'s \texttt{proofArray} are set similarly.
+
+Finally, the \texttt{panel} is refreshed using \texttt{panel.printLines()} and the enability of the \texttt{undoItem} is set.
+
+A public method is also included in the \texttt{setUndoable} method. This method sets the state of the enability of \texttt{undoItem}.
+
+\subsubsection{Implementation in ProofMethods}
+To aid in this implementation of undo, the ProofMethods constructor was overloaded to allow construction using either a String[] (as always) or an NDLine[].
+
+\subsubsection{Implementation in ProofPanel}
+The implementation of undo in the ProofPanel class occurswithin the \texttt{actionPerformed}, \texttt{introActions} and \texttt{elimActions} methods. Exactly the same process occurs within each.
+
+In \texttt{actionPerformed}, the undo implementation occurs in the \texttt{sameLineRule} conditional, under the heading \texttt{Prepare for Undo}. In the \texttt{introActions} and \texttt{elimActions} methods, the undo implementation occurs first, under the same heading.
+
+The undo implementation first creates a new NDLine[] from the \texttt{proofArray} by cloning each item in that array. It pushes the result to \texttt{Globals.proofsForUndo}. The current goal index is pushed to \texttt{Globals.goalsForUndo}. If the current resource index is identical to the current goal index, -1 is pushed to \texttt{Globals.resourcesForUndo}. Otherwise, the current resource index is pushed to \texttt{Globals.resourcesForUndo}. This is due to a conditional in the \texttt{introRule} section which makes the current resource index identical to the current goal index if no resource has been selected. Finally, the current line number is pushed to \texttt{Globals.lineNumsForUndo}.
+
+\subsubsection{Implementation in NDLine}
+A \texttt{clone} method has been implemented in NDLine to aid in the implementation of undo. Because Java copies references when assigning variables, the targets are able to change even when the specific variables are not called. In an early test of the implementation, undo would not step justifications back, because the copied NDLines had changed their justifications. Hence, a clone feature has been implemented.
+
+To summarise the above paragraph, Java does not include deep copying, however that is required for the implementation of undo. Hence, a \texttt{clone} method has been implemented to facilitate this.
+
+The \texttt{clone} method creates a new NDLine called \texttt{theClone}, with the same \texttt{line} and \texttt{type}. The justification is set to the same as the current NDLine, as is the line number. Finally, \texttt{Globals.lineNum} is decremented, as it has been incremented during the creation of \texttt{theClone}.
+
+The method \texttt{setLineNum} was also create to facilitate the undo implementation.
+
+\subsubsection{Implementation in NDJustification}
+For the same reasons outlined in the previous section, a clone method has been implemented in NDJustification.
+
+This method creates a new NDJustification with the same properties as the current NDJustification.
+
+
+
+\end{document}
