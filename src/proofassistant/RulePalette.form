@@ -1,0 +1,1554 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JDialogFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.JCheckBox" name="jCheckBox9">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="jCheckBox9"/>
+      </Properties>
+    </Component>
+    <Container class="javax.swing.JPanel" name="jPanel6">
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="160" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <EmptySpace min="0" pref="100" max="32767" attributes="0"/>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+    </Container>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="defaultCloseOperation" type="int" value="2"/>
+    <Property name="title" type="java.lang.String" value="Palette"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="jScrollPane1" alignment="0" pref="713" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="org.jdesktop.swingx.JXTaskPaneContainer" name="jXTaskPaneContainer1">
+          <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="f0" green="f0" id="Control" palette="2" red="f0" type="palette"/>
+            </Property>
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new Dimension(presetComboBox.getMinimumSize().width, 600)" type="code"/>
+            </Property>
+          </Properties>
+          <SubComponents>
+            <Container class="org.jdesktop.swingx.JXPanel" name="jXPanel1">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Component id="savePresetButton" max="32767" attributes="0"/>
+                              <Component id="presetComboBox" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="presetComboBox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="savePresetButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="jLabel1">
+                  <Properties>
+                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                      <Font name="Tahoma" size="14" style="0"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Rule Preset"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JComboBox" name="presetComboBox">
+                  <Properties>
+                    <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="getComboContents()" type="code"/>
+                    </Property>
+                    <Property name="selectedItem" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                      <Connection code="null" type="code"/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" value="Select a preset"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="presetComboBoxActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="savePresetButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Save to new preset..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Save the current setup as a new preset"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="savePresetButtonActionPerformed"/>
+                  </Events>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane1">
+              <Properties>
+                <Property name="title" type="java.lang.String" value="Basic Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel1">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="conIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="disIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="impIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="equIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="negIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="disElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="conElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="equElimCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="negElimCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="impElimCheckBox" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="conIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="conElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="disIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="disElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="impIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="impElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="equIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="equElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="negIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="negElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="conIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;conIntro&quot;)&#xd;&#xa;" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;con&quot;) + &quot;I&quot;&#xd;&#xa;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Conjunction introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="conIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="conElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;conElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;con&quot;) + &quot;E&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Conjunction elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="conElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="disIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;disIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;dis&quot;) + &quot;I&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Disjunction introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="disIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="disElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;disElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;dis&quot;) + &quot;E&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Disjunction elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="disElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="impIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;impIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;imp&quot;) + &quot;I&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Implication introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="impIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="impElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;impElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;imp&quot;) + &quot;E&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Implication elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="impElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="equIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;equIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;equ&quot;) + &quot;I&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Equivalence introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="equIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="equElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;equElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;equ&quot;) + &quot;E&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Equivalence elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="equElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="negIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;negIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;neg&quot;) + &quot;I&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Negation introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="negIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="negElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;negElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.operators.get(&quot;neg&quot;) + &quot;E&quot;" type="code"/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" value="Negation elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="negElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="1_verticalLayout3">
+                    <CodeVariable name="verticalLayout3" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="1_verticalLayout3"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="1_verticalLayout3"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="2">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="3">
+                    <ExpressionOrigin>
+                      <CodeExpression id="4_jXTaskPane1">
+                        <CodeVariable name="jXTaskPane1" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane1"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="1_verticalLayout3"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="3"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="5_jPanel1">
+                      <CodeVariable name="jPanel1" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel1"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane2">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Quantifier Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel2">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="qaIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qeIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="qaElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qeElimCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="qaIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qaElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="qeIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="qeElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="qaIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;qaIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2200;I"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Universal introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="qaIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="qaElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;qaElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2200;E"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Universal Elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="qaElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="qeIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;qeIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2203;I"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Existential introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="qeIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="qeElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;qeElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2203;E"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Existential elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="qeElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="6_verticalLayout4">
+                    <CodeVariable name="verticalLayout4" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="6_verticalLayout4"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="6_verticalLayout4"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="7">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="8">
+                    <ExpressionOrigin>
+                      <CodeExpression id="9_jXTaskPane2">
+                        <CodeVariable name="jXTaskPane2" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane2"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="6_verticalLayout4"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="8"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="10_jPanel2">
+                      <CodeVariable name="jPanel2" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel2"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane3">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Identity Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel3">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="eqIntroCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="eqElimCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="eqIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="eqElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="eqIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;eqIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="=I"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Identity introduction"/>
+                        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                          <Dimension value="[39, 23]"/>
+                        </Property>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="eqIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="eqElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;eqElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="=E"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Identity elimination"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="eqElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="11_verticalLayout5">
+                    <CodeVariable name="verticalLayout5" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="11_verticalLayout5"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="11_verticalLayout5"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="12">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="13">
+                    <ExpressionOrigin>
+                      <CodeExpression id="14_jXTaskPane3">
+                        <CodeVariable name="jXTaskPane3" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane3"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="11_verticalLayout5"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="13"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="15_jPanel3">
+                      <CodeVariable name="jPanel3" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel3"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane6">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Modal Logic Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel7">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="atIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="boxIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="diaIntroCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="boxElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="atElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="diaElimCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Component id="showContextCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="atIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="atElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="boxIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="boxElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="diaElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="diaIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="showContextCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="atIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;atIntro&quot;)&#xd;&#xa;" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="@I"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="atIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="atElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;atElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="@E"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="atElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="boxIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;boxIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2610; I"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="boxIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="boxElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;boxElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2610; E"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="boxElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="diaIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;diaIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x25c7;I"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="diaIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="diaElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;diaElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x25c7;E"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="diaElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="showContextCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;showContext&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Show contexts"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="showContextCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="16_verticalLayout1">
+                    <CodeVariable name="verticalLayout1" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="16_verticalLayout1"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="16_verticalLayout1"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="17">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="18">
+                    <ExpressionOrigin>
+                      <CodeExpression id="19_jXTaskPane6">
+                        <CodeVariable name="jXTaskPane6" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane6"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="16_verticalLayout1"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="18"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="20_jPanel7">
+                      <CodeVariable name="jPanel7" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel7"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane7">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Hybrid Logic Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel8">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="nomIntroCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="nomElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="selfIntroCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                                      <Component id="selfElimCheckBox" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="nomIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="nomElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="selfIntroCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="selfElimCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="nomIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;nomIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value=":I"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="nomIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="nomElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;nomElim&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value=":E"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="nomElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="selfIntroCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;selfIntro&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2193;I"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="selfIntroCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="selfElimCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;selfIntro&quot;)&#xd;&#xa;" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2193;E"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="selfElimCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="21_verticalLayout8">
+                    <CodeVariable name="verticalLayout8" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="21_verticalLayout8"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="21_verticalLayout8"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="22">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="23">
+                    <ExpressionOrigin>
+                      <CodeExpression id="24_jXTaskPane7">
+                        <CodeVariable name="jXTaskPane7" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane7"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="21_verticalLayout8"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="23"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="25_jPanel8">
+                      <CodeVariable name="jPanel8" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel8"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane4">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Special Rules"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel4">
+                  <Properties>
+                    <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+                      <Dimension value="[190, 175]"/>
+                    </Property>
+                  </Properties>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="inductionCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="showQCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="doubleNegationCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="sameLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="secondOrderCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="149" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="doubleNegationCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="showQCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="inductionCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="sameLineCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="secondOrderCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="14" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="doubleNegationCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;doubleNegation&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Double Negation"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Allow double negation"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="doubleNegationCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="inductionCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;induction&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Induction"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Allow induction (useful for Peano Arithmetic)"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="inductionCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="showQCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;Q&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Show Q Axioms"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Show the axioms for Robinson Arithmetic"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="showQCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="sameLineCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;sameLine&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Same Line Rule"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Justify a line by an identical line"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sameLineCheckBoxActionPerformed"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="secondOrderCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;secondOrder&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="2nd Order Logic"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="secondOrderCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="26_verticalLayout6">
+                    <CodeVariable name="verticalLayout6" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="26_verticalLayout6"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="26_verticalLayout6"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="27">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="28">
+                    <ExpressionOrigin>
+                      <CodeExpression id="29_jXTaskPane4">
+                        <CodeVariable name="jXTaskPane4" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane4"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="26_verticalLayout6"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="28"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="30_jPanel4">
+                      <CodeVariable name="jPanel4" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel4"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+            <Container class="org.jdesktop.swingx.JXTaskPane" name="jXTaskPane5">
+              <Properties>
+                <Property name="collapsed" type="boolean" value="true"/>
+                <Property name="title" type="java.lang.String" value="Shortcut Options"/>
+              </Properties>
+              <SubComponents>
+                <Container class="javax.swing.JPanel" name="jPanel5">
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="equIdBoxCheckBox" max="32767" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="universalsShortcutsCheckBox" max="32767" attributes="0"/>
+                                          <Component id="autoParametersCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="eqIdBoxesCheckBox" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="139" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="universalsShortcutsCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="autoParametersCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="eqIdBoxesCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="equIdBoxCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JCheckBox" name="universalsShortcutsCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;universalsShortcuts&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Shortcuts with &#x2200;E"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Bypass universal elimination and access the underlying operator"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="universalsShortcutsCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="autoParametersCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;autoParameters&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="Auto-Parameters"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Automatically generate parameters when a new one is needed"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="autoParametersCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="eqIdBoxesCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;eqIdentityBoxes&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="= Identity Boxes"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Allow identity boxes for identity introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="eqIdBoxesCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                    <Component class="javax.swing.JCheckBox" name="equIdBoxCheckBox">
+                      <Properties>
+                        <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                          <Connection code="Globals.allowedRules.get(&quot;equIdentityBoxes&quot;)" type="code"/>
+                        </Property>
+                        <Property name="text" type="java.lang.String" value="&#x2261; Identity Boxes"/>
+                        <Property name="toolTipText" type="java.lang.String" value="Give the option of creating an identity box for equivalence introduction"/>
+                      </Properties>
+                      <Events>
+                        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="equIdBoxCheckBoxItemStateChanged"/>
+                      </Events>
+                    </Component>
+                  </SubComponents>
+                </Container>
+              </SubComponents>
+              <LayoutCode>
+                <CodeStatement>
+                  <CodeExpression id="31_verticalLayout7">
+                    <CodeVariable name="verticalLayout7" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                    <ExpressionOrigin>
+                      <ExpressionProvider type="CodeConstructor">
+                        <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeExpression">
+                    <CodeExpression id="31_verticalLayout7"/>
+                  </StatementProvider>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="31_verticalLayout7"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="32">
+                      <ExpressionOrigin>
+                        <Value type="int" value="2"/>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="33">
+                    <ExpressionOrigin>
+                      <CodeExpression id="34_jXTaskPane5">
+                        <CodeVariable name="jXTaskPane5" type="8194" declaredType="org.jdesktop.swingx.JXTaskPane"/>
+                        <ExpressionOrigin>
+                          <ExpressionProvider type="ComponentRef">
+                            <ComponentRef name="jXTaskPane5"/>
+                          </ExpressionProvider>
+                        </ExpressionOrigin>
+                      </CodeExpression>
+                      <ExpressionProvider type="CodeMethod">
+                        <CodeMethod name="getContentPane" class="org.jdesktop.swingx.JXTaskPane" parameterTypes=""/>
+                      </ExpressionProvider>
+                    </ExpressionOrigin>
+                  </CodeExpression>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="31_verticalLayout7"/>
+                  </Parameters>
+                </CodeStatement>
+                <CodeStatement>
+                  <CodeExpression id="33"/>
+                  <StatementProvider type="CodeMethod">
+                    <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+                  </StatementProvider>
+                  <Parameters>
+                    <CodeExpression id="35_jPanel5">
+                      <CodeVariable name="jPanel5" type="8194" declaredType="javax.swing.JPanel"/>
+                      <ExpressionOrigin>
+                        <ExpressionProvider type="ComponentRef">
+                          <ComponentRef name="jPanel5"/>
+                        </ExpressionProvider>
+                      </ExpressionOrigin>
+                    </CodeExpression>
+                  </Parameters>
+                </CodeStatement>
+              </LayoutCode>
+            </Container>
+          </SubComponents>
+          <LayoutCode>
+            <CodeStatement>
+              <CodeExpression id="36_verticalLayout2">
+                <CodeVariable name="verticalLayout2" type="4096" declaredType="org.jdesktop.swingx.VerticalLayout"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="CodeConstructor">
+                    <CodeConstructor class="org.jdesktop.swingx.VerticalLayout" parameterTypes=""/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeExpression">
+                <CodeExpression id="36_verticalLayout2"/>
+              </StatementProvider>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="36_verticalLayout2"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setGap" class="org.jdesktop.swingx.VerticalLayout" parameterTypes="int"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="37">
+                  <ExpressionOrigin>
+                    <Value type="int" value="14"/>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1">
+                <CodeVariable name="jXTaskPaneContainer1" type="8194" declaredType="org.jdesktop.swingx.JXTaskPaneContainer"/>
+                <ExpressionOrigin>
+                  <ExpressionProvider type="ComponentRef">
+                    <ComponentRef name="jXTaskPaneContainer1"/>
+                  </ExpressionProvider>
+                </ExpressionOrigin>
+              </CodeExpression>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="setLayout" class="java.awt.Container" parameterTypes="java.awt.LayoutManager"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="36_verticalLayout2"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="39_jXPanel1">
+                  <CodeVariable name="jXPanel1" type="8194" declaredType="org.jdesktop.swingx.JXPanel"/>
+                  <ExpressionOrigin>
+                    <ExpressionProvider type="ComponentRef">
+                      <ComponentRef name="jXPanel1"/>
+                    </ExpressionProvider>
+                  </ExpressionOrigin>
+                </CodeExpression>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="4_jXTaskPane1"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="9_jXTaskPane2"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="14_jXTaskPane3"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="19_jXTaskPane6"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="24_jXTaskPane7"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="29_jXTaskPane4"/>
+              </Parameters>
+            </CodeStatement>
+            <CodeStatement>
+              <CodeExpression id="38_jXTaskPaneContainer1"/>
+              <StatementProvider type="CodeMethod">
+                <CodeMethod name="add" class="java.awt.Container" parameterTypes="java.awt.Component"/>
+              </StatementProvider>
+              <Parameters>
+                <CodeExpression id="34_jXTaskPane5"/>
+              </Parameters>
+            </CodeStatement>
+          </LayoutCode>
+        </Container>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>
