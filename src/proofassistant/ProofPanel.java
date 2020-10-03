@@ -33,6 +33,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
     private double scaleFactor = 1;
     private float zoomFactor = Globals.zoomFactor;
     
+    private int lineHeight = 25;
+    private int topOffSet = 10;
+    
     public ProofPanel(NDLine[] proofArray) {
         this.proofArray = proofArray;
         setLayout(null);
@@ -114,14 +117,14 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         theIdentityBoxes = new IdentityBoxLine[numIdentityBoxes];
         
         // Set the x position for lineNum, lineContents and justification
-        lineNumX = (int)(zoomFactor*(deepestAss*10 + 10));
+        lineNumX = (int)(zoomFactor*(deepestAss*10 + topOffSet));
         int lineContentsX;
-        lineContentsX = lineNumX + (int)(zoomFactor*(currentFont.stringWidth("77.") + 10));
+        lineContentsX = lineNumX + (int)(zoomFactor*(currentFont.stringWidth("77.") + topOffSet));
         justificationX = lineContentsX + (int)(zoomFactor*(longestLine + 10));
         // In StanfordStyle, line numbers come before scope lines, and the lineContents is closer
         if (Globals.proofStyle == Globals.STANFORDSTYLE){
             lineContentsX = lineNumX + (int)(zoomFactor*(currentFont.stringWidth("77.")));
-            lineNumX = 10;
+            lineNumX = (int)(zoomFactor * topOffSet);
         }
         
         // Create a stack to store the indices of scope beginnings and a variable to store the beginnings of the identity boxes
@@ -136,16 +139,32 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         int k = 0; // counter for identityboxes
         int xExtension = 135; // set the x extension to the end border of the shortcut button (the last button)
 //        System.out.println();
+        
+
+        
+        int linesY;
+        
         for (int i = 0; i < proofArray.length; i++) {
             if (proofArray[i].getType() != 5) {  
                 Color textColour;
-                if (Globals.currentGoalIndex == i) {
-                    textColour = Color.GREEN.darker();
+                linesY = (int)(zoomFactor*(lineHeight*i + topOffSet));
+                if (Globals.currentGoalIndex == i) { // If we're printing the goal line, add the buttons
+                    
+                    textColour = Color.GREEN.darker(); // Green for goal line
+                    
+                    // Set the dimensions/positioinig of the buttons
+                    int buttonWidth = (int)(zoomFactor*(currentFont.stringWidth("===")));
+                    int buttonHeight = (int)(zoomFactor*lineHeight);
+                    int buttonSep = (int)(zoomFactor*5);
+                    // Buttons X coordinate
                     int buttonPosition = justificationX;
                     // if we're in an id box, move the buttons to the right a bit
                     if (proofArray[i].getType() > 6 && proofArray[i].getType() < 11) {
                         buttonPosition = buttonPosition + (int)(zoomFactor*10);
                     }
+                    // Buttons Y coordinate
+                    int buttonY = linesY;
+                    
                     
                     // Add the intro rule button
                     if (!proofArray[i].parseMainOp().equals("") && !proofArray[i].parseMainOp().equals("\u22a5") // If the main op is not " " or falsum
@@ -157,9 +176,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                             && Globals.allowedRules.get(proofArray[i].getSMainOp() + "Intro")
                             && Globals.editable) { 
                         introButton = new ProofButton(proofArray[i].parseMainOp() + "I", showButtons);
-                        introButton.setLocation(buttonPosition, (int)(zoomFactor*(20*i + 10)));
+                        introButton.setLocation(buttonPosition, buttonY);
                         introButton.setMargin(buttonInsets);
-                        introButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                        introButton.setSize(buttonWidth,buttonHeight);
                         introButton.addActionListener(this);
                         introButton.setActionCommand("introRule");
                         introButton.setFont(introButton.getFont().deriveFont(zoomFactor*introButton.getFont().getSize2D()));
@@ -172,9 +191,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                     if (proofArray[i].getMainOp().equals("qa") && Globals.allowedRules.get("induction")
                             && Globals.editable) {
                         indButton = new ProofButton("IND", showButtons);
-                        indButton.setLocation(buttonPosition + (int)(zoomFactor*70), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                        indButton.setLocation(buttonPosition + 2*(buttonWidth + buttonSep), buttonY);
                         indButton.setMargin(buttonInsets);
-                        indButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                        indButton.setSize(buttonWidth,buttonHeight);
                         indButton.addActionListener(this);
                         indButton.setFont(indButton.getFont().deriveFont(zoomFactor*indButton.getFont().getSize2D()));
                         indButton.setActionCommand("inductionRule");
@@ -196,9 +215,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                                 if (Globals.allowedRules.get("universalsShortcuts") && Globals.allowedRules.containsKey(proofArray[Globals.currentResourceIndex].getNonUniSMainOp() + "Elim")
                                         && Globals.allowedRules.get(proofArray[Globals.currentResourceIndex].getNonUniSMainOp() + "Elim")){
                                     elimButton = new ProofButton(proofArray[Globals.currentResourceIndex].parseNonUniSMainOp() + "E", showButtons);
-                                    elimButton.setLocation(buttonPosition + (int)(zoomFactor*35), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                                    elimButton.setLocation(buttonPosition + buttonWidth + buttonSep, buttonY);
                                     elimButton.setMargin(buttonInsets);
-                                    elimButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                                    elimButton.setSize(buttonWidth,buttonHeight);
                                     elimButton.setEnabled(proofArray[i].isInScopeOf(proofArray[Globals.currentResourceIndex], proofArray));
                                     elimButton.addActionListener(this);
                                     elimButton.setFont(elimButton.getFont().deriveFont(zoomFactor*elimButton.getFont().getSize2D()));
@@ -208,9 +227,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                                 } else if (Globals.allowedRules.containsKey(proofArray[Globals.currentResourceIndex].getSMainOp() + "Elim")
                                         && (Globals.allowedRules.get(proofArray[Globals.currentResourceIndex].getSMainOp() + "Elim"))){
                                     elimButton = new ProofButton(proofArray[Globals.currentResourceIndex].parseMainOp() + "E", showButtons);
-                                    elimButton.setLocation(buttonPosition + (int)(zoomFactor*35), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                                    elimButton.setLocation(buttonPosition + buttonWidth + buttonSep, buttonY);
                                     elimButton.setMargin(buttonInsets);
-                                    elimButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                                    elimButton.setSize(buttonWidth,buttonHeight);
                                     elimButton.setEnabled(proofArray[i].isInScopeOf(proofArray[Globals.currentResourceIndex], proofArray));
                                     elimButton.addActionListener(this);
                                     elimButton.setFont(elimButton.getFont().deriveFont(zoomFactor*elimButton.getFont().getSize2D()));
@@ -230,9 +249,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                                 && Globals.allowedRules.get("sameLine")) {
                             remove(indButton);
                             sameLineButton = new ProofButton("==", showButtons);
-                            sameLineButton.setLocation(buttonPosition + (int)(zoomFactor*70), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                            sameLineButton.setLocation(buttonPosition + 2*(buttonWidth + buttonSep), buttonY);
                             sameLineButton.setMargin(buttonInsets);
-                            sameLineButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                            sameLineButton.setSize(buttonWidth,buttonHeight);
                             sameLineButton.setEnabled(proofArray[i].isInScopeOf(proofArray[Globals.currentResourceIndex], proofArray)
                                                         && proofArray[i].getContext().equals(proofArray[Globals.currentResourceIndex].getContext()));
                             sameLineButton.addActionListener(this);
@@ -244,9 +263,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                             // Add the universals shortcut button. This allows us to use a universal quantifier INSTEAD of the inner operator
                         } else if (Globals.allowedRules.get("universalsShortcuts") && proofArray[Globals.currentResourceIndex].getMainOp().equals("qa") && !proofArray[Globals.currentResourceIndex].getNonUniMainOp().equals("qa")) {
                             shortcutButton = new ProofButton(proofArray[Globals.currentResourceIndex].parseMainOp() + "E", showButtons);
-                            shortcutButton.setLocation(buttonPosition + (int)(zoomFactor*70), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                            shortcutButton.setLocation(buttonPosition + 2*(buttonWidth + buttonSep), buttonY);
                             shortcutButton.setMargin(buttonInsets);
-                            shortcutButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                            shortcutButton.setSize(buttonWidth,buttonHeight);
                             shortcutButton.addActionListener(this);
                             shortcutButton.setFont(shortcutButton.getFont().deriveFont(zoomFactor*shortcutButton.getFont().getSize2D()));
                             shortcutButton.setActionCommand("shortcutRule");
@@ -263,9 +282,9 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                             && !(proofArray[i].getType() > 6 && proofArray[i].getType() < 11)
                             && Globals.editable) {
                         DNButton = new ProofButton(Globals.operators.get("neg") + Globals.operators.get("neg") + "E", showButtons);
-                        DNButton.setLocation(buttonPosition + (int)(zoomFactor*105), (int)(zoomFactor*20*Globals.currentGoalIndex) + (int)(zoomFactor*10));
+                        DNButton.setLocation(buttonPosition + 3*(buttonWidth + buttonSep), buttonY);
                         DNButton.setMargin(buttonInsets);
-                        DNButton.setSize((int)(zoomFactor*30),(int)(zoomFactor*20));
+                        DNButton.setSize(buttonWidth,buttonHeight);
                         DNButton.addActionListener(this);
                         DNButton.setFont(DNButton.getFont().deriveFont((float)0.7*zoomFactor*DNButton.getFont().getSize2D()));
                         DNButton.setActionCommand("doubleNegationRule");
@@ -293,15 +312,15 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                         proofArray[i].setLineNum(i+1);
                     }
                     JLabel lineNum = new JLabel((proofArray[i].getLineNum() + Globals.lineIncrement) + ".");
-                    lineNum.setLocation(lineNumX, (int)(zoomFactor*20*i) + (int)(zoomFactor*10));
-                    lineNum.setSize((int)(zoomFactor*50),(int)(zoomFactor*20));
+                    lineNum.setLocation(lineNumX, linesY);
+                    lineNum.setSize((int)(zoomFactor*50),(int)(zoomFactor*lineHeight));
                     lineNum.setFont(lineNum.getFont().deriveFont(zoomFactor*lineNum.getFont().getSize2D()));
                     lineNum.setForeground(textColour);
                     add(lineNum);
                 } else if (proofArray[i].isSpecial()) {
                     JLabel lineNum = new JLabel(proofArray[i].getSpecialNum());
-                    lineNum.setLocation(lineNumX, (int)(zoomFactor*20*i) + (int)(zoomFactor*10));
-                    lineNum.setSize((int)(zoomFactor*50),(int)(zoomFactor*20));
+                    lineNum.setLocation(lineNumX, linesY);
+                    lineNum.setSize((int)(zoomFactor*50),(int)(zoomFactor*lineHeight));
                     lineNum.setFont(lineNum.getFont().deriveFont(zoomFactor*lineNum.getFont().getSize2D()));
                     lineNum.setForeground(textColour);
                     lineNum.setBorder(null);
@@ -309,8 +328,8 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                 }
                 
                 JLabel lineContents = new JLabel(proofArray[i].parseLineHTML());
-                lineContents.setLocation(lineContentsX, (int)(zoomFactor*20*i) + (int)(zoomFactor*10));
-                lineContents.setSize((int)(zoomFactor*10*longestLine),(int)(zoomFactor*20));
+                lineContents.setLocation(lineContentsX, linesY);
+                lineContents.setSize((int)(zoomFactor*10*longestLine),(int)(zoomFactor*lineHeight));
                 lineContents.setFont(lineContents.getFont().deriveFont(zoomFactor*lineContents.getFont().getSize2D()));
                 lineContents.setForeground(textColour);
                 add(lineContents);
@@ -319,10 +338,10 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
 //                System.out.println(proofArray[i].getJustification().getJava());
                 JLabel justification = new JLabel(proofArray[i].getJustification().getJava());
 //                System.out.println(proofArray[i].getJustification().getJava());
-                justification.setLocation(justificationX, (int)(zoomFactor*20*i) + (int)(zoomFactor*10));
+                justification.setLocation(justificationX, linesY);
 //                System.out.println(justification.getPreferredSize());
 //                justification.setSize((int)(zoomFactor*currentFont.stringWidth(proofArray[i].getJustification().getJava())*1.05),(int)(zoomFactor*20));
-                justification.setSize((int)((zoomFactor+1)*justification.getPreferredSize().width),(int)(zoomFactor*20));
+                justification.setSize((int)((zoomFactor+1)*justification.getPreferredSize().width),(int)(zoomFactor*lineHeight));
                 justification.setFont(justification.getFont().deriveFont(zoomFactor*justification.getFont().getSize2D()));
                 justification.setForeground(textColour);
                 FontMetrics thisJust = justification.getFontMetrics(justification.getFont());
@@ -341,7 +360,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                 }
                 if (proofArray[i].getType() == 2 || proofArray[i].getType() == 3) {
                     // We are closing an assumption. We need to create a ScopeLine object and decrement the scopeDepth
-                    theScopes[j] = new ScopeLine((int)(scopeStartIndex.pop()), i, deepestAss, scopeDepth, justificationX, zoomFactor, currentFont);
+                    theScopes[j] = new ScopeLine((int)(scopeStartIndex.pop()), i, deepestAss, scopeDepth, justificationX, zoomFactor, currentFont, lineHeight, topOffSet);
                     scopeDepth--;
                     j++;
                 }
@@ -350,13 +369,13 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                 if (proofArray[i].getType() == 7 || proofArray[i].getType() == 10) {
                     idBoxStart = i;
                 } else if (proofArray[i].getType() == 9) {
-                    theIdentityBoxes[k] = new IdentityBoxLine(idBoxStart, i, lineContentsX, justificationX, zoomFactor);
+                    theIdentityBoxes[k] = new IdentityBoxLine(idBoxStart, i, lineContentsX, justificationX, zoomFactor, lineHeight);
                     k++;
                 }
             }
         }
         
-        Globals.proofHeight = (int)(zoomFactor*(20*(proofArray.length) + 10));
+        Globals.proofHeight = (int)(zoomFactor*(lineHeight*(proofArray.length) + topOffSet));
         Globals.proofWidth = justificationX + (int)(zoomFactor*xExtension);
         
         
@@ -448,7 +467,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         int mouseY = e.getY();
         
         if (mouseX > lineNumX && mouseX < justificationX + 100) {
-            int lineNum = (int)((((mouseY/zoomFactor) - 10)/10)/2);
+            int lineNum = (int)((((mouseY/zoomFactor) - topOffSet)/lineHeight));
             if (lineNum < proofArray.length && proofArray[lineNum].getType() != 5) {
                 if (proofArray[lineNum].getJustification().getBlank()) { // Let us select blank lines as goals
                     Globals.currentGoalIndex = lineNum;

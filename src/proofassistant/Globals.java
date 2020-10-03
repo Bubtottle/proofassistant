@@ -425,7 +425,7 @@ public class Globals {
     public static final int AUCKLANDSTYLE = 1;
     public static final int STANFORDSTYLE = 2;
     
-    public static int proofStyle = AUCKLANDSTYLE;
+    public static int proofStyle = STANFORDSTYLE;
     
     // Should disjunction introduction require you to select a disjunct that's 
     // available?

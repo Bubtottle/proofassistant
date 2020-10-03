@@ -16,6 +16,18 @@ import java.util.regex.Pattern;
  */
 public class NDLine {
     
+    public final static int ASS_START = 1;
+    public final static int ASS_END = 2;
+    public final static int ASS_ONE_LINE = 3;
+    public final static int PREMISE = 4;
+    public final static int BLANK = 5;
+    public final static int DUMMY_LINE = 6;
+    public final static int ID_BOX_START = 7;
+    public final static int ID_BOX_LINE = 8;
+    public final static int ID_BOX_END = 9;
+    public final static int EQU_ID_BOX_START = 10;
+    public final static int AXIOM = 11;
+    
     private String line;
     private String mainOp;
     private String firstArg;
@@ -36,7 +48,7 @@ public class NDLine {
      */
     public NDLine(String macro, int type) { // Allows specification of line type
         id = System.currentTimeMillis();
-        if (type == 6) {
+        if (type == DUMMY_LINE) {
             line = macro;
         } else {
             line = processMacro(macro);
@@ -47,11 +59,11 @@ public class NDLine {
         mainOp = findMainOp(line);
         firstArg = findFirstArg(line);
         secondArg = findSecondArg(line);
-        if (type != 6) { // Type 6 - used for creating a line solely to access first and second arguments
+        if (type != DUMMY_LINE) { // Type 6 - used for creating a line solely to access first and second arguments
             parsedLine = parseLine();
         }
         
-        if (type != 6 && type != 8 && type != 9 && type != 11) { // Types 8, 9 - identity box lines,
+        if (type != DUMMY_LINE && type != ID_BOX_LINE && type != ID_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
             Globals.lineNum ++;
             this.lineNum = Globals.lineNum;
         } else {
@@ -60,15 +72,15 @@ public class NDLine {
         }
         
         this.type = type;
-        if (type == 4) {
-            justification = new JustPrem();
-        } else if (type == 1 || type == 3) {
-            justification = new JustAss();
-        } else if (type == 7) {
-            justification = new JustAss(1);
-        } else if (type == 10) {
-            justification = new JustAss(2);
-        } else if (type == 11) {
+        if (type == PREMISE) {
+            justification = new JustNone(JustNone.PREMISE_JUST);
+        } else if (type == ASS_START || type == ASS_ONE_LINE) {
+            justification = new JustNone(JustNone.ASS_JUST);
+        } else if (type == ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
+        } else if (type == EQU_ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
+        } else if (type == AXIOM) {
             justification = new JustAxiom();
         } else {
             justification = new NDJustification();
@@ -141,7 +153,7 @@ public class NDLine {
      */
     public NDLine(String macro, int type, boolean incrementLine) { // Allows specification of line type
         id = System.currentTimeMillis();
-        if (type == 6) {
+        if (type == DUMMY_LINE) {
             line = macro;
         } else {
             line = processMacro(macro);
@@ -150,11 +162,11 @@ public class NDLine {
         mainOp = findMainOp(line);
         firstArg = findFirstArg(line);
         secondArg = findSecondArg(line);
-        if (type != 6) { // Type 6 - used for creating a line solely to access first and second arguments
+        if (type != DUMMY_LINE) { // Type 6 - used for creating a line solely to access first and second arguments
             parsedLine = parseLine();
         }
         Globals.terms.processLine(context);
-        if (type != 6 && type != 8 && type != 9 && type != 11) { // Types 8, 9 - identity box lines,
+        if (type != DUMMY_LINE && type != ID_BOX_LINE && type != ID_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
             if (incrementLine) {
                 Globals.lineNum ++;
             }
@@ -165,15 +177,15 @@ public class NDLine {
         }
         
         this.type = type;
-        if (type == 4) {
-            justification = new JustPrem();
-        } else if (type == 1) {
-            justification = new JustAss();
-        } else if (type == 7) {
-            justification = new JustAss(1);
-        } else if (type == 10) {
-            justification = new JustAss(2);
-        } else if (type == 11) {
+        if (type == PREMISE) {
+            justification = new JustNone(JustNone.PREMISE_JUST);
+        } else if (type == ASS_START) {
+            justification = new JustNone(JustNone.ASS_JUST);
+        } else if (type == ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
+        } else if (type == EQU_ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
+        } else if (type == AXIOM) {
             justification = new JustAxiom();
         } else {
             justification = new NDJustification();
@@ -188,7 +200,7 @@ public class NDLine {
      */
     public NDLine(String macro, int type, int lineNum) { // Allows specification of line type
         id = System.currentTimeMillis();
-        if (type == 6) {
+        if (type == DUMMY_LINE) {
             line = macro;
         } else {
             line = processMacro(macro);
@@ -197,26 +209,26 @@ public class NDLine {
         mainOp = findMainOp(line);
         firstArg = findFirstArg(line);
         secondArg = findSecondArg(line);
-        if (type != 6) { // Type 6 - used for creating a line solely to access first and second arguments
+        if (type != DUMMY_LINE) { // Type 6 - used for creating a line solely to access first and second arguments
             parsedLine = parseLine();
         }
         Globals.terms.processLine(context);
-        if (type != 6 && type != 8 && type != 9 && type != 11) { // Types 8, 9 - identity box lines,
+        if (type != DUMMY_LINE && type != ID_BOX_LINE && type != iD_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
             this.lineNum = lineNum;
         } else {
             this.lineNum = lineNum;
         }
         
         this.type = type;
-        if (type == 4) {
-            justification = new JustPrem();
-        } else if (type == 1) {
-            justification = new JustAss();
-        } else if (type == 7) {
-            justification = new JustAss(1);
-        } else if (type == 10) {
-            justification = new JustAss(2);
-        } else if (type == 11) {
+        if (type == PREMISE) {
+            justification = new JustNone(JustNone.PREMISE_JUST);
+        } else if (type == ASS_START) {
+            justification = new JustNone(JustNone.ASS_JUST);
+        } else if (type == ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
+        } else if (type == EQU_ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
+        } else if (type == AXIOM) {
             justification = new JustAxiom();
         } else {
             justification = new NDJustification();
@@ -232,7 +244,7 @@ public class NDLine {
      */
     public NDLine(String macro, int type, String specialLineNum) { // Allows specification of line type
         id = System.currentTimeMillis();
-        if (type == 6) {
+        if (type == DUMMY_LINE) {
             line = macro;
         } else {
             line = processMacro(macro);
@@ -241,11 +253,11 @@ public class NDLine {
         mainOp = findMainOp(line);
         firstArg = findFirstArg(line);
         secondArg = findSecondArg(line);
-        if (type != 6) { // Type 6 - used for creating a line solely to access first and second arguments
+        if (type != DUMMY_LINE) { // Type 6 - used for creating a line solely to access first and second arguments
             parsedLine = parseLine();
         }
         Globals.terms.processLine(context);
-        if (type != 6 && type != 8 && type != 9 && type != 11) { // Types 8, 9 - identity box lines,
+        if (type != DUMMY_LINE && type != ID_BOX_START && type != ID_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
             Globals.lineNum ++;
             this.lineNum = Globals.lineNum;
         } else {
@@ -256,15 +268,15 @@ public class NDLine {
         this.specialLineNum = specialLineNum;
         
         this.type = type;
-        if (type == 4) {
-            justification = new JustPrem();
-        } else if (type == 1) {
-            justification = new JustAss();
-        } else if (type == 7) {
-            justification = new JustAss(1);
-        } else if (type == 10) {
-            justification = new JustAss(2);
-        } else if (type == 11) {
+        if (type == PREMISE) {
+            justification = new JustNone(JustNone.PREMISE_JUST);
+        } else if (type == ASS_START) {
+            justification = new JustNone(JustNone.ASS_JUST);
+        } else if (type == ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
+        } else if (type == EQU_ID_BOX_START) {
+            justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
+        } else if (type == AXIOM) {
             justification = new JustAxiom();
         } else {
             justification = new NDJustification();

@@ -174,30 +174,38 @@ public class ProofMethods {
         String theCode = "";
         theCode = theCode + "\\begin{NDProof}[jdistance = "+ (int)(0.8*longestLine) + "em + 1]\n";
         for (int i = 0; i < proofArray.length; i++) {
-            if (proofArray[i].getType() == 1) {
-                theCode = theCode + "\\NDAssStart{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
-            } else if (proofArray[i].getType() == 2) {
-                theCode = theCode + "\\NDAssEnd{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
-            } else if (proofArray[i].getType() == 3) {
-                theCode = theCode + "\\NDOneLineAss{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
-            } else if (proofArray[i].getType() == 5) {
-                theCode = theCode + "\\NDLine{}{}{}\n";
-            } else if (proofArray[i].getType() == 7) {
-                theCode = theCode + "\\IBoxStart{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
-            } else if (proofArray[i].getType() == 8) {
-                theCode = theCode + "\\IBoxLine{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
-            }else if (proofArray[i].getType() == 9) {
-                theCode = theCode + "\\IBoxEnd{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
-            } else {
-                if (proofArray[i].getLineNum() < 0) {
-                    if (!proofArray[i].isSpecial()) {
-                        theCode = theCode + "\\NDLine{}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+            switch(proofArray[i].getType()) {
+                case NDLine.ASS_START : 
+                    theCode += "\\NDAssStart{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
+                    break;
+                case NDLine.ASS_END :   
+                    theCode += "\\NDAssEnd{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                    break;
+                case NDLine.ASS_ONE_LINE :  
+                    theCode += "\\NDOneLineAss{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
+                    break;
+                case NDLine.BLANK :         
+                    theCode += "\\NDLine{}{}{}\n";
+                    break;
+                case NDLine.ID_BOX_START :  
+                    theCode += "\\IBoxStart{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}\n";
+                    break;
+                case NDLine.ID_BOX_LINE :
+                    theCode += "\\IBoxLine{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                    break;
+                case NDLine.ID_BOX_END :
+                    theCode += "\\IBoxEnd{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                    break;
+                default :
+                    if (proofArray[i].getLineNum() < 0) {
+                        if (!proofArray[i].isSpecial()) {
+                            theCode = theCode + "\\NDLine{}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                        } else {
+                            theCode = theCode + "\\NDLine{" +proofArray[i].getLineNumOutput(i) + "}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                        }
                     } else {
-                        theCode = theCode + "\\NDLine{" +proofArray[i].getLineNumOutput(i) + "}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
+                        theCode = theCode + "\\NDLine{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
                     }
-                } else {
-                    theCode = theCode + "\\NDLine{" + proofArray[i].getLineNumOutput(i) + ".}{$" + proofArray[i].getTeXLine() + "$}{" + proofArray[i].getJustification().getTeX() + "}\n";
-                }
             }
         }
         theCode = theCode + "\\end{NDProof}\n";
@@ -657,8 +665,7 @@ public class ProofMethods {
         if (resource.getMainOp().equals("qa")) {
             if ((goal.getLine().matches(resource.getNonUniFirstArgRegEx()) || goal.getLine().matches(resource.getNonUniSecondArgRegEx()))
                     && goalResourceUseAllowed(goal, resource)) {
-                NDJustification just = new JustConElim(resource);
-                goal.setJustification(just);
+                goal.setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
             }
             collapseBlanks();
             Globals.rulesUsed.add("conElim");
@@ -669,8 +676,7 @@ public class ProofMethods {
         // Checks if the goal is a conjunct of the resource. If so, justifies the goal
         if ((goal.getLine().equals(resource.getFirstArg()) || goal.getLine().equals(resource.getSecondArg()))
                 && goalResourceUseAllowed(goal, resource)) { // If the goal is one of the conjuncts and they have the same context
-            NDJustification just = new JustConElim(resource);
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
             Globals.currentGoalIndex = -1;
             
             
@@ -697,8 +703,7 @@ public class ProofMethods {
                 }
                 temp[k] = new NDLine(resource.getFirstArg());
                 temp[k].setContext(getResourceContext(goal, resource));
-                NDJustification just = new JustConElim(resource);
-                temp[k].setJustification(just);
+                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
 
                 k++;
                 for (int j = indexOfBlank; j < proofArray.length; j++) {
@@ -720,8 +725,7 @@ public class ProofMethods {
                 
                 temp[k] = new NDLine(resource.getSecondArg());
                 temp[k].setContext(getResourceContext(goal, resource));
-                NDJustification justTwo = new JustConElim(resource);
-                temp[k].setJustification(justTwo);
+                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
 
                 k++;
                 for (int j = indexOfBlank; j < proofArray.length; j++) {
@@ -742,14 +746,12 @@ public class ProofMethods {
                 }
                 temp[k] = new NDLine(resource.getFirstArg());
                 temp[k].setContext(getResourceContext(goal, resource));
-                NDJustification just = new JustConElim(resource);
-                temp[k].setJustification(just);
+                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
 
                 k++;
                 temp[k] = new NDLine(resource.getSecondArg());
                 temp[k].setContext(getResourceContext(goal, resource));
-                NDJustification justTwo = new JustConElim(resource);
-                temp[k].setJustification(justTwo);
+                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
 
                 k++;
                 for (int j = indexOfBlank; j < proofArray.length; j++) {
@@ -1079,17 +1081,14 @@ public class ProofMethods {
         
         
         if (!Globals.requireDisSelect && firstJustLine != null) { // If the first disjunct is found
-            NDJustification just = new JustDisIntro(firstJustLine.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, firstJustLine));
             Globals.currentGoalIndex = -1;
         } else if (!Globals.requireDisSelect && secondJustLine != null) {
-            NDJustification just = new JustDisIntro(secondJustLine.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, secondJustLine));
             Globals.currentGoalIndex = -1;
         } else if ((goal.getFirstArg().equals(resource.getLine()) || goal.getSecondArg().equals(resource.getLine())) && goal.isInScopeOf(resource, proofArray)
                 && goalResourceUseAllowed(goal, resource)) { // If the goal is one of the disjuncts
-            NDJustification just = new JustDisIntro(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, resource));
             Globals.currentGoalIndex = -1;
         }  else {
             magicMode = false; // turn off magic mode
@@ -1125,7 +1124,7 @@ public class ProofMethods {
                 temp[k] = new NDLine(goal.getSecondArg());
                 temp[k].setContext(getGoalContext(goal, resource));
             }
-            String disjunctLineNum = temp[k].getJustLineNum();
+            resource = temp[k];
             Globals.currentGoalIndex = k;
 
             k++;
@@ -1134,8 +1133,7 @@ public class ProofMethods {
                 k++;
             }
 
-            NDJustification just = new JustDisIntro(disjunctLineNum);
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, resource));
 
             proofArray = temp;
         }
@@ -1608,7 +1606,7 @@ public class ProofMethods {
             }
             
             if (createAnIdBox) {
-                String idStartLineNum;
+                NDLine idStart;
 
                 NDLine[] temp = new NDLine[proofArray.length + 2];
 
@@ -1620,7 +1618,7 @@ public class ProofMethods {
 
                 temp[k] = new NDLine(goal.getFirstArg(), 10);
                 temp[k].setContext(getGoalContext(goal, resource));
-                idStartLineNum = temp[k].getJustLineNum();
+                idStart = temp[k];
                 k++;
 
                 temp[k] = proofArray[indexOfBlank];
@@ -1636,8 +1634,7 @@ public class ProofMethods {
                     k++;
                 }
 
-                NDJustification just = new JustEqIntroBox(idStartLineNum);
-                goal.setJustification(just);
+                goal.setJustification(new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
 
                 proofArray = temp;
                 collapseBlanks();
@@ -1755,7 +1752,7 @@ public class ProofMethods {
             int indexOfGoal = goal.indexIn(proofArray);
             int indexOfBlank = findIndexOfBlank(indexOfGoal);
             NDLine[] temp = new NDLine[proofArray.length + 1];
-            String falsumLineNumber;
+            NDLine falsumLine;
 
             int k = 0;
             for (int j = 0; j < indexOfBlank + 1; j++) {
@@ -1767,7 +1764,7 @@ public class ProofMethods {
             temp[k].setContext(getResourceContext(goal, resource));
             NDJustification just = new JustNegElim(resource.getJustLineNum(), propLineNum);
             temp[k].setJustification(just);
-            falsumLineNumber = temp[k].getJustLineNum();
+            falsumLine= temp[k];
             k++;
 
             for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
@@ -1776,8 +1773,7 @@ public class ProofMethods {
             }
             
             if (goalResourceUseAllowed(goal, resource)) {
-                NDJustification justTwo = new JustFalsumElim(falsumLineNumber);
-                goal.setJustification(justTwo);
+                goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, falsumLine));
                 Globals.currentGoalIndex = -1;
             } else {
                 Globals.currentGoalIndex = goal.indexIn(temp);
@@ -1820,7 +1816,7 @@ public class ProofMethods {
             int indexOfGoal = goal.indexIn(proofArray);
             int indexOfBlank = findIndexOfBlank(indexOfGoal);
             NDLine[] temp = new NDLine[proofArray.length + 2];
-            String falsumLineNumber;
+            NDLine falsumLine;
 
             int k = 0;
             for (int j = 0; j < indexOfBlank + 1; j++) {
@@ -1839,7 +1835,7 @@ public class ProofMethods {
             temp[k].setContext(getResourceContext(goal, resource));
             NDJustification just = new JustNegElim(resource.getJustLineNum(), propLineNum);
             temp[k].setJustification(just);
-            falsumLineNumber = temp[k].getJustLineNum();
+            falsumLine = temp[k];
             k++;
 
             for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
@@ -1848,8 +1844,7 @@ public class ProofMethods {
             }
             
             if (goalResourceUseAllowed(goal, resource)) {
-                NDJustification justTwo = new JustFalsumElim(falsumLineNumber);
-                goal.setJustification(justTwo);
+                goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, falsumLine));
             } else {
                 Globals.currentGoalIndex = goal.indexIn(temp);
             }
@@ -1941,8 +1936,7 @@ public class ProofMethods {
     public NDLine[] qaElim(NDLine goal, NDLine resource) {
         if (Globals.allowedRules.get("universalsShortcuts") && goal.getLine().matches(resource.getNonUniRegEx())
                 && goalResourceUseAllowed(goal, resource)) {
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentGoalIndex = -1;
             collapseBlanks();
             Globals.rulesUsed.add("qaElim");
@@ -1955,8 +1949,7 @@ public class ProofMethods {
 //        System.out.println(goal.getLine() +" - " + regEx);
         if (goal.getLine().matches(regEx) && goalResourceUseAllowed(goal, resource)) {
 //            System.out.println(goal.getLine() + regEx);
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentGoalIndex = -1;
         } else {
             magicMode = false; // turn off magic mode
@@ -1983,8 +1976,7 @@ public class ProofMethods {
                 return proofArray;
             } else if (resource.replace(resource.getSecondArg(), resource.getFirstArg(), term).equals(goal.getLine())
                     && goalResourceUseAllowed(goal, resource)) {
-                NDJustification just = new JustQaElim(resource.getJustLineNum());
-                goal.setJustification(just);
+                goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
                 collapseBlanks();
                 Globals.rulesUsed.add("qaElim");
                 return proofArray;
@@ -1999,8 +1991,7 @@ public class ProofMethods {
             
             temp[k] = new NDLine(resource.replace(resource.getSecondArg(), resource.getFirstArg(), term));
             temp[k].setContext(getResourceContext(goal, resource));
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            temp[k].setJustification(just);
+            temp[k].setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentResourceIndex = k;
             k++;
             
@@ -2028,8 +2019,7 @@ public class ProofMethods {
     public NDLine[] qaElimProp(NDLine goal, NDLine resource) {
         if (Globals.allowedRules.get("universalsShortcuts") && goal.getLine().matches(resource.getNonUniRegEx())
                 && goalResourceUseAllowed(goal, resource)) {
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentGoalIndex = -1;
             collapseBlanks();
             Globals.rulesUsed.add("qaElim");
@@ -2038,8 +2028,7 @@ public class ProofMethods {
         
         String regEx = findRegExProp(resource.getFirstArg(), resource.getSecondArg());
         if (goal.getLine().matches(regEx) && goalResourceUseAllowed(goal, resource)) {
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentGoalIndex = -1;
         } else {
             magicMode = false; // turn off magic mode
@@ -2061,8 +2050,7 @@ public class ProofMethods {
                 return proofArray;
             } else if (resource.replace(resource.getSecondArg(), resource.getFirstArg(), term).equals(goal.getLine())
                     && goalResourceUseAllowed(goal, resource)) {
-                NDJustification just = new JustQaElim(resource.getJustLineNum());
-                goal.setJustification(just);
+                goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
                 collapseBlanks();
                 Globals.rulesUsed.add("qaElim");
                 return proofArray;
@@ -2077,8 +2065,7 @@ public class ProofMethods {
             
             temp[k] = new NDLine(resource.replace(resource.getSecondArg(), resource.getFirstArg(), term));
             temp[k].setContext(getResourceContext(goal, resource));
-            NDJustification just = new JustQaElim(resource.getJustLineNum());
-            temp[k].setJustification(just);
+            temp[k].setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
             Globals.currentResourceIndex = k;
             k++;
             
@@ -2295,8 +2282,7 @@ public class ProofMethods {
             proofArray = temp;
         }
         
-        NDJustification just = new JustQeIntro(matchLine);
-        goal.setJustification(just);
+        goal.setJustification(new JustSingle(JustSingle.QE_INTRO, matchLine));
         collapseBlanks();
         Globals.rulesUsed.add("qeIntro");
         return proofArray;
@@ -2309,8 +2295,7 @@ public class ProofMethods {
      * @return The resulting proofArray.
      */
     public NDLine[] falsumElim(NDLine goal, NDLine resource) {
-        NDJustification just = new JustFalsumElim(resource.getJustLineNum());
-        goal.setJustification(just);
+        goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, resource));
         collapseBlanks();
         Globals.currentGoalIndex = -1;
         Globals.rulesUsed.add("falsumElim");
@@ -3826,12 +3811,11 @@ public class ProofMethods {
      */
         
     public NDLine[] doubleNegation(NDLine goal, NDLine resource) {
-        String dNLineNum;
+
         
         NDLine dNJustLine = checkFor(findRegEx("", "\\neg{\\neg{" + goal.getLine() + "}}"), goal);
         if (dNJustLine != null) {
-            NDJustification just = new JustDNElim(dNJustLine.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.DN_ELIM, dNJustLine));
             Globals.currentGoalIndex = -1;
         } else {
 
@@ -3848,7 +3832,7 @@ public class ProofMethods {
 
             temp[k] = new NDLine("\\neg{\\neg{" + goal.getLine() + "}}");
             temp[k].setContext(getGoalContext(goal, resource));
-            dNLineNum = temp[k].getJustLineNum();
+            dNJustLine = temp[k];
             Globals.currentGoalIndex = k;
             k++;
 
@@ -3858,8 +3842,7 @@ public class ProofMethods {
             }
 
             proofArray = temp;
-            NDJustification just = new JustDNElim(dNLineNum);
-            goal.setJustification(just);    
+            goal.setJustification(new JustSingle(JustSingle.DN_ELIM, dNJustLine)); 
         }
         collapseBlanks();
         
@@ -3884,7 +3867,7 @@ public class ProofMethods {
         } else if (Globals.allowedRules.get("eqIdentityBoxes")) { // Otherwise, if we're using identity boxes
             int indexOfGoal = goal.indexIn(proofArray);
             int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            String idStartLineNum;
+            NDLine idStart;
             
             NDLine[] temp = new NDLine[proofArray.length + 2];
             
@@ -3894,15 +3877,15 @@ public class ProofMethods {
                 k++;
             }
             
-            temp[k] = new NDLine(goal.getFirstArg(), 7);
+            temp[k] = new NDLine(goal.getFirstArg(), NDLine.ID_BOX_START);
             temp[k].setContext(getGoalContext(goal, resource));
-            idStartLineNum = temp[k].getJustLineNum();
+            idStart = temp[k];
             k++;
             
             temp[k] = proofArray[indexOfBlank];
             k++;
             
-            temp[k] = new NDLine(goal.getSecondArg(), 9);
+            temp[k] = new NDLine(goal.getSecondArg(), NDLine.ID_BOX_END);
             temp[k].setContext(getGoalContext(goal, resource));
             Globals.currentGoalIndex = k;
             k++;
@@ -3912,8 +3895,7 @@ public class ProofMethods {
                 k++;
             }
             
-            NDJustification just = new JustEqIntroBox(idStartLineNum);
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
             
             proofArray = temp;
 //            Globals.rulesUsed.add("idBoxEqIntro");
@@ -4143,7 +4125,7 @@ public class ProofMethods {
         String subRtL = goal.replace(goal.getLine(), rightSide, leftSide);
         
         
-        NDJustification just = new JustEqElimSimple(resource.getJustLineNum());
+        NDJustification just = new JustSingle(JustSingle.EQ_ELIM_S, resource);
         
         if (!goal.getLine().contains(leftSide) && !goal.getLine().contains(rightSide)) { // If the goal doesn't match the resource, ignore
             magicMode = false; // turn off magic mode
@@ -4307,7 +4289,7 @@ public class ProofMethods {
         
         String leftSide = resource.getFirstArg();
         String rightSide = resource.getSecondArg();
-        NDJustification just = new JustEquElimSimple(resource.getJustLineNum());
+        NDJustification just = new JustSingle(JustSingle.EQU_ELIM_S, resource);
         
         if ((goal.getLine().equals(leftSide) && otherIdBoxLine.equals(rightSide)) || (goal.getLine().equals(rightSide) && otherIdBoxLine.equals(leftSide))){ // If this equivalence will solve the identity box
             if (atBottom) {
@@ -4904,7 +4886,7 @@ public class ProofMethods {
         k++;
         
         temp[k] = new NDLine(resource.getSecondArg());
-        temp[k].setJustification(new JustAss());
+        temp[k].setJustification(new JustNone(JustNone.ASS_JUST));
         temp[k].setContext(term);
         assStart2 = temp[k].getJustLineNum();
         Globals.currentResourceIndex = k;
@@ -5036,7 +5018,7 @@ public class ProofMethods {
 //            System.out.println("hello");
             int indexOfGoal = goal.indexIn(proofArray);
             int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            String idStartLineNum;
+            NDLine idStart;
             
             NDLine[] temp = new NDLine[proofArray.length + 2];
             
@@ -5048,7 +5030,7 @@ public class ProofMethods {
             
             temp[k] = new NDLine(goal.getContext(), 7);
             temp[k].setContext(getGoalContext(goal, resource));
-            idStartLineNum = temp[k].getJustLineNum();
+            idStart = temp[k];
             k++;
             
             temp[k] = proofArray[indexOfBlank];
@@ -5064,7 +5046,7 @@ public class ProofMethods {
                 k++;
             }
             
-            NDJustification just = new JustNomIntroBox(idStartLineNum);
+            NDJustification just = new JustSingle(JustSingle.NOM_BOX_INTRO, idStart);
             goal.setJustification(just);
             
             proofArray = temp;
@@ -5263,7 +5245,7 @@ public class ProofMethods {
         String subRtL = goal.replace(goal.getLine(), rightSide, leftSide);
         
         
-        NDJustification just = new JustNomElimSimple(resource.getJustLineNum());
+        NDJustification just = new JustSingle(JustSingle.NOM_ELIM_S, resource);
         
         if (!goal.getLine().contains(leftSide) && !goal.getLine().contains(rightSide)) { // If the goal doesn't match the resource, ignore
             magicMode = false; // turn off magic mode
@@ -5399,8 +5381,7 @@ public class ProofMethods {
         NDLine refLine = checkFor(findRegEx("", result), goal);
         
         if (refLine != null) {
-            NDJustification just = new JustSelfIntro(refLine);
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.SELF_INTRO, refLine));
             Globals.currentGoalIndex = -1;
         } else {
             NDLine[] temp = new NDLine[proofArray.length+1];
@@ -5440,7 +5421,7 @@ public class ProofMethods {
             return proofArray;
         }
         String result = resource.replace(resource.getSecondArg(), resource.getFirstArg(), resource.getContext());
-        NDJustification just = new JustSelfElim(resource.getJustLineNum());
+        NDJustification just = new JustSingle(JustSingle.SELF_ELIM, resource);
         
         if (goal.getContext().equals(resource.getContext())
                 && goal.getLine().equals(result)) {
@@ -5487,9 +5468,7 @@ public class ProofMethods {
         public NDLine[] sameLine(NDLine goal, NDLine resource) {
         if (goal.isInScopeOf(resource, proofArray) && goal.getLine().equals(resource.getLine())
                 && goalResourceUseAllowed(goal, resource)) {
-
-            NDJustification just = new JustLine(resource.getJustLineNum());
-            goal.setJustification(just);
+            goal.setJustification(new JustSingle(JustSingle.LINE_IS_EQUAL, resource));
         }
         collapseBlanks();
         Globals.currentGoalIndex = -1;

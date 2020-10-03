@@ -18,6 +18,7 @@ public class IdentityBoxLine {
     private int lineContentsX = 0;
     private int justificationX = 0;
     private float zoomFactor = 1f;
+    private int lineHeight = 20;
     
     
     
@@ -29,12 +30,21 @@ public class IdentityBoxLine {
         this.zoomFactor = zoomFactor;
     }
     
+    public IdentityBoxLine(int startIndex, int endIndex, int lineContentsX, int justificationX, float zoomFactor, int lineH) {
+        this.startLine = startIndex + 1;
+        this.endLine = endIndex + 1;
+        this.lineContentsX = lineContentsX;
+        this.justificationX = justificationX;
+        this.zoomFactor = zoomFactor;
+        this.lineHeight = lineH;
+    }
+    
     public void draw(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
         g2.setStroke(new BasicStroke(zoomFactor));
-        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(20*startLine - 10)), (int)(justificationX - zoomFactor*5), (int)(zoomFactor*(20*startLine - 10)));
-        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(20*startLine - 10)), (int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(20*endLine + 10)));
-        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(20*endLine + 10)),(int)(justificationX - zoomFactor*5), (int)(zoomFactor*(20*endLine + 10 )));
+        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(lineHeight*startLine - lineHeight/2)), (int)(justificationX - zoomFactor*5), (int)(zoomFactor*(lineHeight*startLine - lineHeight/2)));
+        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(lineHeight*startLine - lineHeight/2)), (int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(lineHeight*endLine + lineHeight/2)));
+        g2.drawLine((int)((lineContentsX - zoomFactor*10)), (int)(zoomFactor*(lineHeight*endLine + lineHeight/2)),(int)(justificationX - zoomFactor*5), (int)(zoomFactor*(lineHeight*endLine + lineHeight/2)));
     }
     
 
