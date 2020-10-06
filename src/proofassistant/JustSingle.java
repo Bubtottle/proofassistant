@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 bubto.
+ * Copyright 2020 Declan Thompson.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,8 @@ public class JustSingle extends NDJustification implements NDJust {
     public static final int QE_INTRO = 4096; // Existential introduction
     public static final int SELF_ELIM = 8192; // Self-reference elimination (hybrid logic)
     public static final int SELF_INTRO = 16384; // Self-reference introduction (hybrid logic)
+    public static final int AT_ELIM = 32768; // @ elimination (hybrid logic)
+    public static final int AT_INTRO = 65536; // @ introduction (hybrid logic)
     
     
     private int type;
@@ -83,6 +85,8 @@ public class JustSingle extends NDJustification implements NDJust {
             case QE_INTRO : out = ", " + Globals.operators.get("qe") + "I"; break;
             case SELF_ELIM : out = ", " + Globals.operators.get("self") + "E"; break;
             case SELF_INTRO : out = ", " + Globals.operators.get("self") + "I"; break;
+            case AT_ELIM : out = ", " + Globals.operators.get("at") + "E"; break;
+            case AT_INTRO : out = ", " + Globals.operators.get("at") + "I"; break;
         }
         return line.getLineNumOutput() + out;
     }
@@ -105,6 +109,8 @@ public class JustSingle extends NDJustification implements NDJust {
             case QE_INTRO : out = ", $\\qeop\\rulename{I}$"; break;
             case SELF_ELIM : out = ", $\\selfop\\rulename{E}$"; break;
             case SELF_INTRO : out = ", $\\selfop\\rulename{I}$"; break;
+            case AT_ELIM : out = ", $@\\rulename{E}$"; break;
+            case AT_INTRO : out = ", $@\\rulename{I}$"; break;
         }
         return line.getLineNumOutput() + out;
     }

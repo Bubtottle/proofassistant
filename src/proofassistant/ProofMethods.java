@@ -465,7 +465,7 @@ public class ProofMethods {
         return -1;
     }
 
-    private NDLine checkFor(String regEx, NDLine goal) { // Returns the line number of the first line in scope with contents matching lineContents. Returns -1 if none found
+    private NDLine checkForNDLine(String regEx, NDLine goal, String context) { // Returns the the first line in scope with contents matching lineContents. Returns -1 if none found
         int indexOfGoal = goal.indexIn(proofArray);
         NDLine lineOfWant = null;
         int scopes = 0;
@@ -476,7 +476,30 @@ public class ProofMethods {
             }
             
             if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)
-                    && goalResourceUseAllowed(goal, proofArray[indexOfGoal-i])) { // Check line against what we want, but ignore if scopes>0
+                    && goalContextUseAllowed(proofArray[indexOfGoal-i], context)) { // Check line against what we want, but ignore if scopes>0
+                lineOfWant = proofArray[indexOfGoal - i];
+            }
+            if (proofArray[indexOfGoal - i].getType() == 1 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit a start-of-ass line, decrease scopes count
+                scopes--;
+                if (scopes < 0) { // Make sure scopes doesn't go below 0
+                    scopes = 0;
+                }
+            }
+        }
+        return lineOfWant;
+    }
+    
+    private NDLine checkForNDLine(String regEx, NDLine goal) { // Returns the the first line in scope with contents matching lineContents. Returns -1 if none found
+        int indexOfGoal = goal.indexIn(proofArray);
+        NDLine lineOfWant = null;
+        int scopes = 0;
+        
+        for (int i = 1; i <= indexOfGoal; i++) { // Move from current goal up to top of proof
+            if (proofArray[indexOfGoal - i].getType() == 2 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit an end-of-assumption line, increase scopes count
+                scopes++;
+            }
+            
+            if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)) { // Check line against what we want, but ignore if scopes>0
                 lineOfWant = proofArray[indexOfGoal - i];
             }
             if (proofArray[indexOfGoal - i].getType() == 1 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit a start-of-ass line, decrease scopes count
@@ -513,7 +536,7 @@ public class ProofMethods {
         return lineNumOfWant;
     }
     
-    private int checkForIndexOf(String regEx, NDLine goal) { // Returns the line number of the first line in scope with contents matching lineContents. Returns -1 if none found
+    private int checkForIndex(String regEx, NDLine goal, String context) { // Returns the line number of the first line in scope with contents matching lineContents. Returns -1 if none found
         int indexOfGoal = goal.indexIn(proofArray);
         int indexOfWant = -1;
         int scopes = 0;
@@ -521,7 +544,8 @@ public class ProofMethods {
             if (proofArray[indexOfGoal - i].getType() == 2 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit an end-of-assumption line, increase scopes count
                 scopes++;
             }
-            if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)) { // Check line against what we want, but ignore if scopes>0
+            if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)
+                    && goalContextUseAllowed(proofArray[indexOfGoal-i], context)) { // Check line against what we want, but ignore if scopes>0
                 indexOfWant = indexOfGoal - i;
             }
             if (proofArray[indexOfGoal - i].getType() == 1 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit a start-of-ass line, decrease scopes count
@@ -779,8 +803,8 @@ public class ProofMethods {
      * @return The resulting proofArray.
      */
     public NDLine[] conIntro(NDLine goal, NDLine resource) { // Applies conjunction introduction to the supplied goal and resource, in proofArray
-        NDLine firstJustLine = checkFor(findRegEx("", goal.getFirstArg()), goal);
-        NDLine secondJustLine = checkFor(findRegEx("", goal.getSecondArg()), goal);
+        NDLine firstJustLine = checkForNDLine(findRegEx("", goal.getFirstArg()), goal);
+        NDLine secondJustLine = checkForNDLine(findRegEx("", goal.getSecondArg()), goal);
         int indexOfGoal = goal.indexIn(proofArray);
         int indexOfBlank = findIndexOfBlank(indexOfGoal);
         NDLine[] tempCon = proofArray;
@@ -1076,8 +1100,8 @@ public class ProofMethods {
      */
     public NDLine[] disIntro(NDLine goal, NDLine resource) {
         // First, check to see if either disjunct appears in scope
-        NDLine firstJustLine = checkFor(findRegEx("", goal.getFirstArg()), goal);
-        NDLine secondJustLine = checkFor(findRegEx("", goal.getSecondArg()), goal);
+        NDLine firstJustLine = checkForNDLine(findRegEx("", goal.getFirstArg()), goal);
+        NDLine secondJustLine = checkForNDLine(findRegEx("", goal.getSecondArg()), goal);
         
         
         if (!Globals.requireDisSelect && firstJustLine != null) { // If the first disjunct is found
@@ -2240,7 +2264,7 @@ public class ProofMethods {
      * @return The resulting proofArray.
      */
     public NDLine[] qeIntro(NDLine goal, NDLine resource) {
-        NDLine matchLine = checkFor(findRegEx(goal.getFirstArg(), goal.getSecondArg()), goal);
+        NDLine matchLine = checkForNDLine(findRegEx(goal.getFirstArg(), goal.getSecondArg()), goal);
         
         if (matchLine != null) {
             Globals.currentGoalIndex = -1;
@@ -3813,7 +3837,7 @@ public class ProofMethods {
     public NDLine[] doubleNegation(NDLine goal, NDLine resource) {
 
         
-        NDLine dNJustLine = checkFor(findRegEx("", "\\neg{\\neg{" + goal.getLine() + "}}"), goal);
+        NDLine dNJustLine = checkForNDLine(findRegEx("", "\\neg{\\neg{" + goal.getLine() + "}}"), goal);
         if (dNJustLine != null) {
             goal.setJustification(new JustSingle(JustSingle.DN_ELIM, dNJustLine));
             Globals.currentGoalIndex = -1;
@@ -4594,11 +4618,11 @@ public class ProofMethods {
         
         int indexOfGoal = goal.indexIn(proofArray);
         int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        String antecedentLineNum = checkFor(findRegEx("",resource.getFirstArg() + "(" + term + ")"), goal, resource.getContext());
+        NDLine antecedentLine = checkForNDLine(findRegEx("",resource.getFirstArg() + "(" + term + ")"), goal, resource.getContext());
         
         
-        if (!antecedentLineNum.equals("-1")) {
-            NDJustification just = new JustBoxElim(resource.getJustLineNum(), antecedentLineNum, resource.getFirstArg());
+        if (antecedentLine != null) {
+            NDJustification just = new JustBoxElim(resource, antecedentLine);
             if (goal.getLine().equals(resource.getSecondArg()) && goal.getContext().equals(term)) {
                 goal.setJustification(just);
                 Globals.currentGoalIndex = -1;
@@ -4638,7 +4662,7 @@ public class ProofMethods {
                 
                 temp[k] = new NDLine(resource.getFirstArg() + term);
                 temp[k].setContext(resource.getContext());
-                antecedentLineNum = temp[k].getJustLineNum();
+                antecedentLine = temp[k];
                 Globals.currentGoalIndex = k;
                 k++;
                 
@@ -4648,7 +4672,7 @@ public class ProofMethods {
                 }
                 
                 proofArray = temp;
-                NDJustification just = new JustBoxElim(resource.getJustLineNum(), antecedentLineNum, resource.getFirstArg());
+                NDJustification just = new JustBoxElim(resource, antecedentLine);
                 goal.setJustification(just);
                 
             } else {
@@ -4662,10 +4686,10 @@ public class ProofMethods {
                 
                 temp[k] = new NDLine(resource.getFirstArg() + term);
                 temp[k].setContext(resource.getContext());
-                antecedentLineNum = temp[k].getJustLineNum();
+                antecedentLine = temp[k];
                 Globals.currentGoalIndex = k;
                 k++;
-                NDJustification just = new JustBoxElim(resource.getJustLineNum(), antecedentLineNum, resource.getFirstArg());
+                NDJustification just = new JustBoxElim(resource, antecedentLine);
                 
                 temp[k] = new NDLine(resource.getSecondArg());
                 temp[k].setContext(term);
@@ -4921,10 +4945,10 @@ public class ProofMethods {
      * @return The resulting proofArray.
      */
     public NDLine[] atIntro(NDLine goal, NDLine resource) {
-        String lineNumOfProp = checkFor(findRegEx("",goal.getSecondArg()), goal, goal.getFirstArg());
+        int indexOfProp = checkForIndex(findRegEx("",goal.getSecondArg()), goal, goal.getFirstArg());
         
-        if (!lineNumOfProp.equals("-1")) {
-            NDJustification just = new JustAtIntro(lineNumOfProp);
+        if (indexOfProp != -1) {
+            NDJustification just = new JustSingle(JustSingle.AT_INTRO, proofArray[indexOfProp]);
             goal.setJustification(just);
             Globals.currentGoalIndex = -1;
         } else {
@@ -4940,7 +4964,7 @@ public class ProofMethods {
             
             temp[k] = new NDLine(goal.getSecondArg());
             temp[k].setContext(goal.getFirstArg());
-            NDJustification just = new JustAtIntro(temp[k].getJustLineNum());
+            NDJustification just = new JustSingle(JustSingle.AT_INTRO, temp[k]);
             goal.setJustification(just);
             Globals.currentGoalIndex = k;
             k++;
@@ -4964,7 +4988,7 @@ public class ProofMethods {
      * @return The resulting proofArray.
      */
     public NDLine[] atElim(NDLine goal, NDLine resource) {
-        NDJustification just = new JustAtElim(resource.getJustLineNum());
+        NDJustification just = new JustSingle(JustSingle.AT_ELIM, resource);
         if (goal.getContext().equals(resource.getFirstArg())
                 && goal.getLine().equals(resource.getSecondArg())) {
             goal.setJustification(just);
@@ -5011,7 +5035,7 @@ public class ProofMethods {
         
     public NDLine[] nomIntro(NDLine goal, NDLine resource) {
         if (goal.getLine().equals(goal.getContext())) { // If the first arg is the second arg, justify
-            goal.setJustification(new JustNomIntro());
+            goal.setJustification(new JustNone(JustNone.NOM_INTRO));
             Globals.currentGoalIndex = -1;
             Globals.rulesUsed.add("nomIntro");
         } else if (Globals.allowedRules.get("eqIdentityBoxes")) { // Otherwise, if we're using identity boxes
@@ -5378,7 +5402,7 @@ public class ProofMethods {
         int indexOfBlank = findIndexOfBlank(indexOfGoal);
         
         String result = goal.replace(goal.getSecondArg(), goal.getFirstArg(), goal.getContext());
-        NDLine refLine = checkFor(findRegEx("", result), goal);
+        NDLine refLine = checkForNDLine(findRegEx("", result), goal);
         
         if (refLine != null) {
             goal.setJustification(new JustSingle(JustSingle.SELF_INTRO, refLine));

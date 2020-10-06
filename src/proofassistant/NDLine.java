@@ -81,7 +81,7 @@ public class NDLine {
         } else if (type == EQU_ID_BOX_START) {
             justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
         } else if (type == AXIOM) {
-            justification = new JustAxiom();
+            justification = new JustNone(JustNone.AXIOM);
         } else {
             justification = new NDJustification();
         }
@@ -186,7 +186,7 @@ public class NDLine {
         } else if (type == EQU_ID_BOX_START) {
             justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
         } else if (type == AXIOM) {
-            justification = new JustAxiom();
+            justification = new JustNone(JustNone.AXIOM);
         } else {
             justification = new NDJustification();
         }
@@ -213,7 +213,7 @@ public class NDLine {
             parsedLine = parseLine();
         }
         Globals.terms.processLine(context);
-        if (type != DUMMY_LINE && type != ID_BOX_LINE && type != iD_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
+        if (type != DUMMY_LINE && type != ID_BOX_LINE && type != ID_BOX_END && type != AXIOM) { // Types 8, 9 - identity box lines,
             this.lineNum = lineNum;
         } else {
             this.lineNum = lineNum;
@@ -229,7 +229,7 @@ public class NDLine {
         } else if (type == EQU_ID_BOX_START) {
             justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
         } else if (type == AXIOM) {
-            justification = new JustAxiom();
+            justification = new JustNone(JustNone.AXIOM);
         } else {
             justification = new NDJustification();
         }
@@ -277,7 +277,7 @@ public class NDLine {
         } else if (type == EQU_ID_BOX_START) {
             justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
         } else if (type == AXIOM) {
-            justification = new JustAxiom();
+            justification = new JustNone(JustNone.AXIOM);
         } else {
             justification = new NDJustification();
         }

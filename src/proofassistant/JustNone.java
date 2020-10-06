@@ -38,6 +38,8 @@ public class JustNone extends NDJustification implements NDJust {
     public static final int ASS_JUST = 5;
     public static final int ASS_JUST_ID_BOX = 25;
     public static final int ASS_JUST_EQU_ID_BOX = 125;
+    public static final int NOM_INTRO = 625;
+    public static final int AXIOM = 3125;
     
     private int type;
     
@@ -60,7 +62,9 @@ public class JustNone extends NDJustification implements NDJust {
             case PREMISE_JUST : out = "Prem"; break;
             case ASS_JUST : out = "Ass"; break;
             case ASS_JUST_ID_BOX : out = "Ass (" + Globals.operators.get("eq") + ")"; break;            
-            case ASS_JUST_EQU_ID_BOX : out = "Ass (" + Globals.operators.get("equ") + ")"; break;
+            case ASS_JUST_EQU_ID_BOX : out = "Ass (" + Globals.operators.get("equ") + ")"; break;      
+            case NOM_INTRO : out = Globals.operators.get("nom") + "I"; break;
+            case AXIOM : out = ""; break;
         }
         return out;
     }
@@ -72,7 +76,9 @@ public class JustNone extends NDJustification implements NDJust {
             case PREMISE_JUST : out = "$\\rulename{Prem}$"; break;
             case ASS_JUST : out = "Ass"; break;
             case ASS_JUST_ID_BOX : out = "$\\rulename{Ass (\u003d)}$"; break;            
-            case ASS_JUST_EQU_ID_BOX : out = "$\\rulename{Ass (\u2261)}$"; break;
+            case ASS_JUST_EQU_ID_BOX : out = "$\\rulename{Ass (\u2261)}$"; break;      
+            case NOM_INTRO : out = "$:\\rulename{I}$"; break;
+            case AXIOM : out = ""; break;
         }
         return out;
     }
