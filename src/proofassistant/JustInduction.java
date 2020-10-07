@@ -7,53 +7,40 @@
 package proofassistant;
 
 /**
+ * The JustInduction class implements NDJust for induction
  *
- * @author dtho139
+ * @since Proof Assistant 0.2
+ * @version 2.0
+ * @author Declan Thompson
  */
-public class JustInduction extends NDJustification {
-    private String zeroBit;
-    private String rangeS;
-    private String rangeE;
+public class JustInduction implements NDJust {
+    private NDLine zeroLine;
+    private NDLine rangeS;
+    private NDLine rangeE;
     
-    public JustInduction(int zeroPart, int rangeStart, int rangeEnd) {
-        zeroBit = ""+zeroPart;
-        rangeS = ""+rangeStart;
-        rangeE = ""+rangeEnd;
-        setBlank(false);
-        setLines();
-    }
-    
-    public JustInduction(String zeroPart, String rangeStart, String rangeEnd) {
-        zeroBit = zeroPart;
+    public JustInduction(NDLine zeroPart, NDLine rangeStart, NDLine rangeEnd) {
+        zeroLine = zeroPart;
         rangeS = rangeStart;
         rangeE = rangeEnd;
-        setBlank(false);
-        setLines();
     }
     
-    public void setLines() {
-        setTeX(zeroBit + ", " + rangeS + "-" + rangeE + ", $\\rulename{IND}$");
-        setJava(zeroBit + ", " + rangeS + "-" + rangeE + ", IND");
+    @Override
+    public String getJava() {
+        return zeroLine.getLineNumOutput() + ", " 
+                + rangeS.getJustLineNum() + "-" + rangeE.getJustLineNum() 
+                + ", IND";
     }
     
-    public void setZeroPart(int zeroPart) {
-        zeroBit = ""+zeroPart;
-        setLines();
+    @Override
+    public String getTeX() {
+        return zeroLine.getLineNumOutput() + ", " 
+                + rangeS.getJustLineNum() + "-" + rangeE.getJustLineNum() 
+                + ", $\\rulename{IND}$";
     }
     
-    public void setRangeStart(int rangeStart) {
-        rangeS = ""+rangeStart;
-        setLines();
+    
+    public boolean getBlank() {
+        return false;
     }
     
-    public void setRangeEnd(int rangeEnd) {
-        rangeE = ""+rangeEnd;
-        setLines();
-    }
-    
-    public JustInduction clone() {
-        JustInduction theClone = new JustInduction(zeroBit, rangeS, rangeE);
-        
-        return theClone;
-    }
 }

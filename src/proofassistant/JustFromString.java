@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 bubto.
+ * Copyright 2020 Declan Thompson.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,33 @@
 package proofassistant;
 
 /**
- * The NDJust interface provides justification objects for use in the NDLine 
- * justification field.
- * 
- * Originally derived from the NDJustification class.
- * 
+ * The JustFromString class implements NDJust by explicitly taking in string arguments
+ *
  * @since Proof Assistant 2.0
  * @version 1.0
  * @author Declan Thompson
  */
-public interface NDJust {
+public class JustFromString implements NDJust {
     
-    public String getJava();
+    private String javaJust;
+    private String texJust;
+    private boolean blank;
     
-    public String getTeX();
+    public JustFromString(String javaJ, String texJ, boolean bl) {
+        this.javaJust = javaJ;
+        this.texJust = texJ;
+        this.blank = bl;
+    }
     
-    public boolean getBlank();
+    public String getJava() {
+        return javaJust;
+    }
     
+    public String getTeX() {
+        return texJust;
+    }
+    
+    public boolean getBlank() {
+        return blank;
+    }
 }

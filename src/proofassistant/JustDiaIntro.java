@@ -7,52 +7,38 @@
 package proofassistant;
 
 /**
+ * The JustDiaIntro class implements NDJust for diamond introduction
  *
- * @author dtho139
+ * @since Proof Assistant 1.3
+ * @version 2.0
+ * @author Declan Thompson
  */
-public class JustDiaIntro extends NDJustification {
-    private String pred;
-    private String prop;
-    private String ct;
+public class JustDiaIntro implements NDJust {
+    private NDLine pred;
+    private NDLine prop;
+    private NDLine goal;
     
-    public JustDiaIntro(int predicate, int proposition, String centre) {
-        pred = ""+predicate;
-        prop = ""+proposition;
-        ct = centre;
-        setBlank(false);
-        setLines();
-    }
-    
-    public JustDiaIntro(String predicate, String proposition, String centre) {
+    public JustDiaIntro(NDLine predicate, NDLine proposition, NDLine gl) {
         pred = predicate;
         prop = proposition;
-        ct = centre;
-        setBlank(false);
-        setLines();
+        goal = gl;
     }
     
-    public void setLines() {
-        setTeX(pred + ", " + prop + ", $\\langle " + ct + "\\rangle\\rulename{I}$");
-        setJava(pred + ", " + prop + ", " + Globals.operators.get("LEFTdia") + ct + Globals.operators.get("RIGHTdia") + "I");
+    @Override
+    public String getJava() {
+        return pred.getLineNumOutput() + ", " + prop.getLineNumOutput() + ", " 
+                + Globals.operators.get("LEFTdia") + goal.getFirstArg() 
+                + Globals.operators.get("RIGHTdia") + "I";
     }
     
-    public void setPredicate(int predicate) {
-        pred = ""+predicate;
-        setLines();
+    @Override
+    public String getTeX() {
+        return pred.getLineNumOutput() + ", " + prop.getLineNumOutput() 
+                + ", $\\langle " + goal.getFirstArg() + "\\rangle\\rulename{I}$";
     }
     
-    public void setProposition(int proposition) {
-        prop = ""+proposition;
-        setLines();
-    }
-    public void setCentre(String centre) {
-        ct = centre;
-        setLines();
+    public boolean getBlank() {
+        return false;
     }
     
-    public JustDiaIntro clone() {
-        JustDiaIntro theClone = new JustDiaIntro(pred, prop, ct);
-        
-        return theClone;
-    }
 }

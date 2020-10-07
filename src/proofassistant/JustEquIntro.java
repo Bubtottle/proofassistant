@@ -7,61 +7,44 @@
 package proofassistant;
 
 /**
+ * The JustEquIntro class implements NDJust for equivalence introduction
  *
- * @author dtho139
+ * @since Proof Assistant 0.1
+ * @version 2.0
+ * @author Declan Thompson
  */
-public class JustEquIntro extends NDJustification {
-    private String antecedentOne;
-    private String consequentOne;
-    private String antecedentTwo;
-    private String consequentTwo;
+public class JustEquIntro implements NDJust {
+    private NDLine antecedentOne;
+    private NDLine consequentOne;
+    private NDLine antecedentTwo;
+    private NDLine consequentTwo;
     
-    public JustEquIntro(int rangeOneStart, int rangeOneEnd, int rangeTwoStart, int rangeTwoEnd) {
-        antecedentOne = ""+rangeOneStart;
-        consequentOne = ""+rangeOneEnd;
-        antecedentTwo = ""+rangeTwoStart;
-        consequentTwo = ""+rangeTwoEnd;
-        setBlank(false);
-        setLines();
-    }
-    
-    public JustEquIntro(String rangeOneStart, String rangeOneEnd, String rangeTwoStart, String rangeTwoEnd) {
+    public JustEquIntro(NDLine rangeOneStart, NDLine rangeOneEnd, NDLine rangeTwoStart, NDLine rangeTwoEnd) {
         antecedentOne = rangeOneStart;
         consequentOne = rangeOneEnd;
         antecedentTwo = rangeTwoStart;
         consequentTwo = rangeTwoEnd;
-        setBlank(false);
-        setLines();
     }
     
-    public void setLines() {
-        setTeX(antecedentOne + "-" + consequentOne + "," + antecedentTwo + "-" + consequentTwo + ", $\\equop\\rulename{I}$");
-        setJava(antecedentOne + "-" + consequentOne + "," + antecedentTwo + "-" + consequentTwo + ", " + Globals.operators.get("equ") + "I");
+    @Override
+    public String getJava() {
+        return antecedentOne.getLineNumOutput() + "-" 
+                + consequentOne.getLineNumOutput() + "," 
+                + antecedentTwo.getLineNumOutput() + "-" 
+                + consequentTwo.getLineNumOutput() + ", " 
+                + Globals.operators.get("equ") + "I";
     }
     
-     public void setRangeOneStart(int rangeOneStart) {
-        antecedentOne = ""+rangeOneStart;
-        setLines();
+    
+    public String getTeX() {
+        return antecedentOne.getLineNumOutput() + "-" 
+                + consequentOne.getLineNumOutput() + "," 
+                + antecedentTwo.getLineNumOutput() + "-" 
+                + consequentTwo.getLineNumOutput() + ", $\\equop\\rulename{I}$";
     }
     
-    public void setRangeOneEnd(int rangeOneEnd) {
-        consequentOne = ""+rangeOneEnd;
-        setLines();
+    public boolean getBlank() {
+        return false;
     }
     
-    public void setRangeTwoStart(int rangeTwoStart) {
-        antecedentTwo = ""+rangeTwoStart;
-        setLines();
-    }
-    
-    public void setRangeTwoEnd(int rangeTwoEnd) {
-        consequentTwo = ""+rangeTwoEnd;
-        setLines();
-    }
-    
-    public JustEquIntro clone() {
-        JustEquIntro theClone = new JustEquIntro(antecedentOne, consequentOne, antecedentTwo, consequentTwo);
-        
-        return theClone;
-    }
 }

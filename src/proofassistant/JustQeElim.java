@@ -7,66 +7,43 @@
 package proofassistant;
 
 /**
+ * The JustQeElim class implements NDJust for existential elimination
  *
- * @author dtho139
+ * @since Proof Assistant 0.1
+ * @version 2.0
+ * @author Declan Thompson
  */
-public class JustQeElim extends NDJustification {
-    private String qe;
-    private String rangeS;
-    private String rangeE;
+public class JustQeElim implements NDJust {
+    private NDLine qe;
+    private NDLine rangeS;
+    private NDLine rangeE;
     private boolean legal;
     
-    public JustQeElim(int existental, int rangeStart, int rangeEnd, boolean allowable) {
-        qe = ""+existental;
-        rangeS = ""+rangeStart;
-        rangeE = ""+rangeEnd;
-        legal = allowable;
-        setBlank(false);
-        setLines();
-    }
-    
-    public JustQeElim(String existental, String rangeStart, String rangeEnd, boolean allowable) {
+    public JustQeElim(NDLine existental, NDLine rangeStart, NDLine rangeEnd, boolean allowable) {
         qe = existental;
         rangeS = rangeStart;
         rangeE = rangeEnd;
         legal = allowable;
-        setBlank(false);
-        setLines();
     }
     
-    public void setLines() {
-        if (legal) {
-            setTeX(qe + ", " + rangeS + "-" + rangeE + ", $\\qeop\\rulename{E}$");
-            setJava(qe + ", " + rangeS + "-" + rangeE + ", " + Globals.operators.get("qe") + "E");
-        } else {
-            setTeX(qe + ", " + rangeS + "-" + rangeE + ", $\\qeop\\rulename{E}$" + "\\illegalflag");
-            setJava(qe + ", " + rangeS + "-" + rangeE + ", " + Globals.operators.get("qe") + "E" + "!");
-        }
+    @Override
+    public String getJava() {
+        return qe.getLineNumOutput() + ", " 
+                + rangeS.getLineNumOutput() + "-" + rangeE.getLineNumOutput() 
+                + ", " + Globals.operators.get("qe") + "E"
+                + (legal ? "" : "!");
     }
     
-    public void setDisjunction(int disjunction) {
-        qe = ""+disjunction;
-        setLines();
+    @Override
+    public String getTeX() {
+        return qe.getLineNumOutput() + ", " 
+                + rangeS.getLineNumOutput() + "-" + rangeE.getLineNumOutput() 
+                + ", $\\qeop\\rulename{E}$"
+                + (legal ? "" : "\\illegalflag");
     }
     
-    public void setRangeStart(int rangeStart) {
-        rangeS = ""+rangeStart;
-        setLines();
-    }
     
-    public void setRangeEnd(int rangeEnd) {
-        rangeE = ""+rangeEnd;
-        setLines();
-    }
-    
-    public void setAllowable(boolean allowable) {
-        legal = allowable;
-        setLines();
-    }
-    
-    public JustQeElim clone() {
-        JustQeElim theClone = new JustQeElim(qe, rangeS, rangeE, legal);
-        
-        return theClone;
+    public boolean getBlank() {
+        return false;
     }
 }

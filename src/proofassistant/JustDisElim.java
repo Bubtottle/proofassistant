@@ -7,69 +7,46 @@
 package proofassistant;
 
 /**
- *
- * @author dtho139
+ * The JustDisElim class implements NDJust for disjunction elimination
+ * 
+ * @since Proof assistant 0.1
+ * @version 2.0
+ * @author Declan Thompson
  */
-public class JustDisElim extends NDJustification {
-    private String dis;
-    private String ranOneS;
-    private String ranOneE;
-    private String ranTwoS;
-    private String ranTwoE;
+public class JustDisElim implements NDJust {
+    private NDLine dis;
+    private NDLine ranOneS;
+    private NDLine ranOneE;
+    private NDLine ranTwoS;
+    private NDLine ranTwoE;
     
-    public JustDisElim(int disjunction, int rangeOneStart, int rangeOneEnd, int rangeTwoStart, int rangeTwoEnd) {
-        dis = ""+disjunction;
-        ranOneS = ""+rangeOneStart;
-        ranOneE = ""+rangeOneEnd;
-        ranTwoS = ""+rangeTwoStart;
-        ranTwoE = ""+rangeTwoEnd;
-        setBlank(false);
-        setLines();
-    }
-    
-    public JustDisElim(String disjunction, String rangeOneStart, String rangeOneEnd, String rangeTwoStart, String rangeTwoEnd) {
+    public JustDisElim(NDLine disjunction, NDLine rangeOneStart, 
+            NDLine rangeOneEnd, NDLine rangeTwoStart, NDLine rangeTwoEnd) {
         dis = disjunction;
         ranOneS = rangeOneStart;
         ranOneE = rangeOneEnd;
         ranTwoS = rangeTwoStart;
         ranTwoE = rangeTwoEnd;
-        setBlank(false);
-        setLines();
     }
     
-    public void setLines() {
-        setTeX(dis + ", " + ranOneS + "-" + ranOneE + ", " + ranTwoS + "-" + ranTwoE + ", $\\disop\\rulename{E}$");
-        setJava(dis + ", " + ranOneS + "-" + ranOneE + ", " + ranTwoS + "-" + ranTwoE + ", " + Globals.operators.get("dis") + "E");
+    @Override
+    public String getJava() {
+        return dis.getLineNumOutput() + ", " 
+                + ranOneS.getLineNumOutput() + "-" + ranOneE.getLineNumOutput() + ", " 
+                + ranTwoS.getLineNumOutput() + "-" + ranTwoE.getLineNumOutput() 
+                + ", " + Globals.operators.get("dis") + "E";
     }
     
-    public void setDisjunction(int disjunction) {
-        dis = ""+disjunction;
-        setLines();
+    @Override
+    public String getTeX() {
+        return dis.getLineNumOutput() + ", " 
+                + ranOneS.getLineNumOutput() + "-" + ranOneE.getLineNumOutput() + ", " 
+                + ranTwoS.getLineNumOutput() + "-" + ranTwoE.getLineNumOutput() 
+                + ", $\\disop\\rulename{E}$";
     }
     
-    public void setRangeOneStart(int rangeOneStart) {
-        ranOneS = ""+rangeOneStart;
-        setLines();
+    public boolean getBlank() {
+        return false;
     }
     
-    public void setRangeOneEnd(int rangeOneEnd) {
-        ranOneE = ""+rangeOneEnd;
-        setLines();
-    }
-    
-    public void setRangeTwoStart(int rangeTwoStart) {
-        ranTwoS = ""+rangeTwoStart;
-        setLines();
-    }
-    
-    public void setRangeTwoEnd(int rangeTwoEnd) {
-        ranTwoE = ""+rangeTwoEnd;
-        setLines();
-    }
-    
-    public JustDisElim clone() {
-        JustDisElim theClone = new JustDisElim(dis, ranOneS, ranOneE, ranTwoS, ranTwoE);
-        
-        return theClone;
-    }
 }

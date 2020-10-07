@@ -93,7 +93,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         for (NDLine proofArray1 : proofArray) {
 //            System.out.println(proofArray[i].parseLine());
 //            System.out.println("setLines:");
-            proofArray1.getJustification().setLines();
+//            proofArray1.getJustification().setnies();
             if (currentFont.stringWidth(proofArray1.parseLine()) > longestLine) {
                 longestLine = currentFont.stringWidth(proofArray1.parseLine());
             }

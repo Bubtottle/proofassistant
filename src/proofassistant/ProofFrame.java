@@ -1898,14 +1898,8 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
 
                     NDLine out = new NDLine(lineContents, lineType, false);
                     out.setLineNum(lineNum);
-                    NDJustification just = new NDJustification();
-                    just.setJava(javaJust);
-                    just.setTeX(texJust);
-                    if (lineNum < 0 && lineNum > -10) {
-                        just.setBlank(false);
-                    } else {
-                        just.setBlank(javaJust.equals(""));
-                    }
+                    NDJust just = new JustFromString(javaJust, texJust, 
+                            ((lineNum < 0 && lineNum > -10) ? false : javaJust.equals("") ) );
                     out.setJustification(just);
                     out.setContext(context);
                     if (javaJust.equals("Prem")){
@@ -2030,11 +2024,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
 
                     NDLine out = new NDLine(lineContents, lineType, false);
                     out.setLineNum(lineNum);
-                    NDJustification just = new NDJustification();
-                    just.setJava(javaJust);
-                    just.setTeX(texJust);
-                    just.setBlank(javaJust.equals(""));
-                    out.setJustification(just);
+                    out.setJustification(new JustFromString(javaJust, texJust, javaJust.equals("")));
                     out.setContext(context);
                     if (!specialLineNum.equals("")) {
                         out.setSpecialLineNum(specialLineNum);
@@ -2131,14 +2121,8 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         revalidate();
     }
     
-    private NDJustification getJust(String texJust, String javaJust) {
-        
-        NDJustification just = new NDJustification();
-        just.setJava(javaJust);
-        just.setTeX(texJust);
-        just.setBlank(javaJust.equals(""));
-        
-        return just;
+    private NDJust getJust(String texJust, String javaJust) {
+        return new JustFromString(javaJust, texJust, javaJust.equals(""));
     }
     
     private long funTime = 0;

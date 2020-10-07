@@ -31,7 +31,7 @@ package proofassistant;
  * @version 1.0
  * @author Declan Thompson
  */
-public class JustSingle extends NDJustification implements NDJust {
+public class JustSingle implements NDJust {
     // Type constants
     public static final int CON_ELIM = 2; // Conjunction elimination
     public static final int DIS_INTRO = 4; // Disjunction introduction
@@ -49,10 +49,12 @@ public class JustSingle extends NDJustification implements NDJust {
     public static final int SELF_INTRO = 16384; // Self-reference introduction (hybrid logic)
     public static final int AT_ELIM = 32768; // @ elimination (hybrid logic)
     public static final int AT_INTRO = 65536; // @ introduction (hybrid logic)
+    public static final int QA_INTRO = 131072; // Universal introduction
     
     
     private int type;
     private NDLine line;
+    private boolean legal = true;
     
     /**
      * Class constructor.
@@ -64,7 +66,12 @@ public class JustSingle extends NDJustification implements NDJust {
     public JustSingle(int tp, NDLine ln) {
         this.type = tp;
         this.line = ln;
-        setBlank(false);
+    }
+    
+    public JustSingle(int tp, NDLine ln, boolean allowed) {
+        this.type = tp;
+        this.line = ln;
+        this.legal = allowed;
     }
     
     @Override
@@ -87,8 +94,9 @@ public class JustSingle extends NDJustification implements NDJust {
             case SELF_INTRO : out = ", " + Globals.operators.get("self") + "I"; break;
             case AT_ELIM : out = ", " + Globals.operators.get("at") + "E"; break;
             case AT_INTRO : out = ", " + Globals.operators.get("at") + "I"; break;
+            case QA_INTRO : out = ", " + Globals.operators.get("qa") + "I"; break;
         }
-        return line.getLineNumOutput() + out;
+        return line.getLineNumOutput() + out + (legal ? "" : "!");
     }
     
     @Override
@@ -111,8 +119,13 @@ public class JustSingle extends NDJustification implements NDJust {
             case SELF_INTRO : out = ", $\\selfop\\rulename{I}$"; break;
             case AT_ELIM : out = ", $@\\rulename{E}$"; break;
             case AT_INTRO : out = ", $@\\rulename{I}$"; break;
+            case QA_INTRO : out = ", $\\qaop\\rulename{I}$"; break;
         }
-        return line.getLineNumOutput() + out;
+        return line.getLineNumOutput() + out + (legal ? "" : "\\illegalflag");
+    }
+    
+    public boolean getBlank() {
+        return false;
     }
     
 

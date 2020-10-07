@@ -25,14 +25,22 @@ package proofassistant;
 
 /**
  * The JustDouble class implements NDJust for justifications requiring 2 args
+ * This class replaces dedicated classes for the types of justification contained.
  * 
  * @since Proof Assistant 2.0
  * @version 1.0
  * @author Declan Thompson
  */
-public class JustDouble extends NDJustification implements NDJust {
+public class JustDouble implements NDJust {
     // Type Constants
-    public static final int CON_INTRO = 3;
+    public static final int CON_INTRO = 3; // Conjunction introduction
+    public static final int IMP_INTRO = 9; // Implication introduction
+    public static final int IMP_ELIM = 27; // Implication elimination
+    public static final int EQU_ELIM = 81; // Equivalence elimination
+    public static final int EQ_ELIM = 243; // Equality elimination
+    public static final int NEG_ELIM = 729; // Negation elimination
+    public static final int NEG_INTRO = 2187; // Negation introduction
+    public static final int NOM_ELIM = 6561; // Nominal elimination (hybrid logic)
     
     
     private int type;
@@ -43,6 +51,75 @@ public class JustDouble extends NDJustification implements NDJust {
         this.type = tp;
         this.firstLine = one;
         this.secondLine = two;
-        setBlank(false);
+    }
+    
+    @Override
+    public String getJava() {
+        String gap = "";
+        String ending = "";
+        switch(type) {
+            case CON_INTRO :    gap = ", ";
+                                ending = ", " + Globals.operators.get("con") + "I"; 
+                                break;
+            case IMP_INTRO :    gap = "-";
+                                ending = ", " + Globals.operators.get("imp") + "I"; 
+                                break;
+            case IMP_ELIM :     gap = ", ";
+                                ending = ", " + Globals.operators.get("imp") + "E"; 
+                                break;
+            case EQU_ELIM :     gap = ", ";
+                                ending = ", " + Globals.operators.get("equ") + "E"; 
+                                break;
+            case EQ_ELIM :      gap = ", ";
+                                ending = ", " + Globals.operators.get("eq") + "E"; 
+                                break;
+            case NEG_ELIM :     gap = ", ";
+                                ending = ", " + Globals.operators.get("neg") + "E"; 
+                                break;
+            case NEG_INTRO:     gap = "-";
+                                ending = ", " + Globals.operators.get("neg") + "I"; 
+                                break;
+            case NOM_ELIM:      gap = ", ";
+                                ending = ", " + Globals.operators.get("neg") + "E"; 
+                                break;
+        }
+        return firstLine.getLineNumOutput() + gap + secondLine.getLineNumOutput() + ending;
+    }
+    
+    @Override
+    public String getTeX() {
+        String gap = "";
+        String ending = "";
+        switch(type) {
+            case CON_INTRO :    gap = ", ";
+                                ending = ", $\\conop\\rulename{I}$"; 
+                                break;
+            case IMP_INTRO :    gap = "-";
+                                ending = ", $\\impop\\rulename{I}$"; 
+                                break;
+            case IMP_ELIM :     gap = ", ";
+                                ending = ", $\\impop\\rulename{E}$"; 
+                                break;
+            case EQU_ELIM :     gap = ", ";
+                                ending = ", $\\equop\\rulename{E}$"; 
+                                break;
+            case EQ_ELIM :      gap = ", ";
+                                ending = ", $=\\rulename{E}$"; 
+                                break;
+            case NEG_ELIM :     gap = ", ";
+                                ending = ", $negop\\rulename{E}$"; 
+                                break;
+            case NEG_INTRO :    gap = "-";
+                                ending = ", $negop\\rulename{I}$"; 
+                                break;
+            case NOM_ELIM:      gap = ", ";
+                                ending = ", $:\\rulename{E}$"; 
+                                break;
+        }
+        return firstLine.getLineNumOutput() + gap + secondLine.getLineNumOutput() + ending;
+    }
+    
+    public boolean getBlank() {
+        return false;
     }
 }

@@ -32,7 +32,7 @@ package proofassistant;
  * @author Declan Thompson
  * 
  */
-public class JustNone extends NDJustification implements NDJust {
+public class JustNone implements NDJust {
     // Type constants
     public static final int PREMISE_JUST = 1;
     public static final int ASS_JUST = 5;
@@ -40,19 +40,29 @@ public class JustNone extends NDJustification implements NDJust {
     public static final int ASS_JUST_EQU_ID_BOX = 125;
     public static final int NOM_INTRO = 625;
     public static final int AXIOM = 3125;
+    public static final int EQ_INTRO = 15625;
     
     private int type;
+    
+    private boolean blank;
     
     /**
      * Class constructor.
      * 
      * @param tp    An int representing the type of this justification. 
      *              Possible types are defined as constants in this class.
-     * @param ln    The NDLine which this justification references.
      */
     public JustNone(int tp) {
         this.type = tp;
-        setBlank(false);
+        blank = false;
+    }
+    
+    /**
+     * Class constructor for empty justifications.
+     */
+    public JustNone() {
+        this.type = 0;
+        blank = true;
     }
 
     @Override
@@ -65,6 +75,7 @@ public class JustNone extends NDJustification implements NDJust {
             case ASS_JUST_EQU_ID_BOX : out = "Ass (" + Globals.operators.get("equ") + ")"; break;      
             case NOM_INTRO : out = Globals.operators.get("nom") + "I"; break;
             case AXIOM : out = ""; break;
+            case EQ_INTRO : out = Globals.operators.get("eq") + "I"; break;
         }
         return out;
     }
@@ -79,8 +90,13 @@ public class JustNone extends NDJustification implements NDJust {
             case ASS_JUST_EQU_ID_BOX : out = "$\\rulename{Ass (\u2261)}$"; break;      
             case NOM_INTRO : out = "$:\\rulename{I}$"; break;
             case AXIOM : out = ""; break;
+            case EQ_INTRO : out = "$\\rulename{=I}$"; break;
         }
         return out;
     }
     
+    
+    public boolean getBlank() {
+        return blank;
+    }
 }

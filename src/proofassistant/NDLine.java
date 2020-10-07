@@ -35,7 +35,7 @@ public class NDLine {
     private String parsedLine;
     private String context = "";
     private int lineNum;
-    private NDJustification justification;
+    private NDJust justification;
     private int type;
     private String specialLineNum = "";
     public final long id;
@@ -83,7 +83,7 @@ public class NDLine {
         } else if (type == AXIOM) {
             justification = new JustNone(JustNone.AXIOM);
         } else {
-            justification = new NDJustification();
+            justification = new JustNone();
         }
     }
     
@@ -101,7 +101,7 @@ public class NDLine {
         Globals.lineNum ++;
         this.lineNum = Globals.lineNum;
         type = 0;
-        justification = new NDJustification();
+        justification = new JustNone();
         Globals.terms.processLine(context);
     }
     
@@ -124,7 +124,7 @@ public class NDLine {
         this.lineNum = Globals.lineNum;
         
         type = 0;
-        justification = new NDJustification();
+        justification = new JustNone();
     }
     
     /**
@@ -141,7 +141,7 @@ public class NDLine {
             parsedLine = "";
             lineNum = 0;
             this.type = type;
-            justification = new NDJustification();
+            justification = new JustNone();
         }
     }
     
@@ -188,7 +188,7 @@ public class NDLine {
         } else if (type == AXIOM) {
             justification = new JustNone(JustNone.AXIOM);
         } else {
-            justification = new NDJustification();
+            justification = new JustNone();
         }
     }
     
@@ -231,7 +231,7 @@ public class NDLine {
         } else if (type == AXIOM) {
             justification = new JustNone(JustNone.AXIOM);
         } else {
-            justification = new NDJustification();
+            justification = new JustNone();
         }
     }
     
@@ -279,7 +279,7 @@ public class NDLine {
         } else if (type == AXIOM) {
             justification = new JustNone(JustNone.AXIOM);
         } else {
-            justification = new NDJustification();
+            justification = new JustNone();
         }
     }
     
@@ -1104,7 +1104,7 @@ public class NDLine {
      * Set this NDLine's justification.
      * @param just The justification to set
      */
-        public void setJustification(NDJustification just){
+        public void setJustification(NDJust just){
         justification = just;
     }
     
@@ -1275,7 +1275,7 @@ public class NDLine {
         @Override
     public NDLine clone() {
         NDLine theClone = new NDLine(line, type, false);
-        theClone.setJustification(justification.clone());
+        theClone.setJustification(justification);
         theClone.setLineNum(lineNum);
         theClone.setContext(context);
         theClone.setSpecialLineNum(specialLineNum);
@@ -1382,7 +1382,7 @@ public class NDLine {
         return lineNum;
     }
     
-    public NDJustification getJustification() {
+    public NDJust getJustification() {
         return justification;
     }
     
