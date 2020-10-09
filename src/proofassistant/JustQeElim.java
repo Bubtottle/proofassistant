@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustQeElim class implements NDJust for existential elimination
  *
@@ -45,5 +48,9 @@ public class JustQeElim implements NDJust {
     
     public boolean getBlank() {
         return false;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(qe, rangeS, rangeE));
     }
 }

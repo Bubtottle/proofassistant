@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustBoxIntro class implements NDJust for box introduction
  *
@@ -41,4 +44,7 @@ public class JustBoxIntro implements NDJust {
         return false;
     }
     
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(aStart, aEnd, goal));
+    }
 }

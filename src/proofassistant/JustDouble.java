@@ -23,6 +23,9 @@
  */
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustDouble class implements NDJust for justifications requiring 2 args
  * This class replaces dedicated classes for the types of justification contained.
@@ -121,5 +124,9 @@ public class JustDouble implements NDJust {
     
     public boolean getBlank() {
         return false;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(firstLine, secondLine));
     }
 }

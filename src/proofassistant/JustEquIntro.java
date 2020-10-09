@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustEquIntro class implements NDJust for equivalence introduction
  *
@@ -47,4 +50,10 @@ public class JustEquIntro implements NDJust {
         return false;
     }
     
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(antecedentOne, 
+                                                    antecedentTwo, 
+                                                    consequentOne, 
+                                                    consequentTwo));
+    }
 }

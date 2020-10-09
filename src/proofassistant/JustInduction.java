@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustInduction class implements NDJust for induction
  *
@@ -43,4 +46,7 @@ public class JustInduction implements NDJust {
         return false;
     }
     
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(zeroLine, rangeS, rangeE));
+    }
 }

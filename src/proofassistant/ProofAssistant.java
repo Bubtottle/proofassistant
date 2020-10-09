@@ -24,7 +24,7 @@ public class ProofAssistant {
         
 
         
-//        Globals.assist = new ProofMethods(args);
+//        Globals.assist = new ProofObject(args);
 //        Globals.proofArray = Globals.assist.getProofArray();
         
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -58,7 +58,7 @@ public class ProofAssistant {
         } else {
             ProofFrame frame;
             frame = new ProofFrame(Globals.proofArray);
-            Globals.assist = new ProofMethods(arguments);
+            Globals.assist = new ProofObject(arguments);
             Globals.proofArray = Globals.assist.getProofArray();
             frame = new ProofFrame(Globals.proofArray);
             frame.setVisible(true);

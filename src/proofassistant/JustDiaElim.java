@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustDiaElim class implements NDJust for diamond elimination
  * 
@@ -49,5 +52,9 @@ public class JustDiaElim implements NDJust {
     
     public boolean getBlank() {
         return false;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(diamond, rangeS1, rangeS2, rangeE));
     }
 }

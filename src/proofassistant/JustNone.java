@@ -23,6 +23,9 @@
  */
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustNone class implements NDJust for justifications that do not reference
  * another line
@@ -98,5 +101,9 @@ public class JustNone implements NDJust {
     
     public boolean getBlank() {
         return blank;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>();
     }
 }

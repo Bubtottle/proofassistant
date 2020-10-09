@@ -6,6 +6,10 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * The JustBoxElim class implements NDJust for box elimination
  * 
@@ -37,6 +41,10 @@ public class JustBoxElim implements NDJust {
     
     public boolean getBlank() {
         return false;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(box, ant));
     }
     
 }

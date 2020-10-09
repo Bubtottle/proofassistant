@@ -23,6 +23,8 @@
  */
 package proofassistant;
 
+import java.util.List;
+
 /**
  * The NDJust interface provides justification objects for use in the NDLine 
  * justification field.
@@ -40,5 +42,7 @@ public interface NDJust {
     public String getTeX();
     
     public boolean getBlank();
+    
+    public List<NDLine> getDependentNDLines();
     
 }

@@ -23,6 +23,9 @@
  */
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustFromString class implements NDJust by explicitly taking in string arguments
  *
@@ -52,5 +55,9 @@ public class JustFromString implements NDJust {
     
     public boolean getBlank() {
         return blank;
+    }
+    
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>();
     }
 }

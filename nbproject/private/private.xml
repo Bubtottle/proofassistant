@@ -3,23 +3,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofMethods.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustDisElim.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustDouble.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofFrame.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustBoxElim.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustDiaElim.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustEquIntro.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofObject.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustBoxIntro.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustDiaIntro.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustSingle.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustNone.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/LineNotInProofArrayException.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/NDLine.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustQeElim.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustInduction.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofFrame.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofStage.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustBoxElim.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/NDJust.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofPanel.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/JustFromString.java</file>
         </group>
     </open-files>
 </project-private>

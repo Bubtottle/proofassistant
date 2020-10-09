@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustDisElim class implements NDJust for disjunction elimination
  * 
@@ -49,4 +52,7 @@ public class JustDisElim implements NDJust {
         return false;
     }
     
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(dis, ranOneS, ranTwoS, ranOneE, ranTwoE));
+    }
 }

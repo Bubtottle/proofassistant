@@ -22,7 +22,7 @@ public class Globals {
     public static int proofWidth = 500;
     public static int currentGoalIndex = -1;
     public static int currentResourceIndex = -1;
-    public static ProofMethods assist;
+    public static ProofObject assist;
     public static NDLine[] proofArray;
     public static TermStore terms = new TermStore();
     public static JScrollPane scrollpane;

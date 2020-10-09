@@ -12,6 +12,9 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a line in a natural deduction proof
+ * 
+ * @since Proof Assistant 0.1
+ * @version 2.0
  * @author Declan Thompson
  */
 public class NDLine {
@@ -769,51 +772,6 @@ public class NDLine {
         }
     }
     
-    private String findFirstSquareArg(String line){ // Returns the first argument of the line
-        if (line.length() < 5 || !line.contains("/")){
-            return "";
-        } else {
-//            System.out.println(line);
-            int bracketCount = 0;
-            boolean started = false;
-            int i = 0;
-            
-            while (bracketCount > 0 || !started) {
-                if (line.charAt(i) == '[') {
-                        bracketCount++;
-                        started = true;
-                } else if (line.charAt(i) == ']') {
-                        bracketCount--;
-                }
-                i++;
-            }
-
-            return line.substring(line.indexOf("[")+1, i-1);
-        }
-    }
-    
-    private String findSecondSquareArg(String line) { // Returns the second argument of the line, or "" if the line takes one argument
-//        System.out.println(line);
-        if (line.length() < 5 || !line.contains("/")){
-            return "";
-        } else {
-            int bracketCount = 0;
-            boolean started = false;
-            int i = 0;
-
-            while (bracketCount > 0 || !started) {
-                if (line.charAt(i) == '[') {
-                        bracketCount++;
-                        started = true;
-                } else if (line.charAt(i) == ']') {
-                        bracketCount--;
-                }
-                i++;
-            }
-            return line.substring(i+1,line.length()-1);
-        }
-    }
-    
     private String findNonUniMainOp(String line) { // Returns the first non universal main operator, or qa if there is no other operator
         if (findMainOp(line).equals("qa")) {
             if (findMainOp(findSecondArg(line)).equals("")) {
@@ -1104,7 +1062,7 @@ public class NDLine {
      * Set this NDLine's justification.
      * @param just The justification to set
      */
-        public void setJustification(NDJust just){
+    public void setJustification(NDJust just){
         justification = just;
     }
     
@@ -1147,7 +1105,6 @@ public class NDLine {
      * Get this line's context
      * @return This line's context
      */
-    
     public String getContext() {
         return context;
     }
@@ -1439,9 +1396,8 @@ public class NDLine {
     
     public int indexIn(NDLine[] anArray) { // Returns the index of this line in an array of NDLines
         int i = 0;
-        int searchValue = getLineNum();
         while (i < anArray.length) {
-            if (searchValue == anArray[i].getLineNum()) {
+            if (this == anArray[i]) {
                 return i;
             }
             i++;
@@ -1634,6 +1590,21 @@ public class NDLine {
         }
     }
     
+    public boolean getIsAllowedInContext(String context) {
+        return getContext().equals(context) || isContextless() || context.equals("");
+    }
+    
+    /**
+     * Check if this NDLine has the same context as another.
+     * @param otherLine The NDLine to compare.
+     * @return true if otherLine has the same context, or either this or 
+     *          otherLine are contextless. Otherwise returns false.
+     */
+    public boolean getIsSameContextAs(NDLine otherLine) {
+        return getContext().equals(otherLine.getContext()) 
+                || isContextless() 
+                || otherLine.isContextless();
+    }
     
 //    public String replace(String phrase, String replacement, int argToReturn) { // Replace all instances of phrase in the argToReturn of THIS NDLine with replacement
 //        if (argToReturn == 1) {

@@ -23,6 +23,9 @@
  */
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustSingle class implements NDJust for justifications referring to a
  * single line.
@@ -128,5 +131,7 @@ public class JustSingle implements NDJust {
         return false;
     }
     
-
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(line));
+    }
 }

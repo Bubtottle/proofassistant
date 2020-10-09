@@ -6,6 +6,9 @@
 
 package proofassistant;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * The JustDiaIntro class implements NDJust for diamond introduction
  *
@@ -41,4 +44,7 @@ public class JustDiaIntro implements NDJust {
         return false;
     }
     
+    public ArrayList<NDLine> getDependentNDLines() {
+        return new ArrayList<NDLine>(Arrays.asList(pred, prop, goal));
+    }
 }

@@ -988,7 +988,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         Globals.terms.empty();
                         Globals.currentGoalIndex = -1;
                         Globals.currentResourceIndex = -1;
-                        Globals.assist = new ProofMethods(argumentArray);
+                        Globals.assist = new ProofObject(argumentArray);
                         Globals.proofArray = Globals.assist.getProofArray();
                         panel = new ProofPanel(Globals.proofArray);
                         Globals.scrollpane = new JScrollPane(panel);
@@ -1011,7 +1011,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         Globals.terms.empty();
                         Globals.currentGoalIndex = -1;
                         Globals.currentResourceIndex = -1;
-                        Globals.assist = new ProofMethods(s.split(","));
+                        Globals.assist = new ProofObject(s.split(","));
                         Globals.proofArray = Globals.assist.getProofArray();
                         panel = new ProofPanel(Globals.proofArray);
                         Globals.scrollpane = new JScrollPane(panel);
@@ -1055,7 +1055,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
 //                    System.out.println("proofframe says " + Globals.terms.getListOfUsedTerms().contains("s"));
                     Globals.currentGoalIndex = -1;
                     Globals.currentResourceIndex = -1;
-                    Globals.assist = new ProofMethods(s.split(","));
+                    Globals.assist = new ProofObject(s.split(","));
                     Globals.proofArray = Globals.assist.getProofArray();
                     panel = new ProofPanel(Globals.proofArray);
                     Globals.scrollpane = new JScrollPane(panel);
@@ -1213,7 +1213,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                 
                 // Pop from Undo
                 NDLine[] prior = (NDLine[])Globals.proofsForUndo.pop();
-                Globals.assist = new ProofMethods(prior);
+                Globals.assist = new ProofObject(prior);
                 Globals.setArities();
                 Globals.currentGoalIndex = (int)Globals.goalsForUndo.pop();
 //                System.out.println("popped " + Globals.currentGoalIndex);
@@ -1265,7 +1265,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                 
                 // Pop from Redo
                 NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
-                Globals.assist = new ProofMethods(prior);
+                Globals.assist = new ProofObject(prior);
                 Globals.setArities();
                 Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
                 Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
@@ -1414,7 +1414,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         
                         // Pop from Redo
                         NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
-                        Globals.assist = new ProofMethods(prior);
+                        Globals.assist = new ProofObject(prior);
                         Globals.setArities();
                         Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
                         Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
@@ -1498,7 +1498,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
 
                     // Pop from Redo
                     NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
-                    Globals.assist = new ProofMethods(prior);
+                    Globals.assist = new ProofObject(prior);
                     Globals.setArities();
                     Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
                     Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
@@ -2090,7 +2090,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         NDLine[] proofArray = proofArrayList.toArray(new NDLine[1]);
         concForBox = proofArray[proofArray.length - 1].parseLine();
         
-        Globals.assist = new ProofMethods(proofArray);
+        Globals.assist = new ProofObject(proofArray);
 //        Globals.assist.printProofArrayLines();
 //        Globals.assist.printProofArray();
         Globals.setArities();
