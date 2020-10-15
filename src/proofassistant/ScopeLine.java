@@ -55,6 +55,8 @@ public class ScopeLine {
         int botY = (int)(zoomFactor*(lineHeight*endLine + topOffSet + lineHeight/16));
         if (Globals.proofStyle == Globals.AUCKLANDSTYLE) {
             
+            topY += (int)(zoomFactor*(lineHeight/2));
+            
             // Start line horizontal 
             g2.drawLine( leftX, topY, indentX, topY );
             // Vertical line

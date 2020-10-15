@@ -5,11 +5,14 @@
  */
 
 package proofassistant;
+import proofassistant.line.NDLine;
+import proofassistant.exception.LineNotInProofArrayException;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import javax.swing.*;
+import proofassistant.exception.WrongLineTypeException;
 
 /**
  *
@@ -170,7 +173,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                     if (!proofArray[i].parseMainOp().equals("") && !proofArray[i].parseMainOp().equals("\u22a5") // If the main op is not " " or falsum
                             && !(proofArray[i].getType() > 6 && proofArray[i].getType() < 11) //                     and we're not in an id box
                             && (!proofArray[i].parseMainOp().equals("=") //                                          and if it's not =
-                                  || proofArray[i].getFirstArg().equals(proofArray[i].getSecondArg()) //                   or both arguments are the same
+                                  || proofArray[i].getArg(1).equals(proofArray[i].getArg(2)) //                   or both arguments are the same
                                   || Globals.allowedRules.get("eqIdentityBoxes")) //                                                           or we're using identity boxes
                             && Globals.allowedRules.containsKey(proofArray[i].getSMainOp() + "Intro")
                             && Globals.allowedRules.get(proofArray[i].getSMainOp() + "Intro")
@@ -667,7 +670,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         requestFocusInWindow();
     }
     
-    private void introActions(String op, int goal, int resource) {
+    private void introActions(String op, int goal, int resource) throws LineNotInProofArrayException {
         // Prepare for Undo
         NDLine[] tempArray = new NDLine[proofArray.length];
         for (int i = 0; i < proofArray.length; i++) {
@@ -734,7 +737,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         }
     }
     
-    private void elimActions(String op, int goal, int resource) {
+    private void elimActions(String op, int goal, int resource) throws LineNotInProofArrayException, WrongLineTypeException {
         
         // Prepare for Undo
         NDLine[] tempArray = new NDLine[proofArray.length];
@@ -819,7 +822,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         
     }
     
-    public void magicMode() {
+    public void magicMode() throws LineNotInProofArrayException, WrongLineTypeException {
         if (!Globals.editable) {
             JOptionPane.showMessageDialog(this, "Proof is not editable");
             return;

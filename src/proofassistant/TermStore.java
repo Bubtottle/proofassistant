@@ -24,6 +24,7 @@
 
 package proofassistant;
 
+import proofassistant.line.NDLine;
 import java.util.*;
 
 /**

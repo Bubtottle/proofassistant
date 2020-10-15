@@ -5,11 +5,31 @@
  */
 package proofassistant;
 
+import proofassistant.line.NDLine;
+import proofassistant.line.NDJust;
+import proofassistant.justification.JustInduction;
+import proofassistant.justification.JustBoxElim;
+import proofassistant.justification.JustNone;
+import proofassistant.justification.JustQeElim;
+import proofassistant.justification.JustDiaElim;
+import proofassistant.justification.JustDiaIntro;
+import proofassistant.justification.JustBoxIntro;
+import proofassistant.justification.JustSingle;
+import proofassistant.justification.JustDisElim;
+import proofassistant.justification.JustDouble;
+import proofassistant.justification.JustEquIntro;
+import proofassistant.exception.LineNotInProofArrayException;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
+import proofassistant.exception.MissingArityException;
+import proofassistant.exception.WrongLineTypeException;
+import proofassistant.line.NDAtom;
+import proofassistant.util.SymbolHandler;
 
 /**
  * The ProofObject class holds a proofArray, and provides methods for modifying it
@@ -24,13 +44,19 @@ public class ProofObject {
     private ProofStage currentProof;
     private boolean magicMode = false;
     private boolean usingExtraLines = false;
+    
+    private SymbolHandler symbols = new SymbolHandler();
 
     /**
      * Create a new ProofMethods object with a supplied sequent
      * @param args The sequent to start with, in TeX code format
      */
     public ProofObject(String[] args) {
-        proofArray = readInArgs(args);
+        try {
+            proofArray = readInArgs(args);
+        } catch (IndexOutOfBoundsException ex) {
+            Logger.getLogger(ProofObject.class.getName()).log(Level.SEVERE, null, ex);
+        }
         currentProof = new ProofStage(proofArray);
 //        setArities();
     }
@@ -67,7 +93,8 @@ public class ProofObject {
         proofArray = array;
     }
         
-    private NDLine[] readInArgs(String[] args) { // Returns an NDLine array containing the premises and conclusion (with blank between), taken from the args array
+    private NDLine[] readInArgs(String[] args) 
+            throws IndexOutOfBoundsException { // Returns an NDLine array containing the premises and conclusion (with blank between), taken from the args array
         NDLine[] argsArray;
 //        System.out.println("Read in args");
         Globals.createExtraLines();
@@ -166,9 +193,11 @@ public class ProofObject {
     
     /**
      * Clone this ProofObject
+     * @return 
+     * @throws java.lang.CloneNotSupportedException
      */
     @Override
-    public ProofObject clone() {
+    public ProofObject clone() throws CloneNotSupportedException {
         NDLine[] cloned = new NDLine[proofArray.length];
         
         return new ProofObject(cloned);
@@ -384,60 +413,6 @@ public class ProofObject {
         }
         return finished;
     }
-
-    private void removeAllBlanks() { // Removes all the blank lines from proofArray
-        int numBlanks = 0;
-        for (int i = 0; i < proofArray.length; i++) {
-            if (proofArray[i].getType() == 5) {
-                numBlanks++;
-            }
-        }
-        NDLine[] temp = new NDLine[proofArray.length - numBlanks];
-
-        int j = 0;
-        for (int k = 0; k < proofArray.length; k++) {
-            if (proofArray[k].getType() != 5) {
-                temp[j] = proofArray[k];
-                j++;
-            }
-        }
-
-        proofArray = temp;
-    }
-
-    private boolean checkScopeFinished(NDLine goal) { // Returns true if the scope of the current goal is entirely justified
-        boolean scopeFinished = true;
-        boolean hitTop = false;
-        boolean hitBottom = false;
-        
-        
-
-        int indexOfGoal = goal.indexIn(proofArray);
-        int i = 0;
-        while (scopeFinished && i < indexOfGoal && !hitTop) { // Check everything from the goal up to the lowest assumption is justified
-            if (proofArray[indexOfGoal - i].getType() != 5 && proofArray[indexOfGoal - i].getJustification().getBlank()) { // if the line has no justification
-                scopeFinished = false;
-            }
-            if (proofArray[indexOfGoal - i].getType() == 1) {
-                hitTop = true;
-            }
-            i++;
-        }
-        
-
-        int j = indexOfGoal;
-        while (scopeFinished && j < proofArray.length && !hitBottom) { // Check everything from the goal down to the highest assumption close or the next blank down is justified
-            if (proofArray[j].getType() != 5 && proofArray[j].getJustification().getBlank()) {
-                scopeFinished = false;
-            }
-            if (proofArray[j].getType() == 2 || proofArray[j].getType() == 5) {
-                hitBottom = true;
-            }
-            j++;
-        }
-        
-        return scopeFinished;
-    }
     
     private void collapseBlanks() {
         int numUnneededBlanks = 0;
@@ -536,20 +511,6 @@ public class ProofObject {
         return regEx;
     }
     
-    private String findRegExProp(String variable, String phrase) {
-        
-        String regEx = phrase.replace("\\", "\\\\"); // Replace \ with \\ to make regex feel happy
-        regEx = regEx.replace("{", "\\{").replace("}", "\\}"); // Replace { and } with \{ and \} to make regex feel happy
-        regEx = regEx.replace("[", "\\[").replace("]", "\\]");
-        regEx = regEx.replace("(", "\\(").replace(")", "\\)"); // Do the same with ( and )
-        if (!variable.equals("")) {
-            regEx = regEx.replace(variable, "\\1"); // Replace variable with the 1st back reference
-            regEx = regEx.replaceFirst("\\\\1", "([\\\\w+\\\\(\\\\)\\\\[\\\\]/]+|\\\\w+)"); // Replace the first back reference with a group to match 1 or more letters
-        }
-//        System.out.println("findRegEx " + phrase + " " + regEx);
-        return regEx;
-    }
-    
     private int findIndexOfBlank(int indexOfGoal) { // Returns the index of the blank line before the goal. Returns 0 if none found
         int indexOfBlank = -1;
 
@@ -567,64 +528,7 @@ public class ProofObject {
 
         return indexOfBlank;
     }
-    
-    private int findIndexOfAssEnd(int indexOfGoal) { // Returns the index of the assumption end before the goal. Returns -1 if none found
-        int indexOfAssEnd = -1;
-
-        int i = 1;
-        while (indexOfAssEnd == -1 && i <= indexOfGoal) {
-            if (proofArray[indexOfGoal - i].getType() == 2) {
-                indexOfAssEnd = indexOfGoal - i;
-            }
-            i++;
-        }
-
-
-        return indexOfAssEnd;
-        
-    }
-    
-    private int findTopOfIdBox(int indexOfGoal) {
-        int indexOfIdStart = -1;
-        if (proofArray[indexOfGoal].getType() > 6 && proofArray[indexOfGoal].getType() < 11) {
-            int i = indexOfGoal;
-            while (i > -1 && indexOfIdStart == -1) {
-                if (proofArray[i].getType() == 7) {
-                    indexOfIdStart = i;
-                }
-                i--;
-            }
-        }
-        
-        return indexOfIdStart;
-    }
-    
-    private String findContext(NDLine goal, NDLine resource) {
-        if (goal.getContext().equals("") && resource.getContext().equals("")) {
-            return "";
-        } else if (goal.getContext().equals("")) {
-            return resource.getContext();
-        } else {
-            return goal.getContext();
-        }
-    }
-    
-    private String findElimContext(NDLine goal, NDLine resource) {
-        return findContext(goal, resource);
-    }
-    
-    private String findIntroContext(NDLine goal, NDLine resource) {
-        return findContext(goal, resource);
-    }
-    
-    private String getGoalContext(NDLine goal, NDLine resource) { // In case we shouldn't use this, for easy changing
-        return goal.getContext();
-    }
-    
-    private String getResourceContext(NDLine goal, NDLine resource) { // In case we shouldn't use this, for easy changing
-        return resource.getContext();
-    }
-    
+   
 
     // NJ Rules //
 
@@ -633,13 +537,15 @@ public class ProofObject {
      * @param goal the current goal.
      * @param resource the current resource.
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] conElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException { // Applies conjunction elimination to the supplied goal and resource, in proofArray
+    public NDLine[] conElim(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException, IndexOutOfBoundsException { 
         if (resource.getMainOp().equals("qa")) {
-            if ((goal.getLine().matches(resource.getNonUniFirstArgRegEx()) 
-                    || goal.getLine().matches(resource.getNonUniSecondArgRegEx()))
-                    && goal.getIsSameContextAs(resource)) {
+            if ((goal.matchesNonUniRegEx(resource, 1)
+                    || goal.matchesNonUniRegEx(resource, 2) )
+                    && goal.hasSameContextAs(resource)) {
                 currentProof.justifyLine(goal, new JustSingle(JustSingle.CON_ELIM, resource));
             }
             proofArray = currentProof.getProofArray();
@@ -649,94 +555,44 @@ public class ProofObject {
         
         
         // Checks if the goal is a conjunct of the resource. If so, justifies the goal
-        if ((goal.getLine().equals(resource.getFirstArg()) || goal.getLine().equals(resource.getSecondArg()))
-                && goal.getIsSameContextAs(resource)) { // If the goal is one of the conjuncts and they have the same context
-            goal.setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
+        if ((goal.equalsArgOf(resource, 1) || goal.equalsArgOf(resource, 2))
+                && goal.hasSameContextAs(resource)) { // If the goal is one of the conjuncts and they have the same context
+            currentProof.justifyLine(goal, new JustSingle(JustSingle.CON_ELIM, resource));
+            proofArray = currentProof.getProofArray();
             Globals.currentGoalIndex = -1;
             
             
         } else { // So goal is not a conjunct of resource. We will ask which (or both) of two new resources to append before the blank space before the goal or after the current resource
             magicMode = false; // turn off magic mode
             
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
             // Ask the user what to create - first argument, second argument or both
             Object[] options = {resource.parseFirstArg(), resource.parseSecondArg(), "Both", "Cancel"};
             int n = JOptionPane.showOptionDialog(Globals.frame, "Would you like to create " + options[0] + ", " + options[1] + " or both?",
                     "Conjunction Elimination", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
 
             // Expand proofArray to handle two new resources (the conjuncts of the resource), and justify them by the resource
-            if (n == 0) {
+            if (n == 0 || n == 2) {
                 // Expand proofArray to handle one new resource (the first arg of the resource), and justify it by the resource
-                NDLine[] temp = new NDLine[proofArray.length + 1];
-
-                int k = 0;
-                for (int j = 0; j < indexOfBlank; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
-                temp[k] = new NDLine(resource.getFirstArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
-
-                k++;
-                for (int j = indexOfBlank; j < proofArray.length; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
-
-                proofArray = temp;
-                Globals.currentGoalIndex = goal.indexIn(proofArray);
-            } else if (n == 1) {
-                // Expand proofArray to handle one new resource (the second arg of the resource), and justify it by the resource
-                NDLine[] temp = new NDLine[proofArray.length + 1];
-
-                int k = 0;
-                for (int j = 0; j < indexOfBlank; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
+                NDLine firstArg = new NDLine(resource.getArg(1));
+                firstArg.setSameContextAs(resource);
+                firstArg.setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
                 
-                temp[k] = new NDLine(resource.getSecondArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
+                currentProof.addNDLineResource(firstArg, goal);
 
-                k++;
-                for (int j = indexOfBlank; j < proofArray.length; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
-
-                proofArray = temp;
+                proofArray = currentProof.getProofArray();
                 Globals.currentGoalIndex = goal.indexIn(proofArray);
-            } else if (n == 2) {
-                // Expand proofArray to handle two new resources (the conjuncts of the resource), and justify them by the resource
-                NDLine[] temp = new NDLine[proofArray.length + 2];
-
-                int k = 0;
-                for (int j = 0; j < indexOfBlank; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
-                temp[k] = new NDLine(resource.getFirstArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
-
-                k++;
-                temp[k] = new NDLine(resource.getSecondArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
-
-                k++;
-                for (int j = indexOfBlank; j < proofArray.length; j++) {
-                    temp[k] = proofArray[j];
-                    k++;
-                }
-
-                proofArray = temp;
+            } 
+            if (n == 1 || n == 2) {
+                NDLine secondArg = new NDLine(resource.getArg(2));
+                secondArg.setSameContextAs(resource);
+                secondArg.setJustification(new JustSingle(JustSingle.CON_ELIM, resource));
+                
+                currentProof.addNDLineResource(secondArg, goal);
+                
+                proofArray = currentProof.getProofArray();
                 Globals.currentGoalIndex = goal.indexIn(proofArray);
-            } else {
+            } 
+            if (n != 0 && n != 1 && n != 2) {
                 Globals.reverseUndo = true;
             }
         }
@@ -749,122 +605,50 @@ public class ProofObject {
 
     /**
      * Applies conjunction introduction to the current proofArray
-     * @param goal the current goal
+     * @param currentGoal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] conIntro(NDLine goal, NDLine resource) { // Applies conjunction introduction to the supplied goal and resource, in proofArray
-        NDLine firstJustLine = checkForNDLine(findRegEx("", goal.getFirstArg()), goal);
-        NDLine secondJustLine = checkForNDLine(findRegEx("", goal.getSecondArg()), goal);
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        NDLine[] tempCon = proofArray;
+    public NDLine[] conIntro(NDLine currentGoal, NDLine resource) throws LineNotInProofArrayException { // Applies conjunction introduction to the supplied goal and resource, in proofArray
+        NDLine firstGoal = currentProof.checkForNDLine(findRegEx("", currentGoal.getArg(1)), currentGoal);
+        NDLine secondGoal = currentProof.checkForNDLine(findRegEx("", currentGoal.getArg(2)), currentGoal);
         
         Globals.currentGoalIndex = -1;
         
-        // If a conjunct hasn't been found, prepends it as a new goal.
-        if (!Globals.reverse2PremIntro && firstJustLine == null) {
-            NDLine[] temp = new NDLine[tempCon.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            temp[k] = new NDLine(goal.getFirstArg());
-            temp[k].setContext(getGoalContext(goal, resource));
-            firstJustLine = temp[k];
-            Globals.currentGoalIndex = k;
-
-            k++;
-            for (int j = indexOfBlank + 1; j < tempCon.length; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            tempCon = temp;
-            indexOfBlank++;
-        }
-
-        if (secondJustLine == null) {
-            NDLine[] temp;
-            if (tempCon[indexOfBlank].getType() == 5) { // So we're just creating a second argument
-                temp = new NDLine[tempCon.length + 1];
-            } else { // So we've already created a first argument, and need to select a blank between it and the second argument
-                temp = new NDLine[tempCon.length + 2];
-            }
+        if (firstGoal == null && secondGoal == null) {
+            // If we need to create 2 new goals
+            firstGoal = new NDLine(currentGoal.getArg(1));
+            firstGoal.setSameContextAs(currentGoal);
+            secondGoal = new NDLine(currentGoal.getArg(2));
+            secondGoal.setSameContextAs(currentGoal);
             
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            if (tempCon[indexOfBlank].getType() != 5) { // If we've already created a first argument
-                temp[k] = new NDLine(5); // Create a Blank
-            k++;
-            }
-            
-            temp[k] = new NDLine(goal.getSecondArg());
-            temp[k].setContext(getGoalContext(goal, resource));
-            secondJustLine = temp[k];
-            if (Globals.currentGoalIndex != -1) {
-                Globals.currentGoalIndex = -1;
+            // Add the two goals, in the relevant order
+            if (!Globals.reverse2PremIntro) {
+                currentProof.addNDLineGoal(firstGoal, currentGoal);
+                currentProof.addNDLineGoal(secondGoal, currentGoal);
             } else {
-                Globals.currentGoalIndex = k;
-            }
-
-            k++;
-            for (int j = indexOfBlank + 1; j < tempCon.length; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            tempCon = temp;
-            indexOfBlank ++;
-        }
-        
-        if (Globals.reverse2PremIntro && firstJustLine == null) {
-            NDLine[] temp;
-            if (tempCon[indexOfBlank].getType() == 5) { // So we're just creating a second argument
-                temp = new NDLine[tempCon.length + 1];
-            } else { // So we've already created a first argument, and need to select a blank between it and the second argument
-                temp = new NDLine[tempCon.length + 2];
-            }
-            
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            if (tempCon[indexOfBlank].getType() != 5) { // If we've already created a first argument
-                temp[k] = new NDLine(5); // Create a Blank
-            k++;
-            }
-            
-            temp[k] = new NDLine(goal.getFirstArg());
-            temp[k].setContext(getGoalContext(goal, resource));
-            firstJustLine = temp[k];
-            if (Globals.currentGoalIndex != -1) {
-                Globals.currentGoalIndex = -1;
-            } else {
-                Globals.currentGoalIndex = k;
-            }
-
-            k++;
-            for (int j = indexOfBlank + 1; j < tempCon.length; j++) {
-                temp[k] = tempCon[j];
-                k++;
-            }
-            tempCon = temp;
+                
+                currentProof.addNDLineGoal(secondGoal, currentGoal);
+                currentProof.addNDLineGoal(firstGoal, currentGoal);
+            }            
+        } else if (firstGoal != null) {
+            // We have to add the second goal
+            secondGoal = new NDLine(currentGoal.getArg(2));
+            secondGoal.setSameContextAs(currentGoal);
+            currentProof.addNDLineGoal(secondGoal, currentGoal);
+        } else if (secondGoal != null) {
+            // We have to add the first goal
+            firstGoal = new NDLine(currentGoal.getArg(1));
+            firstGoal.setSameContextAs(currentGoal);
+            currentProof.addNDLineGoal(firstGoal, currentGoal);
         }
 
         // Justifies the goal with the found or created conjunct lines
-        NDJust just = new JustDouble(JustDouble.CON_INTRO, firstJustLine, secondJustLine);
-        goal.setJustification(just);
+        currentProof.justifyLine(currentGoal, 
+                new JustDouble(JustDouble.CON_INTRO, firstGoal, secondGoal));
         
-        proofArray = tempCon;
-
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
         
         Globals.rulesUsed.add("conIntro");
         return proofArray;
@@ -872,170 +656,59 @@ public class ProofObject {
 
     /**
      * Applies disjunction elimination to the current proofArray
-     * @param goal the current goal
-     * @param resource the current resource
+     * @param goal the current goal.
+     * @param resource the current resource.
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] disElim(NDLine goal, NDLine resource) {
+    public NDLine[] disElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
         if (resource.getMainOp().equals("qa")) {
             Globals.reverseUndo = true;
             return proofArray;
         }
-        
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        int indexOfAssEnd = findIndexOfAssEnd(indexOfGoal);
-        String context = findElimContext(goal, resource);
         
         
         NDLine assLineOne;
         NDLine assEndOne;
         NDLine assLineTwo;
         NDLine assEndTwo;
-        int extraSpaces;
         
-        if (indexOfBlank > indexOfAssEnd) {
-            extraSpaces = 5;
+        if (goal.equalsArgOf(resource, 1) && goal.hasSameContextAs(resource)) {
+            assLineOne = new NDLine(resource.getArg(1), NDLine.ASS_ONE_LINE);
+            assLineOne.setSameContextAs(resource);
+            assEndOne = assLineOne;
+            
+            currentProof.addNDLineResource(assLineOne, goal);
         } else {
-            extraSpaces = 6;
-        }
-        NDLine[] temp = new NDLine[proofArray.length + extraSpaces];
-        
-        if (indexOfBlank > indexOfAssEnd) {
-            int k = 0;
-            for (int j = 0; j < indexOfBlank; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+            assLineOne = new NDLine(resource.getArg(1), NDLine.ASS_START);
+            assLineOne.setSameContextAs(resource);
+            assEndOne = new NDLine(goal.getLine(), NDLine.ASS_END);
+            assEndOne.setSameContextAs(goal);
             
-            if (resource.getFirstArg().equals(goal.getLine())
-                    && resource.getContext().equals(goal.getContext())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getFirstArg(), 3);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineOne = temp[k];
-                assEndOne = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(resource.getFirstArg(), 1);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineOne = temp[k];
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getLine(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEndOne = temp[k];
-                k++;
-            }
-            
-            if (resource.getSecondArg().equals(goal.getLine())
-                    && resource.getContext().equals(goal.getContext())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getSecondArg(), 3);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineTwo = temp[k];
-                assEndTwo = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(resource.getSecondArg(), 1);
-                assLineTwo = temp[k];
-                temp[k].setContext(getResourceContext(goal, resource));
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getLine(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEndTwo = temp[k];
-                k++;
-            }
-                
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-        } else {
-            int k = 0;
-            for (int j = 0; j < indexOfAssEnd + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            if (resource.getFirstArg().equals(goal.getLine())
-                    && resource.getContext().equals(goal.getContext())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getFirstArg(), 3);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineOne = temp[k];
-                assEndOne = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(resource.getFirstArg(), 1);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineOne = temp[k];
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getLine(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEndOne = temp[k];
-                k++;
-            }
-            
-            if (resource.getSecondArg().equals(goal.getLine())
-                    && resource.getContext().equals(goal.getContext())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getSecondArg(), 3);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineTwo = temp[k];
-                assEndTwo = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(resource.getSecondArg(), 1);
-                temp[k].setContext(getResourceContext(goal, resource));
-                assLineTwo = temp[k];
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getLine(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEndTwo = temp[k];
-                k++;
-            }
-
-            for (int j = indexOfAssEnd + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+            currentProof.addNDLineResource(assLineOne, goal);
+            currentProof.addNDLineGoal(assEndOne, goal);
         }
         
+        if (goal.equalsArgOf(resource, 2) && goal.hasSameContextAs(resource)) {
+            assLineTwo = new NDLine(resource.getArg(2), NDLine.ASS_ONE_LINE);
+            assLineTwo.setSameContextAs(resource);
+            assEndTwo = assLineTwo;
+            
+            currentProof.addNDLineResource(assLineTwo, goal);
+        } else {
+            assLineTwo = new NDLine(resource.getArg(2), NDLine.ASS_START);
+            assLineTwo.setSameContextAs(resource);
+            assEndTwo = new NDLine(goal.getLine(), NDLine.ASS_END);
+            assEndTwo.setSameContextAs(goal);
+            
+            currentProof.addNDLineResource(assLineTwo, goal);
+            currentProof.addNDLineGoal(assEndTwo, goal);
+        }
         
-        NDJust just = new JustDisElim(resource, assLineOne, assEndOne, assLineTwo, assEndTwo);
-        goal.setJustification(just);
-        proofArray = temp;
-
-        collapseBlanks();
+        currentProof.justifyLine(goal, 
+                new JustDisElim(resource, assLineOne, assEndOne, assLineTwo, assEndTwo));
+        
+        proofArray = currentProof.getProofArray();
 
         Globals.currentResourceIndex = -1;
         Globals.currentGoalIndex = -1;
@@ -1048,72 +721,60 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] disIntro(NDLine goal, NDLine resource) {
+    public NDLine[] disIntro(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException {
         // First, check to see if either disjunct appears in scope
-        NDLine firstJustLine = checkForNDLine(findRegEx("", goal.getFirstArg()), goal);
-        NDLine secondJustLine = checkForNDLine(findRegEx("", goal.getSecondArg()), goal);
+        NDLine firstJustLine = currentProof.checkForNDLine(findRegEx("", goal.getArg(1)), goal);
+        NDLine secondJustLine = currentProof.checkForNDLine(findRegEx("", goal.getArg(2)), goal);
         
         
         if (!Globals.requireDisSelect && firstJustLine != null) { // If the first disjunct is found
-            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, firstJustLine));
+            currentProof.justifyLine(goal, 
+                    new JustSingle(JustSingle.DIS_INTRO, firstJustLine));
             Globals.currentGoalIndex = -1;
         } else if (!Globals.requireDisSelect && secondJustLine != null) {
-            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, secondJustLine));
+            currentProof.justifyLine(goal, 
+                    new JustSingle(JustSingle.DIS_INTRO, secondJustLine));
             Globals.currentGoalIndex = -1;
-        } else if ((goal.getFirstArg().equals(resource.getLine()) || goal.getSecondArg().equals(resource.getLine())) && goal.isInScopeOf(resource, proofArray)
-                && goal.getIsSameContextAs(resource)) { // If the goal is one of the disjuncts
-            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, resource));
+        } else if ((goal.equalsArgOf(resource, 1) || goal.equalsArgOf(resource, 2)) 
+                && currentProof.scopesAllowAccess(goal, resource)
+                && goal.hasSameContextAs(resource)) { // If the goal is one of the disjuncts
+            currentProof.justifyLine(goal, 
+                    new JustSingle(JustSingle.DIS_INTRO, resource));
             Globals.currentGoalIndex = -1;
         }  else {
             magicMode = false; // turn off magic mode
             boolean chooseFirstDisjunct;
 
-            // Get user input. Ask whether they wish to choose goal.getFirstArg() or goal.getSecondArg()
+            // Get user input. Ask whether they wish to choose goal.getArg(1) or goal.getArg(2)
             Object[] options = {goal.parseFirstArg(), goal.parseSecondArg(), "Cancel"};
             int n = JOptionPane.showOptionDialog(Globals.frame, "Would you like to justify from " + options[0] + " or " + options[1] + "?",
                     "Disjunction Introduction", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-            if (n == 0) {
-                chooseFirstDisjunct = true;
-            } else if (n == 1) {
-                chooseFirstDisjunct = false;
-            } else {
-                Globals.reverseUndo = true;
-                return proofArray;
+            switch (n) {
+                case 0:
+                    chooseFirstDisjunct = true;
+                    break;
+                case 1:
+                    chooseFirstDisjunct = false;
+                    break;
+                default:
+                    Globals.reverseUndo = true;
+                    return proofArray;
             }
-
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            if (chooseFirstDisjunct) {
-                temp[k] = new NDLine(goal.getFirstArg());
-                temp[k].setContext(getGoalContext(goal, resource));
-            } else {
-                temp[k] = new NDLine(goal.getSecondArg());
-                temp[k].setContext(getGoalContext(goal, resource));
-            }
-            resource = temp[k];
-            Globals.currentGoalIndex = k;
-
-            k++;
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            goal.setJustification(new JustSingle(JustSingle.DIS_INTRO, resource));
-
-            proofArray = temp;
+            
+            NDLine newGoal = new NDLine(goal.getArg(chooseFirstDisjunct ? 1 : 2));
+            newGoal.setSameContextAs(goal);
+            
+            currentProof.addNDLineGoal(newGoal, goal);
+            currentProof.justifyLine(goal, 
+                    new JustSingle(JustSingle.DIS_INTRO, resource));
+            
+            Globals.currentGoalIndex = -1;
         }
-
-        collapseBlanks();
+        
+        proofArray = currentProof.getProofArray();
 
         Globals.rulesUsed.add("disIntro");
         return proofArray;
@@ -1124,115 +785,62 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] impElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    public NDLine[] impElim(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException, WrongLineTypeException {
         if (resource.getMainOp().equals("qa")) {
             proofArray = universalsImpElim(goal, resource);
             Globals.rulesUsed.add("impElim");
             return proofArray;
         }
         
+        NDLine antecedent = currentProof.checkForNDLine(findRegEx("", resource.getArg(1)), goal, resource.getContext());
         
-        NDLine antecedentLine = checkForNDLine(findRegEx("", resource.getFirstArg()), goal, resource.getContext());
-        NDLine resourceLine = resource;
-        
-
-        if (antecedentLine != null && goal.getLine().equals(resource.getSecondArg())
-                && goal.getIsSameContextAs(resource)) { // If the antecedent is in the resources and the consequent = the goal
-            goal.setJustification(new JustDouble(JustDouble.IMP_ELIM, resourceLine, antecedentLine));
-            Globals.currentGoalIndex = -1;
-            
-        } else if (antecedentLine != null && 
-                (!goal.getLine().equals(resource.getSecondArg()) || !goal.getIsSameContextAs(resource))) { // If the antecedent is in the resources but the consequent is not the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            // Expand proofArray to handle one new resource (the consequent of the resource), and justify it
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank; j++) {
-                temp[k] = proofArray[j];
-                k++;
+        if (antecedent != null) { // if antecedent is found
+            if (goal.equalsArgOf(resource, 2) && goal.hasSameContextAs(resource)) {
+                // If the goal is the consequent, justify it and we're done
+                currentProof.justifyLine(goal, 
+                        new JustDouble(JustDouble.IMP_ELIM, resource, antecedent));
+                
+                Globals.currentGoalIndex = -1;                
+            } else { // otherwise, the goal isn't the consequent.
+                // Add the consequent as a new resource.
+                NDLine consequent = new NDLine(resource.getArg(2));
+                consequent.setSameContextAs(resource);
+                consequent.setJustification(new JustDouble(JustDouble.IMP_ELIM, resource, antecedent));
+                currentProof.addNDLineResource(consequent, goal);
             }
-            temp[k] = new NDLine(resource.getSecondArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.IMP_ELIM, resourceLine, antecedentLine));
-            Globals.currentResourceIndex = k;
-
-            k++;
-            for (int j = indexOfBlank; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
+        } else { // antecedent was not found
+            if (goal.equalsArgOf(resource, 2) && goal.hasSameContextAs(resource)) {
+                // If the goal is the consequent, add the antecedent as a new goal
+                antecedent = new NDLine(resource.getArg(1));
+                antecedent.setSameContextAs(goal); // NB: goal.hasSameContextAs(resource)
+                currentProof.addNDLineGoal(antecedent, goal);
+                currentProof.justifyLine(goal,
+                        new JustDouble(JustDouble.IMP_ELIM, resource, antecedent));
+            } else { // antecedent not found and goal isn't the consequent
+                // Add a leap-of-faith: antecedent as a new goal above the current goal,
+                // and consequent as a resource directly below it.
+                if (magicMode) {
+                    magicMode = false; // turn off magic mode
+                    return proofArray;
+                }   
+                antecedent = new NDLine(resource.getArg(1));
+                antecedent.setSameContextAs(resource);
+                currentProof.addNDLineGoal(antecedent, goal);
+                
+                NDLine consequent = new NDLine(resource.getArg(2));
+                consequent.setSameContextAs(resource);
+                consequent.setJustification(new JustDouble(JustDouble.IMP_ELIM, resource, antecedent));
+                currentProof.addNDLineResource(consequent, goal);
             }
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-        } else if (antecedentLine == null && goal.getLine().equals(resource.getSecondArg())
-                && goal.getIsSameContextAs(resource)) { // If the antecedent is not in the resources but the consequent IS the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            antecedentLine = temp[k];
-            Globals.currentGoalIndex = k;
-            k++;
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            goal.setJustification(new JustDouble(JustDouble.IMP_ELIM, resourceLine, antecedentLine));
-
-            proofArray = temp;
-        } else if (antecedentLine == null && 
-                (!goal.getLine().equals(resource.getSecondArg()) || !goal.getIsSameContextAs(resource))) { // If the antecedent is not in the resources and the consequent is not the goal
-            if (magicMode) {
-                magicMode = false; // turn off magic mode
-                return proofArray;
-            }
-            
-            
-            int indexOfGoal = goal.indexIn(proofArray);
-            NDLine[] temp = new NDLine[proofArray.length + 3];
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            antecedentLine = temp[k];
-            k++;
-
-            temp[k] = new NDLine(resource.getSecondArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.IMP_ELIM, resourceLine, antecedentLine));
-            k++;
-
-            temp[k] = new NDLine(5);
-            k++;
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-            proofArray = temp;
         }
         
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
         Globals.rulesUsed.add("impElim");
+        Globals.currentGoalIndex = 1;
         return proofArray;
     }
 
@@ -1241,106 +849,35 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] impIntro(NDLine goal, NDLine resource) {
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        int indexOfAssEnd = findIndexOfAssEnd(indexOfGoal);
-        
-        NDLine assLine;
+    public NDLine[] impIntro(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException {
+        NDLine assStart;
         NDLine assEnd;
-        int extraSpaces;
-        
-        
-        if (indexOfBlank > indexOfAssEnd) {
-            extraSpaces = 2;
+        if (goal.getArg(1).equals(goal.getArg(2))) { 
+            // If the implication is trivial, create a one line assumption
+            assStart = new NDLine(resource.getArg(1), NDLine.ASS_ONE_LINE);
+            assStart.setSameContextAs(goal);
+            assEnd = assStart;
+            currentProof.addNDLineResource(assStart, goal);
         } else {
-            extraSpaces = 3;
-        }
-        NDLine[] temp = new NDLine[proofArray.length + extraSpaces];
-        
-        if (indexOfBlank > indexOfAssEnd) {
-            int k = 0;
-            for (int j = 0; j < indexOfBlank; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+            // Otherwise, create a standard assumption scope
+            assStart = new NDLine(resource.getArg(1), NDLine.ASS_START);
+            assStart.setSameContextAs(goal);
+            currentProof.addNDLineResource(assStart, goal);
             
-            if (goal.getFirstArg().equals(goal.getSecondArg())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getFirstArg(), 3);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assLine = temp[k];
-                assEnd = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(goal.getFirstArg(), 1);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assLine = temp[k];
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getSecondArg(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEnd = temp[k];
-                Globals.currentGoalIndex = k;
-                k++;
-            }
-
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-        } else {
-            int k = 0;
-            for (int j = 0; j < indexOfAssEnd + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            if (goal.getFirstArg().equals(goal.getSecondArg())) {
-                NDLine[] temporary = new NDLine[temp.length - 2];
-                for (int i = 0; i< k; i++) {
-                    temporary[i] = temp[i];
-                }
-                temp = temporary;
-                
-                temp[k] = new NDLine(resource.getFirstArg(), 3);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assLine = temp[k];
-                assEnd = temp[k];
-                k++;
-            } else {
-                temp[k] = new NDLine(goal.getFirstArg(), 1);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assLine = temp[k];
-                k++;
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-                temp[k] = new NDLine(goal.getSecondArg(), 2);
-                temp[k].setContext(getGoalContext(goal, resource));
-                assEnd = temp[k];
-                Globals.currentGoalIndex = k;
-                k++;
-            }
-
-            for (int j = indexOfAssEnd + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+            assEnd = new NDLine(goal.getArg(2), NDLine.ASS_END);
+            assEnd.setSameContextAs(goal);
+            currentProof.addNDLineGoal(assEnd, goal);
         }
+        currentProof.justifyLine(goal,
+                new JustDouble(JustDouble.IMP_INTRO, assStart, assEnd));
 
-        goal.setJustification(new JustDouble(JustDouble.IMP_INTRO, assLine, assEnd));
-
-        proofArray = temp;
-
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
+        Globals.currentGoalIndex = -1;
+        
         Globals.rulesUsed.add("impIntro");
         return proofArray;
     }
@@ -1350,194 +887,131 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] equElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    public NDLine[] equElim(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException, WrongLineTypeException {
         if (resource.getMainOp().equals("qa")) {
             proofArray = universalsEquElim(goal, resource);
             Globals.rulesUsed.add("equElim");
             return proofArray;
         }
         
-        NDLine leftSideLine = checkForNDLine(findRegEx("", resource.getFirstArg()), goal, resource.getContext());
-        NDLine rightSideLine = checkForNDLine(findRegEx("", resource.getSecondArg()), goal, resource.getContext());
-//        System.out.println(findRegEx("", resource.getFirstArg()));
+        NDLine leftSideLine = currentProof.checkForNDLine(findRegEx("", resource.getArg(1)), goal, resource.getContext());
+        NDLine rightSideLine = currentProof.checkForNDLine(findRegEx("", resource.getArg(2)), goal, resource.getContext());
+//        System.out.println(findRegEx("", resource.getArg(1)));
 //        System.out.println(leftSideLineNum);
 
-        if (leftSideLine != null && goal.getLine().equals(resource.getSecondArg())
-                && goal.getIsSameContextAs(resource)) { // If the left side is in the resources and the right side = the goal
-            goal.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
-            Globals.currentGoalIndex = -1;
+
+        if (leftSideLine != null && goal.equalsArgOf(resource, 2)
+                && goal.hasSameContextAs(resource)) { 
+            // If the left side is in the resources and the right side = the goal
+            currentProof.justifyLine(goal,
+                    new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
             
-        } else if (rightSideLine != null && goal.getLine().equals(resource.getFirstArg())
-                && goal.getIsSameContextAs(resource)) { // If the right side is in the resources and the left side = the goal
-            goal.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
-            Globals.currentGoalIndex = -1;
+        } else if (rightSideLine != null && goal.equalsArgOf(resource, 1)
+                && goal.hasSameContextAs(resource)) { 
+            // If the right side is in the resources and the left side = the goal
+            currentProof.justifyLine(goal,
+                    new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
             
-        } else if (leftSideLine != null && 
-                (!goal.getLine().equals(resource.getSecondArg()) || !goal.getIsSameContextAs(resource))) { // If the left side is in the resources but the right side is not the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            // Expand proofArray to handle one new resource (the right side of the resource), and justify it
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            temp[k] = new NDLine(resource.getSecondArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
-            Globals.currentResourceIndex = k;
-
-            k++;
-            for (int j = indexOfBlank; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+        } else if (leftSideLine != null) { 
+            // If the left side is in the resources but the right side is not the goal
+            // Add the right side as a new resource
+            rightSideLine = new NDLine(resource.getArg(2));
+            rightSideLine.setSameContextAs(resource);
+            rightSideLine.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
             
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-        } else if (rightSideLine != null && 
-                (!goal.getLine().equals(resource.getFirstArg()) || !goal.getIsSameContextAs(resource))) { // If the right side is in the resources but the left side is not the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            // Expand proofArray to handle one new resource (the left side of the resource), and justify it
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
-            Globals.currentResourceIndex = k;
-
-            k++;
-            for (int j = indexOfBlank; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
+            currentProof.addNDLineResource(rightSideLine, goal);
             
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-        } else if (leftSideLine == null && goal.getLine().equals(resource.getSecondArg())
-                && goal.getIsSameContextAs(resource)) { // If the left side is not found in the resources but the right side IS the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            leftSideLine = temp[k];
-            Globals.currentGoalIndex = k;
-            k++;
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            goal.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
+        } else if (rightSideLine != null) { 
+            // If the right side is in the resources but the left side is not the goal
+            // Add the left side as a new resource
+            leftSideLine = new NDLine(resource.getArg(1));
+            leftSideLine.setSameContextAs(resource);
+            leftSideLine.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
             
-
-            proofArray = temp;
-        } else if (rightSideLine == null && goal.getLine().equals(resource.getFirstArg())
-                && goal.getIsSameContextAs(resource)) { // If the right side is not found in the resources but the left side IS the goal
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            temp[k] = new NDLine(resource.getSecondArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            rightSideLine = temp[k];
-            Globals.currentGoalIndex = k;
-            k++;
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            goal.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
-
-            proofArray = temp;
-        } else { // Otherwise. i.e. If neither the right nor left side is found in the resources and neither is the goal.
+            currentProof.addNDLineResource(leftSideLine, goal);
+            
+        } else if (leftSideLine == null && goal.equalsArgOf(resource, 2)
+                && goal.hasSameContextAs(resource)) { 
+            // If the left side is not found in the resources but the right side IS the goal
+            // Add the left side as a new goal
+            leftSideLine = new NDLine(resource.getArg(1));
+            leftSideLine.setSameContextAs(goal); // NB: goal.hasSameContextAs(resource)
+            
+            currentProof.addNDLineGoal(leftSideLine, goal);
+            currentProof.justifyLine(goal,
+                    new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
+        } else if (rightSideLine == null && goal.equalsArgOf(resource, 1)
+                && goal.hasSameContextAs(resource)) { 
+            // If the right side is not found in the resources but the left side IS the goal
+            // Add the right side as a new goal
+            rightSideLine = new NDLine(resource.getArg(2));
+            rightSideLine.setSameContextAs(goal); // NB: goal.hasSameContextAs(resource)
+            
+            currentProof.addNDLineGoal(rightSideLine, goal);
+            currentProof.justifyLine(goal,
+                    new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
+            
+        } else { 
+            // Otherwise. i.e. both:
+            //      - neither the right nor left side is found in the resources 
+            //      - neither the right nor left side is the goal
             magicMode = false; // turn off magic mode
             
+            // We will make a leap-of-faith.
+            
+            // Ask the user which direction to move in            
             boolean leftToRight;
-
             Object[] options = {"Left-to-right", "Right-to-left", "Cancel"};
             int n = JOptionPane.showOptionDialog(Globals.frame, "You are about to make a bold step. \n Would you like to move left-to-right or right-to-left?",
                     "Equivalence Elimination - Bold Step", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-            if (n == 0) {
-                leftToRight = true;
-            } else if (n == 1) {
-                leftToRight = false;
-            } else {
-                Globals.reverseUndo = true;
-                return proofArray;
+            switch (n) {
+                case 0:
+                    leftToRight = true;
+                    break;
+                case 1:
+                    leftToRight = false;
+                    break;
+                default:
+                    Globals.reverseUndo = true;
+                    return proofArray;
             }
-
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-
-            NDLine[] temp = new NDLine[proofArray.length + 3];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
+            
+            // NB: the order of creation of leftSideLine and rightSideLine has 
+            // an effect on their line numberings. As a result, those initialisations
+            // can't easily be moved outside this conditional.
             if (leftToRight) {
-                temp[k] = new NDLine(resource.getFirstArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                leftSideLine = temp[k];
-                k++;
-
-                temp[k] = new NDLine(resource.getSecondArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
-                k++;
+                // Justify the right line by the left, and add a leap-of-faith:
+                // Add leftLine as new floating goal, with rightLine a resource
+                // directly below it.
+                leftSideLine = new NDLine(resource.getArg(1));
+                leftSideLine.setSameContextAs(resource);
+                currentProof.addNDLineGoal(leftSideLine, goal);
+                
+                rightSideLine = new NDLine(resource.getArg(2));
+                rightSideLine.setSameContextAs(resource);
+                rightSideLine.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, leftSideLine));
+                currentProof.addNDLineResource(rightSideLine, goal);
             } else {
-                temp[k] = new NDLine(resource.getSecondArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                rightSideLine = temp[k];
-                k++;
-
-                temp[k] = new NDLine(resource.getFirstArg());
-                temp[k].setContext(getResourceContext(goal, resource));
-                temp[k].setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
-                k++;
+                // Justify the left line by the right, and add a leap-of-faith.
+                // As above.
+                rightSideLine = new NDLine(resource.getArg(2));
+                rightSideLine.setSameContextAs(resource);
+                currentProof.addNDLineGoal(rightSideLine, goal);
+                
+                leftSideLine = new NDLine(resource.getArg(1));
+                leftSideLine.setSameContextAs(resource);
+                leftSideLine.setJustification(new JustDouble(JustDouble.EQU_ELIM, resource, rightSideLine));
+                currentProof.addNDLineResource(leftSideLine, goal);
             }
-            temp[k] = new NDLine(5);
-            k++;
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
         }
         
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
+        Globals.currentGoalIndex = -1;
+        
         Globals.rulesUsed.add("equElim");
         return proofArray;
     }
@@ -1548,141 +1022,78 @@ public class ProofObject {
      * @param resource the current resource
      * @return The resulting proofArray.
      */
-    public NDLine[] equIntro(NDLine goal, NDLine resource) {
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
+    public NDLine[] equIntro(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+        boolean createAnIdBox = false;
         
         if (Globals.allowedRules.get("equIdentityBoxes")) {
-            boolean createAnIdBox;
+            // If we can make idBoxes, ask if we should.
             
             Object[] options = {"Create " + "\u2261" +" identity box", "Standard " + "\u2261" + "I", "Cancel"};
             int n = JOptionPane.showOptionDialog(Globals.frame, "You have selected \u2261" + "I under proof system NK=.\n" + "Create an identity box or standard \u2261" + "I?",
                     "Equivalence Introduction - NK=", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-            if (n == 0) {
-                createAnIdBox = true;
-            } else if (n == 1) {
-                createAnIdBox = false;
-            } else {
-                Globals.reverseUndo = true;
-                return proofArray;
+            switch (n) {
+                case 0:
+                    createAnIdBox = true;
+                    break;
+                case 1:
+                    createAnIdBox = false;
+                    break;
+                default:
+                    Globals.reverseUndo = true;
+                    return proofArray;
             }
+        }
+        
+        
+        if (createAnIdBox) {
+            NDLine idStart = new NDLine(goal.getArg(1), NDLine.EQU_ID_BOX_START);
+            idStart.setSameContextAs(goal);
+            currentProof.addNDLineResource(idStart, goal);
             
-            if (createAnIdBox) {
-                NDLine idStart;
-
-                NDLine[] temp = new NDLine[proofArray.length + 2];
-
-                int k = 0;
-                for (int i = 0; i < indexOfBlank; i++) {
-                    temp[k] = proofArray[i];
-                    k++;
-                }
-
-                temp[k] = new NDLine(goal.getFirstArg(), 10);
-                temp[k].setContext(getGoalContext(goal, resource));
-                idStart = temp[k];
-                k++;
-
-                temp[k] = proofArray[indexOfBlank];
-                k++;
-
-                temp[k] = new NDLine(goal.getSecondArg(), 9);
-                temp[k].setContext(getGoalContext(goal, resource));
-                Globals.currentGoalIndex = k;
-                k++;
-
-                for (int i = indexOfBlank + 1; i < proofArray.length; i++) {
-                    temp[k] = proofArray[i];
-                    k++;
-                }
-
-                goal.setJustification(new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
-
-                proofArray = temp;
-                collapseBlanks();
-                Globals.rulesUsed.add("idBoxEquIntro");
-                return proofArray;
-            }
-        }
-        
-        int indexOfAssEnd = findIndexOfAssEnd(indexOfGoal);
-        
-        NDLine assLineOne;
-        NDLine assEndOne;
-        NDLine assLineTwo;
-        NDLine assEndTwo;
-        int extraSpaces;
-        
-        if (indexOfBlank > indexOfAssEnd) {
-            extraSpaces = 5;
+            NDLine idEnd = new NDLine(goal.getArg(2), NDLine.ID_BOX_END);
+            idEnd.setSameContextAs(goal);
+            currentProof.addNDLineGoal(idEnd, goal);
+            
+            currentProof.justifyLine(goal, 
+                    new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
+            
         } else {
-            extraSpaces = 6;
-        }
-        NDLine[] temp = new NDLine[proofArray.length + extraSpaces];
-        
-
-        int k = 0;
-        for (int j = 0; j < indexOfBlank; j++) {
-            temp[k] = proofArray[j];
-            k++;
-        }
-
-        if (goal.getFirstArg().equals(goal.getSecondArg())) {
-            NDLine[] temporary = new NDLine[temp.length - 4];
-            for (int i = 0; i< k; i++) {
-                temporary[i] = temp[i];
+            NDLine assStartOne;
+            NDLine assEndOne;
+            NDLine assStartTwo;
+            NDLine assEndTwo;
+            
+            if (goal.getArg(1).equals(goal.getArg(2))) {
+                // If the equivalence is trivial, create one line assumptions
+                assStartOne = new NDLine(goal.getArg(1), NDLine.ASS_ONE_LINE);
+                assStartOne.setSameContextAs(goal);
+                assEndOne = assStartOne;
+                
+                assStartTwo = new NDLine(goal.getArg(2), NDLine.ASS_ONE_LINE);
+                assStartTwo.setSameContextAs(goal);
+                assEndTwo = assStartTwo;
+            } else {
+                // Create two new standard assumption scopes
+                assStartOne = new NDLine(goal.getArg(1), NDLine.ASS_START);
+                assStartOne.setSameContextAs(goal);
+                currentProof.addNDLineResource(assStartOne, goal);
+                assEndOne = new NDLine(goal.getArg(2), NDLine.ASS_END);
+                assEndOne.setSameContextAs(goal);
+                currentProof.addNDLineGoal(assEndOne, goal);
+                
+                assStartTwo = new NDLine(goal.getArg(2), NDLine.ASS_START);
+                assStartTwo.setSameContextAs(goal);
+                currentProof.addNDLineResource(assStartTwo, goal);
+                assEndTwo = new NDLine(goal.getArg(1), NDLine.ASS_END);
+                assEndTwo.setSameContextAs(goal);
+                currentProof.addNDLineGoal(assEndTwo, goal);
             }
-            temp = temporary;
-
-            temp[k] = new NDLine(goal.getFirstArg(), 3);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assLineOne = temp[k];
-            assEndOne = temp[k];
-            k++;
-
-            temp[k] = new NDLine(goal.getSecondArg(), 3);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assLineTwo = temp[k];
-            assEndTwo = temp[k];
-            k++;
-        } else {
-            temp[k] = new NDLine(goal.getFirstArg(), 1);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assLineOne = temp[k];
-            k++;
-            temp[k] = proofArray[indexOfBlank];
-            k++;
-            temp[k] = new NDLine(goal.getSecondArg(), 2);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assEndOne = temp[k];
-            k++;
-
-            temp[k] = new NDLine(goal.getSecondArg(), 1);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assLineTwo = temp[k];
-            k++;
-            temp[k] = proofArray[indexOfBlank];
-            k++;
-            temp[k] = new NDLine(goal.getFirstArg(), 2);
-            temp[k].setContext(getGoalContext(goal, resource));
-            assEndTwo = temp[k];
-            k++;
-        }
-
-
-
-        for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-            temp[k] = proofArray[j];
-            k++;
+            currentProof.justifyLine(goal,
+                    new JustEquIntro(assStartOne, assEndOne, assStartTwo, assEndTwo));
         }
         
+        proofArray = currentProof.getProofArray();
 
-        NDJust just = new JustEquIntro(assLineOne, assEndOne, assLineTwo, assEndTwo);
-        goal.setJustification(just);
-
-        proofArray = temp;
-
-        collapseBlanks();
         Globals.currentGoalIndex = -1;
         Globals.rulesUsed.add("equIntro");
         return proofArray;
@@ -1693,126 +1104,60 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] negElim(NDLine goal, NDLine resource) { // When we have a negation selected as a resource
+    public NDLine[] negElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException { // When we have a negation selected as a resource
         if (resource.getMainOp().equals("qa")) {
             Globals.rulesUsed.add("negElim");
             return universalsNegElim(goal, resource);
         }
-        String prop = resource.getFirstArg(); // The opposite of the negation. If the negation is ~p, this is p
-        NDLine propLine = checkForNDLine(findRegEx("", prop), goal, resource.getContext());
-
-        if (propLine != null && goal.getLine().equals("\\falsum")
-                && goal.getIsSameContextAs(resource)) { // If prop is in the resources and the goal is falsum
-//            System.out.println("" + resource.getJustLineNum());
-            goal.setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, propLine));
-            Globals.currentGoalIndex = -1;
-            
-        } else if (propLine != null && 
-                (!goal.getLine().equals("\\falsum") || !goal.getIsSameContextAs(resource))) { // If prop is in the resources but the goal is not falsum
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-            NDLine falsumLine;
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            temp[k] = new NDLine("\\falsum");
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, propLine));
-            falsumLine= temp[k];
-            k++;
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            
-            if (goal.getIsSameContextAs(resource)) {
-                goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, falsumLine));
-                Globals.currentGoalIndex = -1;
+        NDLine negandLine = currentProof.checkForNDLine(findRegEx("", resource.getArg(1)), goal, resource.getContext());
+        NDLine falsumLine;
+        
+        if (negandLine != null) { // i.e. the negand appears above
+            // We have a contradiction
+            if (goal.getLine().equals("\\falsum") && goal.hasSameContextAs(resource)) {
+                // If the current goal is falsum, justify it
+                currentProof.justifyLine(goal,
+                    new JustDouble(JustDouble.NEG_ELIM, resource, negandLine));
             } else {
-                Globals.currentGoalIndex = goal.indexIn(temp);
-            }
-
-            proofArray = temp;
-            
-        } else if (propLine == null && goal.getLine().equals("\\falsum")
-                && goal.getIsSameContextAs(resource)) { // If prop is not in the resources but the goal IS falsum
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            propLine = temp[k];
-            Globals.currentGoalIndex = k;
-            k++;
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            goal.setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, propLine));
-            
-
-            proofArray = temp;
-            
-
-        } else if (propLine == null && 
-                (!goal.getLine().equals("\\falsum") || !goal.getIsSameContextAs(resource))) { // If prop is not in the resources and the goal is not falsum
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine[] temp = new NDLine[proofArray.length + 2];
-            NDLine falsumLine;
-
-            int k = 0;
-            for (int j = 0; j < indexOfBlank + 1; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-
-            temp[k] = new NDLine(resource.getFirstArg());
-            temp[k].setContext(getResourceContext(goal, resource));
-            propLine = temp[k];
-            if (goal.getIsSameContextAs(resource)){
-                Globals.currentGoalIndex = k;
-            }
-            k++;
-            temp[k] = new NDLine("\\falsum");
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, propLine));
-            falsumLine = temp[k];
-            k++;
-
-            for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-                temp[k] = proofArray[j];
-                k++;
-            }
-            
-            if (goal.getIsSameContextAs(resource)) {
-                goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, falsumLine));
+                // The current goal is not falsum
+                // Add falsum as a new resource
+                falsumLine = new NDLine("\\falsum");
+                falsumLine.setSameContextAs(resource);
+                falsumLine.setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, negandLine));
+                currentProof.addNDLineResource(falsumLine, goal);
+                // if the goal is the same context, justify it
+                if (goal.hasSameContextAs(falsumLine)) {
+                    currentProof.justifyLine(goal,
+                            new JustSingle(JustSingle.FALSUM_ELIM, falsumLine));
+                }
+            }            
+        } else { // i.e. the negand is not a resource
+            // We're trying to make a contradiction
+            negandLine = new NDLine(resource.getArg(1));
+            negandLine.setSameContextAs(goal); // NB: goal.hasSameContextAs(resource)
+            currentProof.addNDLineGoal(negandLine, goal);
+            if (goal.getLine().equals("\\falsum") && goal.hasSameContextAs(resource)) {
+                // If the current goal is falsum, justify it
+                currentProof.justifyLine(goal,
+                        new JustDouble(JustDouble.NEG_ELIM, resource, negandLine));
             } else {
-                Globals.currentGoalIndex = goal.indexIn(temp);
+                // The current goal isn't falsum, so add
+                falsumLine = new NDLine("\\falsum");
+                falsumLine.setSameContextAs(resource);
+                falsumLine.setJustification(new JustDouble(JustDouble.NEG_ELIM, resource, negandLine));
+                currentProof.addNDLineResource(falsumLine, goal);
+                if (goal.hasSameContextAs(falsumLine)) {
+                        currentProof.justifyLine(goal,
+                            new JustDouble(JustDouble.NEG_ELIM, resource, falsumLine));
+                }
             }
-
-            proofArray = temp;
-            
-
         }
         
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        Globals.currentGoalIndex = -1;
+        
         Globals.rulesUsed.add("negElim");
         return proofArray;
     }
@@ -1833,53 +1178,35 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] negIntro(NDLine goal, NDLine resource) {
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        int indexOfAssEnd = findIndexOfAssEnd(indexOfGoal);
-        NDLine assLine;
+    public NDLine[] negIntro(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+        NDLine assStart;
         NDLine assEnd;
-        int extraSpaces;
-        
-        if (indexOfBlank > indexOfAssEnd) {
-            extraSpaces = 2;
+        if (goal.getArg(1).equals("\\falsum")) {
+            // If we proving a negated falsum, do a one line assumption
+            assStart = new NDLine(goal.getArg(1), NDLine.ASS_ONE_LINE);
+            assStart.setSameContextAs(goal);
+            assEnd = assStart;
+            currentProof.addNDLineResource(assStart, goal);
         } else {
-            extraSpaces = 3;
-        }
-        NDLine[] temp = new NDLine[proofArray.length + extraSpaces];
-        
-        
-        int k = 0;
-        for (int j = 0; j < indexOfBlank; j++) {
-            temp[k] = proofArray[j];
-            k++;
-        }
+            assStart = new NDLine(goal.getArg(1), NDLine.ASS_START);
+            assStart.setSameContextAs(goal);
+            currentProof.addNDLineResource(assStart, goal);
 
-        temp[k] = new NDLine(goal.getFirstArg(), 1);
-        temp[k].setContext(getGoalContext(goal, resource));
-        assLine = temp[k];
-        Globals.currentResourceIndex = k;
-        k++;
-        temp[k] = proofArray[indexOfBlank];
-        k++;
-        temp[k] = new NDLine("\\falsum", 2);
-        temp[k].setContext(getGoalContext(goal, resource));
-        assEnd = temp[k];
-        Globals.currentGoalIndex = k;
-        k++;
-
-        for (int j = indexOfBlank + 1; j < proofArray.length; j++) {
-            temp[k] = proofArray[j];
-            k++;
+            assEnd = new NDLine("\\falsum", NDLine.ASS_END);
+            assEnd.setSameContextAs(goal);
+            currentProof.addNDLineGoal(assEnd, goal);
         }
         
+        currentProof.justifyLine(goal,
+                new JustDouble(JustDouble.NEG_INTRO, assStart, assEnd));
 
-        goal.setJustification(new JustDouble(JustDouble.NEG_INTRO, assLine, assEnd));
-
-        proofArray = temp;
-
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
+        Globals.currentGoalIndex = -1;
+        
         Globals.rulesUsed.add("negIntro");
         return proofArray;
     }
@@ -1889,157 +1216,63 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
+     * @throws proofassistant.exception.WrongLineTypeException
+     * @throws proofassistant.LineNotInProofArrayException
      */
-    public NDLine[] qaElim(NDLine goal, NDLine resource) {
-        if (Globals.allowedRules.get("universalsShortcuts") && goal.getLine().matches(resource.getNonUniRegEx())
-                && goal.getIsSameContextAs(resource)) {
-            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
+    public NDLine[] qaElim(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException, WrongLineTypeException {
+        if (Globals.allowedRules.get("universalsShortcuts") 
+                && goal.matchesNonUniRegEx(resource) && goal.hasSameContextAs(resource)) {
+            // If the goal matches the resource, minus some quantifiers, justify
+            // the goal immediately.
+            currentProof.justifyLine(goal,
+                    new JustSingle(JustSingle.QA_ELIM, resource));
+            proofArray = currentProof.getProofArray();
             Globals.currentGoalIndex = -1;
-            collapseBlanks();
             Globals.rulesUsed.add("qaElim");
             return proofArray;
         }
         
-//        System.out.println("first: " + resource.getFirstArg());
-//        System.out.println("second: " + resource.getSecondArg());
-        String regEx = findRegEx(resource.getFirstArg(), resource.getSecondArg());
-//        System.out.println(goal.getLine() +" - " + regEx);
-        if (goal.getLine().matches(regEx) && goal.getIsSameContextAs(resource)) {
-//            System.out.println(goal.getLine() + regEx);
-            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-            Globals.currentGoalIndex = -1;
+        if (goal.matchesQuantifiedNDLine(resource) && goal.hasSameContextAs(resource)) {
+            // If the goal is an instance of the resource, we can justify the goal
+            currentProof.justifyLine(goal,
+                    new JustSingle(JustSingle.QA_ELIM, resource));
         } else {
+            // The goal is not an instance of the resource. We need to ask the
+            // user what term to use.
             magicMode = false; // turn off magic mode
-            
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            
-            // If we're in an identity box, put the result above the box
-            boolean inIdBox = goal.getType() > 6 && goal.getType() < 11;
-            if (inIdBox && findTopOfIdBox(indexOfGoal) != 0) {
-                indexOfBlank = findTopOfIdBox(indexOfGoal);
-            }
-            
-            NDLine[] temp = new NDLine[proofArray.length + 1];
             String term;
             if (Globals.allowedRules.get("secondOrder")) {
                 term = MyOptionPane.showFriendlyLineInputDialog("Universal Elimination (Second-Order Logic)").replace("\\", "\\\\");
             } else {
                 term = (String)JOptionPane.showInputDialog(Globals.frame, "The goal does not match.\nPlease input a term", "Universal Elimination", JOptionPane.PLAIN_MESSAGE, null, null, "a");
             }
-            
             if (term == null) {
+                // If they entered nothing, or cancelled, do nothing
                 Globals.reverseUndo = true;
                 return proofArray;
-            } else if (resource.replace(resource.getSecondArg(), resource.getFirstArg(), term).equals(goal.getLine())
-                    && goal.getIsSameContextAs(resource)) {
-                goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-                collapseBlanks();
-                Globals.rulesUsed.add("qaElim");
-                return proofArray;
             }
             
-            int k = 0;
-            
-            for (int i = 0; i < indexOfBlank; i++) {
-                temp[k] = proofArray[i];
-                k++;
+            NDLine instance = new NDLine(resource.getQuantifierInstance(term));
+            try {
+                System.out.println(resource.getQuantifierInstance(new NDAtom("(" + term + ")", symbols)));
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofObject.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            temp[k] = new NDLine(resource.replace(resource.getSecondArg(), resource.getFirstArg(), term));
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-            Globals.currentResourceIndex = k;
-            k++;
-            
-            for (int i = indexOfBlank; i < proofArray.length; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-            
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-            
+            instance.setSameContextAs(resource);
+            instance.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
+            currentProof.addNDLineResource(instance, goal);            
         }
         
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
+        Globals.currentGoalIndex = -1;
+        
         Globals.rulesUsed.add("qaElim");
         return proofArray;
     }
     
-    /**
-     * NOT IMPLEMENTED! Applies universal elimination to the current proofArray, using second order logic. NOT IMPLEMENTED!
-     * @param goal the current goal
-     * @param resource the current resource
-     * @return The resulting proofArray.
-     */
-    public NDLine[] qaElimProp(NDLine goal, NDLine resource) {
-        if (Globals.allowedRules.get("universalsShortcuts") && goal.getLine().matches(resource.getNonUniRegEx())
-                && goal.getIsSameContextAs(resource)) {
-            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-            Globals.currentGoalIndex = -1;
-            collapseBlanks();
-            Globals.rulesUsed.add("qaElim");
-            return proofArray;
-        }
-        
-        String regEx = findRegExProp(resource.getFirstArg(), resource.getSecondArg());
-        if (goal.getLine().matches(regEx) && goal.getIsSameContextAs(resource)) {
-            goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-            Globals.currentGoalIndex = -1;
-        } else {
-            magicMode = false; // turn off magic mode
-            
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            
-            // If we're in an identity box, put the result above the box
-            boolean inIdBox = goal.getType() > 6 && goal.getType() < 11;
-            if (inIdBox && findTopOfIdBox(indexOfGoal) != 0) {
-                indexOfBlank = findTopOfIdBox(indexOfGoal);
-            }
-            
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-            String term = (String)JOptionPane.showInputDialog(Globals.frame, "The goal does not match.\nPlease input a proposition", "LEM Elimination", JOptionPane.PLAIN_MESSAGE, null, null, "a");
-            
-            if (term == null) {
-                Globals.reverseUndo = true;
-                return proofArray;
-            } else if (resource.replace(resource.getSecondArg(), resource.getFirstArg(), term).equals(goal.getLine())
-                    && goal.getIsSameContextAs(resource)) {
-                goal.setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-                collapseBlanks();
-                Globals.rulesUsed.add("qaElim");
-                return proofArray;
-            }
-            
-            int k = 0;
-            
-            for (int i = 0; i < indexOfBlank; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-            
-            temp[k] = new NDLine(resource.replace(resource.getSecondArg(), resource.getFirstArg(), term));
-            temp[k].setContext(getResourceContext(goal, resource));
-            temp[k].setJustification(new JustSingle(JustSingle.QA_ELIM, resource));
-            Globals.currentResourceIndex = k;
-            k++;
-            
-            for (int i = indexOfBlank; i < proofArray.length; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-            
-            proofArray = temp;
-            Globals.currentGoalIndex = goal.indexIn(proofArray);
-            
-        }
-        
-        collapseBlanks();
-        Globals.rulesUsed.add("qaElim");
-        return proofArray;
-    }
 
     /**
      * Applies universal introduction to the current proofArray
@@ -2048,15 +1281,17 @@ public class ProofObject {
      * @return The resulting proofArray.
      */
     public NDLine[] qaIntro(NDLine goal, NDLine resource) {
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        NDLine[] temp = new NDLine[proofArray.length + 1];
         boolean allowable;
         String term;
         
+        int indexOfGoal = goal.indexIn(proofArray);
+        int indexOfBlank = findIndexOfBlank(indexOfGoal);
+        NDLine[] temp = new NDLine[proofArray.length + 1];
+        
+        
         if (Globals.allowedRules.get("autoParameters")) {
             if (Globals.allowedRules.get("secondOrder")
-                    && (resource.getFirstArg().equals("p") || resource.getFirstArg().equals("q") || resource.getFirstArg().equals("r"))) {
+                    && (resource.getArg(1).equals("p") || resource.getArg(1).equals("q") || resource.getArg(1).equals("r"))) {
                 term = Globals.terms.getNewProposition();
             } else {
                 term = Globals.terms.getNewTerm();
@@ -2066,7 +1301,7 @@ public class ProofObject {
             magicMode = false; // turn off magic mode
             
             if (Globals.allowedRules.get("secondOrder")
-                    && (resource.getFirstArg().equals("p") || resource.getFirstArg().equals("q") || resource.getFirstArg().equals("r"))) {
+                    && (resource.getArg(1).equals("p") || resource.getArg(1).equals("q") || resource.getArg(1).equals("r"))) {
                 term = (String)JOptionPane.showInputDialog(Globals.frame, "Please input a proposition", "Universal Introduction", JOptionPane.PLAIN_MESSAGE, null, null, Globals.terms.getNewProposition());
             } else {
                 term = (String)JOptionPane.showInputDialog(Globals.frame, "Please input a term", "Universal Introduction", JOptionPane.PLAIN_MESSAGE, null, null, Globals.terms.getNewTerm());
@@ -2088,8 +1323,8 @@ public class ProofObject {
             k++;
         }
 
-        temp[k] = new NDLine(goal.replace(goal.getSecondArg(), goal.getFirstArg(), term));
-        temp[k].setContext(getGoalContext(goal, resource));
+        temp[k] = new NDLine(goal.replace(goal.getArg(2), goal.getArg(1), term));
+        temp[k].setSameContextAs(goal);
         NDLine newLine = temp[k];
         Globals.currentGoalIndex = k;
         k++;
@@ -2128,7 +1363,7 @@ public class ProofObject {
         
         if (Globals.allowedRules.get("autoParameters")) {
             if (Globals.allowedRules.get("secondOrder")
-                    && (resource.getFirstArg().equals("p") || resource.getFirstArg().equals("q") || resource.getFirstArg().equals("r"))) {
+                    && (resource.getArg(1).equals("p") || resource.getArg(1).equals("q") || resource.getArg(1).equals("r"))) {
                 term = Globals.terms.getNewProposition();
             } else {
                 term = Globals.terms.getNewTerm();
@@ -2137,7 +1372,7 @@ public class ProofObject {
         } else {
             magicMode = false; // turn off magic mode
             if (Globals.allowedRules.get("secondOrder")
-                    && (resource.getFirstArg().equals("p") || resource.getFirstArg().equals("q") || resource.getFirstArg().equals("r"))) {
+                    && (resource.getArg(1).equals("p") || resource.getArg(1).equals("q") || resource.getArg(1).equals("r"))) {
                 term = (String)JOptionPane.showInputDialog(Globals.frame, "Please input a proposition", "Existential Elimination", JOptionPane.PLAIN_MESSAGE, null, null, Globals.terms.getNewProposition());
             } else {
                 term = (String)JOptionPane.showInputDialog(Globals.frame, "Please input a term", "Existential Elimination", JOptionPane.PLAIN_MESSAGE, null, null, Globals.terms.getNewTerm());
@@ -2160,8 +1395,8 @@ public class ProofObject {
             k++;
         }
         
-        temp[k] = new NDLine(resource.replace(resource.getSecondArg(), resource.getFirstArg(), term), 1);
-        temp[k].setContext(getResourceContext(goal, resource));
+        temp[k] = new NDLine(resource.replace(resource.getArg(2), resource.getArg(1), term), 1);
+        temp[k].setSameContextAs(resource);
         assStartLine = temp[k];
         Globals.currentResourceIndex = k;
         k++;
@@ -2170,7 +1405,7 @@ public class ProofObject {
         k++;
         
         temp[k] = new NDLine(goal.getLine(), 2);
-        temp[k].setContext(getGoalContext(goal, resource));
+        temp[k].setSameContextAs(goal);
         assEndLine = temp[k];
         Globals.currentGoalIndex = k;
         k++;
@@ -2195,7 +1430,7 @@ public class ProofObject {
      * @return The resulting proofArray.
      */
     public NDLine[] qeIntro(NDLine goal, NDLine resource) {
-        NDLine matchLine = checkForNDLine(findRegEx(goal.getFirstArg(), goal.getSecondArg()), goal);
+        NDLine matchLine = checkForNDLine(findRegEx(goal.getArg(1), goal.getArg(2)), goal);
         
         if (matchLine != null) {
             Globals.currentGoalIndex = -1;
@@ -2224,8 +1459,8 @@ public class ProofObject {
             }
             
 //            System.out.println(term);
-            temp[k] = new NDLine(goal.replace(goal.getSecondArg(), goal.getFirstArg(), term));
-            temp[k].setContext(getGoalContext(goal, resource));
+            temp[k] = new NDLine(goal.replace(goal.getArg(2), goal.getArg(1), term));
+            temp[k].setSameContextAs(goal);
             matchLine = temp[k];
             Globals.currentGoalIndex = k;
             k++;
@@ -2248,10 +1483,12 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      */
-    public NDLine[] falsumElim(NDLine goal, NDLine resource) {
-        goal.setJustification(new JustSingle(JustSingle.FALSUM_ELIM, resource));
-        collapseBlanks();
+    public NDLine[] falsumElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+        currentProof.justifyLine(goal,
+                new JustSingle(JustSingle.FALSUM_ELIM, resource));
+        proofArray = currentProof.getProofArray();
         Globals.currentGoalIndex = -1;
         Globals.rulesUsed.add("falsumElim");
         return proofArray;
@@ -2307,10 +1544,10 @@ public class ProofObject {
         int indexOfGoal = goal.indexIn(proofArray);
 //        System.out.println("indexOfGoal is " + indexOfGoal);
         
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
 //        System.out.println("regEx: " + firstRegEx);
         
-        if (goal.getLine().equals("\\falsum") && goal.getIsSameContextAs(resource)) {
+        if (goal.getLine().equals("\\falsum") && goal.hasSameContextAs(resource)) {
 //            System.out.println("here");
             ArrayList<Integer> matchingLines = checkForAllMatching(firstRegEx, goal, resource);
             if (matchingLines.isEmpty()) {
@@ -2331,12 +1568,12 @@ public class ProofObject {
         return proofArray;
     }
     
-    private NDLine[] universalsImpElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    private NDLine[] universalsImpElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException, WrongLineTypeException {
         // 1. Find the unquantified expression //
         NDLine tempLine = new NDLine(5);
         // Find regular expressions for the arguments
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
-        String secondRegEx = resource.getNonUniSecondArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
+        String secondRegEx = resource.getNonQaSecondArgRegEx();
 
         // See if the antecedent is matched in the resources
         // Prepare for multiple matches
@@ -2350,7 +1587,7 @@ public class ProofObject {
         // Create a pattern for matching
         Pattern firstPattern = Pattern.compile(firstRegEx);
         Pattern secondPattern = Pattern.compile(secondRegEx);
-        Pattern wholePattern = Pattern.compile(resource.getNonUniRegEx());
+        Pattern wholePattern = Pattern.compile(resource.getNonQaRegEx());
         
         
         for (int k = 0; k < matchingIndexes.size(); k++) { // Deal with any matching resources
@@ -2375,13 +1612,13 @@ public class ProofObject {
                     int i = 0;
                     boolean replacedVariable = false;
                     while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                        if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                        if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                             matchedArray.remove(matchedArray.get(i)); //               remove it
                         } else { // Otherwise, check if test works with any variables
-                            test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                            test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                             test.setContext(tempLine.getContext());
                             
-                            if (antecedent.getLine().matches(test.getNonUniFirstArgRegEx())) { // If the firstArg of test matches
+                            if (antecedent.matchesNonUniRegEx(test, 1)) { // If the firstArg of test matches
                                 tempLine = test; //                                             make tempLine = test
                                 replacedVariable = true; // Escape from this while loop
                                 matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2419,12 +1656,12 @@ public class ProofObject {
                 int i = 0;
                 boolean replacedVariable = false;
                 while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                    if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                    if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                         matchedArray.remove(matchedArray.get(i)); //               remove it
                     } else { // Otherwise, check if test works with any variables
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
-                        if (goal.getLine().matches(test.getNonUniSecondArgRegEx())) { // If the secondArg of test matches
+                        if (goal.matchesNonUniRegEx(test, 2)) { // If the secondArg of test matches
                             tempLine = test; //                                             make tempLine = test
                             replacedVariable = true; // Escape from this while loop
                             matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2505,12 +1742,12 @@ public class ProofObject {
         return proofArray;
     }
     
-    private NDLine[] universalsEquElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    private NDLine[] universalsEquElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException, WrongLineTypeException {
         // 1. Find the unquantified expression //
         NDLine tempLine = new NDLine(5);
         // Find regular expressions for the arguments
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
-        String secondRegEx = resource.getNonUniSecondArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
+        String secondRegEx = resource.getNonQaSecondArgRegEx();
 
         // See if the antecedent or consequent is matched in the resources
         // Prepare for multiple matches
@@ -2546,12 +1783,12 @@ public class ProofObject {
                     int i = 0;
                     boolean replacedVariable = false;
                     while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                        if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                        if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                             matchedArray.remove(matchedArray.get(i)); //               remove it
                         } else { // Otherwise, check if test works with any variables
-                            test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                            test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                             test.setContext(tempLine.getContext());
-                            if (antecedent.getLine().matches(test.getNonUniFirstArgRegEx())) { // If the firstArg of test matches
+                            if (antecedent.matchesNonUniRegEx(test, 1)) { // If the firstArg of test matches
                                 tempLine = test; //                                             make tempLine = test
                                 replacedVariable = true; // Escape from this while loop
                                 matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2593,12 +1830,12 @@ public class ProofObject {
                     int i = 0;
                     boolean replacedVariable = false;
                     while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                        if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                        if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                             matchedArray.remove(matchedArray.get(i)); //               remove it
                         } else { // Otherwise, check if test works with any variables
-                            test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                            test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                             test.setContext(tempLine.getContext());
-                            if (consequent.getLine().matches(test.getNonUniSecondArgRegEx())) { // If the firstArg of test matches
+                            if (consequent.matchesNonUniRegEx(test, 2)) { // If the firstArg of test matches
                                 tempLine = test; //                                             make tempLine = test
                                 replacedVariable = true; // Escape from this while loop
                                 matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2636,12 +1873,12 @@ public class ProofObject {
                 int i = 0;
                 boolean replacedVariable = false;
                 while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                    if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                    if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                         matchedArray.remove(matchedArray.get(i)); //               remove it
                     } else { // Otherwise, check if test works with any variables
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
-                        if (goal.getLine().matches(test.getNonUniSecondArgRegEx())) { // If the secondArg of test matches
+                        if (goal.matchesNonUniRegEx(test, 2)) { // If the secondArg of test matches
                             tempLine = test; //                                             make tempLine = test
                             replacedVariable = true; // Escape from this while loop
                             matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2675,12 +1912,12 @@ public class ProofObject {
                 int i = 0;
                 boolean replacedVariable = false;
                 while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                    if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                    if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                         matchedArray.remove(matchedArray.get(i)); //               remove it
                     } else { // Otherwise, check if test works with any variables
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
-                        if (goal.getLine().matches(test.getNonUniFirstArgRegEx())) { // If the secondArg of test matches
+                        if (goal.matchesNonUniRegEx(test, 1)) { // If the secondArg of test matches
                             tempLine = test; //                                             make tempLine = test
                             replacedVariable = true; // Escape from this while loop
                             matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2699,8 +1936,8 @@ public class ProofObject {
         
         for (int q = 0; q < possibleLines.size(); q++) {
             String lineAtQ = possibleLines.get(q).getLine();
-            String first = possibleLines.get(q).getFirstArg();
-            String second = possibleLines.get(q).getSecondArg();
+            String first = possibleLines.get(q).getArg(1);
+            String second = possibleLines.get(q).getArg(2);
             for (int r = q+1; r < possibleLines.size(); r++) {
                 NDLine lineR = possibleLines.get(r);
 //                System.out.println(lineR.getLine());
@@ -2708,7 +1945,7 @@ public class ProofObject {
                 if (lineR.getLine().equals(lineAtQ)) {
                     possibleLines.remove(r);
                     r--;
-                } else if (lineR.getFirstArg().equals(second) && lineR.getSecondArg().equals(first)) {
+                } else if (lineR.getArg(1).equals(second) && lineR.getArg(2).equals(first)) {
                     possibleLines.remove(r);
                     r--;
                 }
@@ -2769,7 +2006,7 @@ public class ProofObject {
     }
     
     private NDLine[] universalsIdBoxEquElim(NDLine goal, NDLine resource) {
-        if (!goal.getIsSameContextAs(resource)) {
+        if (!goal.hasSameContextAs(resource)) {
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -2779,8 +2016,8 @@ public class ProofObject {
         // 1. Find the unquantified expression //
         NDLine tempLine = new NDLine(5);
         // Find regular expressions for the arguments
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
-        String secondRegEx = resource.getNonUniSecondArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
+        String secondRegEx = resource.getNonQaSecondArgRegEx();
 
         // See if the antecedent or consequent is matched in the resources
         // Prepare for multiple matches
@@ -2819,12 +2056,12 @@ public class ProofObject {
             int i = 0;
             boolean replacedVariable = false;
             while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                     matchedArray.remove(matchedArray.get(i)); //               remove it
                 } else { // Otherwise, check if test works with any variables
-                    test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                    test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                     test.setContext(tempLine.getContext());
-                    if (otherIdBoxLine.matches(test.getNonUniFirstArgRegEx())) { // If the firstArg of test matches
+                    if (otherIdBoxLine.matches(test.getNonQaFirstArgRegEx())) { // If the firstArg of test matches
                         tempLine = test; //                                             make tempLine = test
                         replacedVariable = true; // Escape from this while loop
                         matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2856,12 +2093,12 @@ public class ProofObject {
             int i = 0;
             boolean replacedVariable = false;
             while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                     matchedArray.remove(matchedArray.get(i)); //               remove it
                 } else { // Otherwise, check if test works with any variables
-                    test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                    test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                     test.setContext(tempLine.getContext());
-                    if (otherIdBoxLine.matches(test.getNonUniSecondArgRegEx())) { // If the firstArg of test matches
+                    if (otherIdBoxLine.matches(test.getNonQaSecondArgRegEx())) { // If the firstArg of test matches
                         tempLine = test; //                                             make tempLine = test
                         replacedVariable = true; // Escape from this while loop
                         matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2895,12 +2132,12 @@ public class ProofObject {
                 int i = 0;
                 boolean replacedVariable = false;
                 while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                    if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                    if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                         matchedArray.remove(matchedArray.get(i)); //               remove it
                     } else { // Otherwise, check if test works with any variables
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
-                        if (goal.getLine().matches(test.getNonUniSecondArgRegEx())) { // If the secondArg of test matches
+                        if (goal.matchesNonUniRegEx(test, 2)) { // If the secondArg of test matches
                             tempLine = test; //                                             make tempLine = test
                             replacedVariable = true; // Escape from this while loop
                             matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2933,12 +2170,12 @@ public class ProofObject {
                 int i = 0;
                 boolean replacedVariable = false;
                 while (!replacedVariable && i < matchedArray.size()) { // Loop through every possible variable
-                    if (tempLine.getFirstArg().contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
+                    if (tempLine.getArg(1).contains(matchedArray.get(i))) { // If the variable isn't in the firstArg of tempLine
                         matchedArray.remove(matchedArray.get(i)); //               remove it
                     } else { // Otherwise, check if test works with any variables
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
-                        if (goal.getLine().matches(test.getNonUniFirstArgRegEx())) { // If the firstArg of test matches
+                        if (goal.matchesNonUniRegEx(test, 1)) { // If the firstArg of test matches
                             tempLine = test; //                                             make tempLine = test
                             replacedVariable = true; // Escape from this while loop
                             matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -2957,14 +2194,14 @@ public class ProofObject {
         
         for (int q = 0; q < possibleLines.size(); q++) {
             String lineAtQ = possibleLines.get(q).getLine();
-            String first = possibleLines.get(q).getFirstArg();
-            String second = possibleLines.get(q).getSecondArg();
+            String first = possibleLines.get(q).getArg(1);
+            String second = possibleLines.get(q).getArg(2);
             for (int r = q+1; r < possibleLines.size(); r++) {
                 NDLine lineR = possibleLines.get(r);
                 if (lineR.getLine().equals(lineAtQ)) {
                     possibleLines.remove(r);
                     r--;
-                } else if (lineR.getFirstArg().equals(second) && lineR.getSecondArg().equals(first)) {
+                } else if (lineR.getArg(1).equals(second) && lineR.getArg(2).equals(first)) {
                     possibleLines.remove(r);
                     r--;
                 }
@@ -3020,8 +2257,8 @@ public class ProofObject {
         return idBoxEquElim(goal, lineToUse);
     }
     
-    private NDLine[] universalsEqElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
-        if (!goal.getIsSameContextAs(resource)) {
+    private NDLine[] universalsEqElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException, WrongLineTypeException {
+        if (!goal.hasSameContextAs(resource)) {
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -3033,8 +2270,8 @@ public class ProofObject {
         int indexOfGoal = goal.indexIn(proofArray);
 //        System.out.println("indexOfGoal is " + indexOfGoal);
         
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
-        String secondRegEx = resource.getNonUniSecondArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
+        String secondRegEx = resource.getNonQaSecondArgRegEx();
         ArrayList<NDLine> possibleLines = new ArrayList<>();
         NDLine tempLine;
         
@@ -3054,7 +2291,7 @@ public class ProofObject {
         for (int k = indexOfGoal - 1; k > -1; k--) { // move from the current goal up
 //            System.out.println("looking at " + proofArray[k].getLine());
             if (goal.isInScopeOf(proofArray[k], proofArray) && proofArray[k].getLineNum() != resource.getLineNum() && proofArray[k].getType() != 11
-                    && resource.getIsSameContextAs(proofArray[k])) {
+                    && resource.hasSameContextAs(proofArray[k])) {
                 listOfTerms = getAllTermsIn(proofArray[k].getLine());
                 matchedArray = new ArrayList<>(); // Create an arrayList holding all the matching groups
                 while (!listOfTerms.isEmpty()) {
@@ -3084,10 +2321,10 @@ public class ProofObject {
                                                       // Remove the quantifier, substituting for matchedArray.get(i)
 //                        System.out.println("|| test with " + matchedArray.get(i) + " ||");
                         if (checkBracketBalance(matchedArray.get(i))) {
-                            test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                            test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                             test.setContext(tempLine.getContext());
     //                        System.out.println("     3. test is " + test.getLine());
-                            Matcher attempt = Pattern.compile(test.getNonUniFirstArgRegEx()).matcher(proofArray[k].getLine());
+                            Matcher attempt = Pattern.compile(test.getNonQaFirstArgRegEx()).matcher(proofArray[k].getLine());
                             if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
     //                            System.out.println("     found");
                                 if (!test.getMainOp().equals("qa")) {
@@ -3113,7 +2350,7 @@ public class ProofObject {
         
         for (int k = indexOfGoal - 1; k > -1; k--) {
             if (goal.isInScopeOf(proofArray[k], proofArray) && proofArray[k].getLineNum() != resource.getLineNum() && proofArray[k].getType() != 11
-                    && goal.getIsSameContextAs(resource)) {
+                    && goal.hasSameContextAs(resource)) {
                 listOfTerms = getAllTermsIn(proofArray[k].getLine());
                 matchedArray = new ArrayList<>(); // Create an arrayList holding all the matching groups
                 while (!listOfTerms.isEmpty()) {
@@ -3143,10 +2380,10 @@ public class ProofObject {
                                                       // Remove the quantifier, substituting for matchedArray.get(i)
 //                        System.out.println("|| test with " + matchedArray.get(i) + " ||");
                         if (checkBracketBalance(matchedArray.get(i))) {
-                            test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                            test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                             test.setContext(tempLine.getContext());
     //                        System.out.println("     3. test is " + test.getLine());
-                            Matcher attempt = Pattern.compile(test.getNonUniSecondArgRegEx()).matcher(proofArray[k].getLine());
+                            Matcher attempt = Pattern.compile(test.getNonQaSecondArgRegEx()).matcher(proofArray[k].getLine());
                             if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
     //                            System.out.println("     found");
                                 if (!test.getMainOp().equals("qa")) {
@@ -3166,7 +2403,7 @@ public class ProofObject {
         }
         
 
-        if (goal.getIsSameContextAs(resource)) {
+        if (goal.hasSameContextAs(resource)) {
             // Check for matches for firstRegEx in goal
     //        System.out.println(">> Check for matches for firstRegEx in goal <<");
     //        System.out.println("firstRegEx " + firstRegEx);
@@ -3200,10 +2437,10 @@ public class ProofObject {
                                                   // Remove the quantifier, substituting for matchedArray.get(i)
     //                System.out.println("|| test with " + matchedArray.get(i) + " ||");
                     if (checkBracketBalance(matchedArray.get(i))){
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
         //                System.out.println("     3. test is " + test.getLine());
-                        Matcher attempt = Pattern.compile(test.getNonUniFirstArgRegEx()).matcher(goal.getLine());
+                        Matcher attempt = Pattern.compile(test.getNonQaFirstArgRegEx()).matcher(goal.getLine());
                         if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
     //                        System.out.println("     found");
                             if (!test.getMainOp().equals("qa")) {
@@ -3253,10 +2490,10 @@ public class ProofObject {
                                                   // Remove the quantifier, substituting for matchedArray.get(i)
     //                System.out.println("|| test with " + matchedArray.get(i) + " ||");
                     if (checkBracketBalance(matchedArray.get(i))) {
-                        test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                        test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                         test.setContext(tempLine.getContext());
         //                System.out.println("     3. test is " + test.getLine());
-                        Matcher attempt = Pattern.compile(test.getNonUniSecondArgRegEx()).matcher(goal.getLine());
+                        Matcher attempt = Pattern.compile(test.getNonQaSecondArgRegEx()).matcher(goal.getLine());
                         if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
         //                    System.out.println("     found");
                             if (!test.getMainOp().equals("qa")) {
@@ -3277,8 +2514,8 @@ public class ProofObject {
         
         for (int q = 0; q < possibleLines.size(); q++) {
             String lineAtQ = possibleLines.get(q).getLine();
-            String first = possibleLines.get(q).getFirstArg();
-            String second = possibleLines.get(q).getSecondArg();
+            String first = possibleLines.get(q).getArg(1);
+            String second = possibleLines.get(q).getArg(2);
             for (int r = q+1; r < possibleLines.size(); r++) {
                 NDLine lineR = possibleLines.get(r);
 //                System.out.println("== Match? ==");
@@ -3287,7 +2524,7 @@ public class ProofObject {
                 if (lineR.getLine().equals(lineAtQ)) {
                     possibleLines.remove(r);
                     r--;
-                } else if (lineR.getFirstArg().equals(second) && lineR.getSecondArg().equals(first)) {
+                } else if (lineR.getArg(1).equals(second) && lineR.getArg(2).equals(first)) {
                     possibleLines.remove(r);
                     r--;
                 }
@@ -3352,7 +2589,7 @@ public class ProofObject {
     }
     
     private NDLine[] universalsIdBoxEqElim(NDLine goal, NDLine resource) { // NOTE: THE STRATEGY USED IN THIS METHOD COULD BE CRAP
-        if (!goal.getIsSameContextAs(resource)) {
+        if (!goal.hasSameContextAs(resource)) {
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -3374,8 +2611,8 @@ public class ProofObject {
 ////            indexOfBlank = indexOfGoal + 1;
 //        }
         
-        String firstRegEx = resource.getNonUniFirstArgRegEx();
-        String secondRegEx = resource.getNonUniSecondArgRegEx();
+        String firstRegEx = resource.getNonQaFirstArgRegEx();
+        String secondRegEx = resource.getNonQaSecondArgRegEx();
         ArrayList<NDLine> possibleLines = new ArrayList<>();
         NDLine tempLine;
         
@@ -3407,9 +2644,9 @@ public class ProofObject {
 //            NDLine test = new NDLine(5);
 //            int i = 0;
 //            while (i < matchedArray.size()) { // Loop through every possible variable
-//                test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+//                test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
 //                System.out.println("test is " + test.getLine());
-//                Matcher attempt = Pattern.compile(test.getNonUniFirstArgRegEx()).matcher(otherIdBoxLine);
+//                Matcher attempt = Pattern.compile(test.getNonQaFirstArgRegEx()).matcher(otherIdBoxLine);
 //                if (attempt.find()) { // If the firstArg of test matches something in otherIdBoxLine
 //                    tempLine = test; //                                             make tempLine = test
 //                    matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -3449,9 +2686,9 @@ public class ProofObject {
 //            NDLine test = new NDLine(5);
 //            int i = 0;
 //            while (i < matchedArray.size()) { // Loop through every possible variable
-//                test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+//                test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
 //                System.out.println("test is " + test.getLine());
-//                Matcher attempt = Pattern.compile(test.getNonUniSecondArgRegEx()).matcher(otherIdBoxLine);
+//                Matcher attempt = Pattern.compile(test.getNonQaSecondArgRegEx()).matcher(otherIdBoxLine);
 //                if (attempt.find()) { // If the firstArg of test matches something in otherIdBoxLine
 //                    tempLine = test; //                                             make tempLine = test
 //                    matchedArray.remove(matchedArray.get(i)); // remove this variable
@@ -3503,10 +2740,10 @@ public class ProofObject {
                                               // Remove the quantifier, substituting for matchedArray.get(i)
 //                System.out.println("|| test with " + matchedArray.get(i) + " ||");
                 if (checkBracketBalance(matchedArray.get(i))) { // If the brackets balance
-                    test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                    test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                     test.setContext(tempLine.getContext());
 //                    System.out.println("     3. test is " + test.getLine());
-                    Matcher attempt = Pattern.compile(test.getNonUniFirstArgRegEx()).matcher(goal.getLine());
+                    Matcher attempt = Pattern.compile(test.getNonQaFirstArgRegEx()).matcher(goal.getLine());
                     if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
 //                        System.out.println("     found");
                         if (!test.getMainOp().equals("qa")) {
@@ -3557,10 +2794,10 @@ public class ProofObject {
                                               // Remove the quantifier, substituting for matchedArray.get(i)
 //                System.out.println("|| test with " + matchedArray.get(i) + " ||");
                 if (checkBracketBalance(matchedArray.get(i))) {
-                    test = new NDLine(tempLine.replace(tempLine.getSecondArg(), tempLine.getFirstArg(), matchedArray.get(i)), false);
+                    test = new NDLine(tempLine.replace(tempLine.getArg(2), tempLine.getArg(1), matchedArray.get(i)), false);
                     test.setContext(tempLine.getContext());
     //                System.out.println("     3. test is " + test.getLine());
-                    Matcher attempt = Pattern.compile(test.getNonUniSecondArgRegEx()).matcher(goal.getLine());
+                    Matcher attempt = Pattern.compile(test.getNonQaSecondArgRegEx()).matcher(goal.getLine());
                     if (attempt.find()) { // If the firstArg of test matches something in goal.getLine(), i.e. if using that term here is correct 
     //                    System.out.println("     found");
                         if (!test.getMainOp().equals("qa")) {
@@ -3579,8 +2816,8 @@ public class ProofObject {
         
         for (int q = 0; q < possibleLines.size(); q++) {
             String lineAtQ = possibleLines.get(q).getLine();
-            String first = possibleLines.get(q).getFirstArg();
-            String second = possibleLines.get(q).getSecondArg();
+            String first = possibleLines.get(q).getArg(1);
+            String second = possibleLines.get(q).getArg(2);
             for (int r = q+1; r < possibleLines.size(); r++) {
                 NDLine lineR = possibleLines.get(r);
 //                System.out.println("== Match? ==");
@@ -3589,7 +2826,7 @@ public class ProofObject {
                 if (lineR.getLine().equals(lineAtQ)) {
                     possibleLines.remove(r);
                     r--;
-                } else if (lineR.getFirstArg().equals(second) && lineR.getSecondArg().equals(first)) {
+                } else if (lineR.getArg(1).equals(second) && lineR.getArg(2).equals(first)) {
                     possibleLines.remove(r);
                     r--;
                 }
@@ -3674,7 +2911,7 @@ public class ProofObject {
                 scopes++;
             }
             if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)
-                    && goal.getIsSameContextAs(proofArray[indexOfGoal-i])) { // Check line against what we want, but ignore if scopes>0
+                    && goal.hasSameContextAs(proofArray[indexOfGoal-i])) { // Check line against what we want, but ignore if scopes>0
                 indexesOfWant.add(indexOfGoal - i);
             }
             if (proofArray[indexOfGoal - i].getType() == 1 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit a start-of-ass line, decrease scopes count
@@ -3721,7 +2958,7 @@ public class ProofObject {
                 scopes++;
             }
             if (scopes == 0 && proofArray[indexOfGoal - i].getLine().matches(regEx)
-                    && resource.getIsSameContextAs(proofArray[indexOfGoal-i])) { // Check line against what we want, but ignore if scopes>0
+                    && resource.hasSameContextAs(proofArray[indexOfGoal-i])) { // Check line against what we want, but ignore if scopes>0
                 indexesOfWant.add(indexOfGoal - i);
             }
             if (proofArray[indexOfGoal - i].getType() == 1 || proofArray[indexOfGoal - i].getType() == 3) { // If we hit a start-of-ass line, decrease scopes count
@@ -3764,41 +3001,19 @@ public class ProofObject {
      * @return The resulting proofArray.
      */
         
-    public NDLine[] doubleNegation(NDLine goal, NDLine resource) {
-
-        
-        NDLine dNJustLine = checkForNDLine(findRegEx("", "\\neg{\\neg{" + goal.getLine() + "}}"), goal);
-        if (dNJustLine != null) {
-            goal.setJustification(new JustSingle(JustSingle.DN_ELIM, dNJustLine));
-            Globals.currentGoalIndex = -1;
-        } else {
-
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine[] temp = new NDLine[proofArray.length + 1];
-
-            int k = 0;
-
-            for (int i = 0; i < indexOfBlank + 1; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-
-            temp[k] = new NDLine("\\neg{\\neg{" + goal.getLine() + "}}");
-            temp[k].setContext(getGoalContext(goal, resource));
-            dNJustLine = temp[k];
-            Globals.currentGoalIndex = k;
-            k++;
-
-            for (int i = indexOfBlank + 1; i < proofArray.length; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-
-            proofArray = temp;
-            goal.setJustification(new JustSingle(JustSingle.DN_ELIM, dNJustLine)); 
+    public NDLine[] doubleNegation(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+        NDLine dNJustLine = currentProof.checkForNDLine(findRegEx("", "\\neg{\\neg{" + goal.getLine() + "}}"), goal);
+        if (dNJustLine == null) {
+            dNJustLine = new NDLine("\\neg{\\neg{" + goal.getLine() + "}}");
+            dNJustLine.setSameContextAs(goal);
+            currentProof.addNDLineGoal(dNJustLine, goal);
         }
-        collapseBlanks();
+        currentProof.justifyLine(goal,
+                    new JustSingle(JustSingle.DN_ELIM, dNJustLine));
+        
+        Globals.currentGoalIndex = -1;
+        
+        proofArray = currentProof.getProofArray();
         
         Globals.rulesUsed.add("doubleNegation");
         return proofArray;
@@ -3811,54 +3026,35 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      */
         
-    public NDLine[] eqIntro(NDLine goal, NDLine resource) {
-        if (goal.getFirstArg().equals(goal.getSecondArg())) { // If the first arg is the second arg, justify
-            goal.setJustification(new JustNone(JustNone.EQ_INTRO));
-            Globals.currentGoalIndex = -1;
-            Globals.rulesUsed.add("eqIntro");
-        } else if (Globals.allowedRules.get("eqIdentityBoxes")) { // Otherwise, if we're using identity boxes
-            int indexOfGoal = goal.indexIn(proofArray);
-            int indexOfBlank = findIndexOfBlank(indexOfGoal);
-            NDLine idStart;
+    public NDLine[] eqIntro(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+        if (goal.getArg(1).equals(goal.getArg(2))) { 
+            // If the first arg is the second arg, justify
+            currentProof.justifyLine(goal,
+                    new JustNone(JustNone.EQ_INTRO));
+        } else if (Globals.allowedRules.get("eqIdentityBoxes")) { 
+            // Otherwise, if we're using identity boxes
+            NDLine idStart = new NDLine(goal.getArg(1), NDLine.ID_BOX_START);
+            idStart.setSameContextAs(goal);
+            currentProof.addNDLineResource(idStart, goal);
             
-            NDLine[] temp = new NDLine[proofArray.length + 2];
+            NDLine idEnd = new NDLine(goal.getArg(2), NDLine.ID_BOX_END);
+            idEnd.setSameContextAs(goal);
+            currentProof.addNDLineGoal(idEnd, goal);
             
-            int k = 0;
-            for (int i = 0; i < indexOfBlank; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-            
-            temp[k] = new NDLine(goal.getFirstArg(), NDLine.ID_BOX_START);
-            temp[k].setContext(getGoalContext(goal, resource));
-            idStart = temp[k];
-            k++;
-            
-            temp[k] = proofArray[indexOfBlank];
-            k++;
-            
-            temp[k] = new NDLine(goal.getSecondArg(), NDLine.ID_BOX_END);
-            temp[k].setContext(getGoalContext(goal, resource));
-            Globals.currentGoalIndex = k;
-            k++;
-            
-            for (int i = indexOfBlank + 1; i < proofArray.length; i++) {
-                temp[k] = proofArray[i];
-                k++;
-            }
-            
-            goal.setJustification(new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
-            
-            proofArray = temp;
-//            Globals.rulesUsed.add("idBoxEqIntro");
-            Globals.rulesUsed.add("eqIntro");
+            currentProof.justifyLine(goal,
+                    new JustSingle(JustSingle.ID_BOX_INTRO, idStart));
         } else {
             magicMode = false;
         }
         
-        collapseBlanks();
+        proofArray = currentProof.getProofArray();
+        
+        Globals.currentGoalIndex = -1;
+        Globals.rulesUsed.add("eqIntro");
+        
         return proofArray;
     }
     
@@ -3868,7 +3064,8 @@ public class ProofObject {
      * @param resource the current resource
      * @return The resulting proofArray.
      */
-    public NDLine[] eqElim(NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    public NDLine[] eqElim(NDLine goal, NDLine resource) 
+            throws LineNotInProofArrayException, WrongLineTypeException {
 //        System.out.println("EQElim");
         if (resource.getMainOp().equals("qa")) {
             Globals.rulesUsed.add("eqElim");
@@ -3876,8 +3073,8 @@ public class ProofObject {
         }
         
         int indexOfGoal = goal.indexIn(proofArray);
-        String leftSide = resource.getFirstArg();
-        String rightSide = resource.getSecondArg();
+        String leftSide = resource.getArg(1);
+        String rightSide = resource.getArg(2);
         
         
         String leftSideParse = resource.parseFirstArg();
@@ -3889,7 +3086,7 @@ public class ProofObject {
             JOptionPane.showMessageDialog(Globals.frame, "This rule is not applicable!");
             return proofArray;
         }
-        if (!goal.getIsSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
+        if (!goal.hasSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -3958,7 +3155,7 @@ public class ProofObject {
             if (goLtR) {
                 if (goal.getLine().indexOf(leftSide) == goal.getLine().lastIndexOf(leftSide)) { // If there's only one instance of leftSide in goal
                     temp[k] = new NDLine(goal.replace(goal.getLine(), leftSide, rightSide));
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
 //                    System.out.println("Goal: " + goal.getLine());
 //                    System.out.println("Replace " + leftSide + " with " + rightSide);
 //                    System.out.println("Result: " + temp[k].getLine());
@@ -3986,13 +3183,13 @@ public class ProofObject {
                     }
                     if (!foundIt) {
                         temp[k] = new NDLine(replacement);
-                        temp[k].setContext(getGoalContext(goal, resource));
+                        temp[k].setSameContextAs(goal);
                     }
                 }
             } else {
                 if (goal.getLine().indexOf(rightSide) == goal.getLine().lastIndexOf(rightSide)) { // If there's only one instance of leftSide in goal
                     temp[k] = new NDLine(goal.replace(goal.getLine(), rightSide, leftSide));
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
                 } else { //                                                                     // Otherwise, ask the user which instance(s) to replace
                     magicMode = false;
                     
@@ -4015,7 +3212,7 @@ public class ProofObject {
                     }
                     if (!foundIt) {
                         temp[k] = new NDLine(replacement);
-                        temp[k].setContext(getGoalContext(goal, resource));
+                        temp[k].setSameContextAs(goal);
                     }
                 }
             }
@@ -4065,8 +3262,8 @@ public class ProofObject {
             indexOfBlank = indexOfGoal + 1;
         }
         
-        String leftSide = resource.getFirstArg();
-        String rightSide = resource.getSecondArg();
+        String leftSide = resource.getArg(1);
+        String rightSide = resource.getArg(2);
         
         String leftSideParse = resource.parseFirstArg();
         String rightSideParse = resource.parseSecondArg();
@@ -4083,7 +3280,7 @@ public class ProofObject {
             JOptionPane.showMessageDialog(Globals.frame, "This rule does not apply!");
             return proofArray;
         }
-        if (!goal.getIsSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
+        if (!goal.hasSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -4168,10 +3365,10 @@ public class ProofObject {
             if (goLtR) {
                 
                 temp[k] = new NDLine(subLtR, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             } else {
                 temp[k] = new NDLine(subRtL, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             }
             Globals.currentGoalIndex = k;
             goal.setJustification(just);
@@ -4179,10 +3376,10 @@ public class ProofObject {
         } else {
             if (goLtR) {
                 temp[k] = new NDLine(subLtR, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             } else {
                 temp[k] = new NDLine(subRtL, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             }
             temp[k].setJustification(just);
             Globals.currentGoalIndex = k;
@@ -4215,7 +3412,7 @@ public class ProofObject {
             Globals.rulesUsed.add("equElim");
             return universalsIdBoxEquElim(goal, resource);
         }
-        if (!goal.getIsSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
+        if (!goal.hasSameContextAs(resource)) { // If the identity elimination doesn't apply at all, return the proof array
             magicMode = false; // turn off magic mode
             Globals.reverseUndo = true;
             JOptionPane.showMessageDialog(Globals.frame, "These lines have different contexts!");
@@ -4237,8 +3434,8 @@ public class ProofObject {
             indexOfBlank = indexOfGoal + 1;
         }
         
-        String leftSide = resource.getFirstArg();
-        String rightSide = resource.getSecondArg();
+        String leftSide = resource.getArg(1);
+        String rightSide = resource.getArg(2);
         NDJust just = new JustSingle(JustSingle.EQU_ELIM_S, resource);
         
         if ((goal.getLine().equals(leftSide) && otherIdBoxLine.equals(rightSide)) || (goal.getLine().equals(rightSide) && otherIdBoxLine.equals(leftSide))){ // If this equivalence will solve the identity box
@@ -4264,14 +3461,14 @@ public class ProofObject {
                 temp[k] = proofArray[indexOfBlank];
                 k++;
                 
-                temp[k] = new NDLine(resource.getSecondArg(), 8);
-                temp[k].setContext(getResourceContext(goal, resource));
+                temp[k] = new NDLine(resource.getArg(2), 8);
+                temp[k].setSameContextAs(resource);
                 Globals.currentGoalIndex = k;
                 goal.setJustification(just);
                 k++;
             } else {
-                temp[k] = new NDLine(resource.getSecondArg(), 8);
-                temp[k].setContext(getResourceContext(goal, resource));
+                temp[k] = new NDLine(resource.getArg(2), 8);
+                temp[k].setSameContextAs(resource);
                 Globals.currentGoalIndex = k;
                 temp[k].setJustification(just);
                 k++;
@@ -4304,14 +3501,14 @@ public class ProofObject {
                 temp[k] = proofArray[indexOfBlank];
                 k++;
                 
-                temp[k] = new NDLine(resource.getFirstArg(), 8);
-                temp[k].setContext(getResourceContext(goal, resource));
+                temp[k] = new NDLine(resource.getArg(1), 8);
+                temp[k].setSameContextAs(resource);
                 Globals.currentGoalIndex = k;
                 goal.setJustification(just);
                 k++;
             } else {
-                temp[k] = new NDLine(resource.getFirstArg(), 8);
-                temp[k].setContext(getResourceContext(goal, resource));
+                temp[k] = new NDLine(resource.getArg(1), 8);
+                temp[k].setSameContextAs(resource);
                 Globals.currentGoalIndex = k;
                 temp[k].setJustification(just);
                 k++;
@@ -4348,53 +3545,31 @@ public class ProofObject {
      * @param goal the current goal
      * @param resource the current resource
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      */
         
-    public NDLine[] induction(NDLine goal, NDLine resource) { // Used with a universally quantified goal. Resource is ignored, and is argument for uniformity
-        String term = Globals.terms.getNewTerm();
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
+    public NDLine[] induction(NDLine goal, NDLine resource) throws LineNotInProofArrayException { // Used with a universally quantified goal. Resource is ignored, and is argument for uniformity
+        String term = Globals.terms.getNewTerm();    
         
-        NDLine zeroLine;
-        NDLine assStartLine;
-        NDLine assEndLine;
+        NDLine zeroLine = new NDLine(NDLine.replace(goal.getArg(2), goal.getArg(1), "0"));
+        zeroLine.setSameContextAs(goal);
+        currentProof.addNDLineGoal(zeroLine, goal);
         
-        NDLine[] temp = new NDLine[proofArray.length + 4];
-        int k = 0;
+        NDLine assStartLine = new NDLine(NDLine.replace(goal.getArg(2), goal.getArg(1), term), 1);
+        assStartLine.setSameContextAs(goal);
+        currentProof.addNDLineResource(assStartLine, goal);
         
-        for (int i = 0; i <= indexOfBlank; i++) {
-            temp[k] = proofArray[i];
-            k++;
-        }
+        NDLine assEndLine = new NDLine(NDLine.replace(goal.getArg(2), goal.getArg(1), "S" + term), 2);
+        assEndLine.setSameContextAs(goal);
+        currentProof.addNDLineGoal(assEndLine, goal);
         
-        temp[k] = new NDLine(goal.replace(goal.getSecondArg(), goal.getFirstArg(), "0"));
-        temp[k].setContext(getGoalContext(goal, resource));
-        zeroLine = temp[k];
-        Globals.currentGoalIndex = k;
-        k++;
+        currentProof.justifyLine(goal,
+                new JustInduction(zeroLine, assStartLine, assEndLine));
         
-        temp[k] = new NDLine(goal.replace(goal.getSecondArg(), goal.getFirstArg(), term), 1);
-        temp[k].setContext(getGoalContext(goal, resource));
-        assStartLine = temp[k];
-        k++;
+        proofArray = currentProof.getProofArray();
         
-        temp[k] = proofArray[indexOfBlank];
-        k++;
+        Globals.currentGoalIndex = -1;
         
-        temp[k] = new NDLine(goal.replace(goal.getSecondArg(), goal.getFirstArg(), "S" + term), 2);
-        temp[k].setContext(getGoalContext(goal, resource));
-        assEndLine = temp[k];
-        k++;
-        
-        for (int i = indexOfBlank + 1; i < proofArray.length; i++) {
-            temp[k] = proofArray[i];
-            k++;
-        }
-        
-        goal.setJustification(new JustInduction(zeroLine, assStartLine, assEndLine));
-        
-        proofArray = temp;
-        collapseBlanks();
         Globals.rulesUsed.add("induction");
         return proofArray;
     }
@@ -4409,37 +3584,10 @@ public class ProofObject {
      */
         
     public NDLine[] cut(NDLine goal, String newLine) {
-        int indexOfGoal = goal.indexIn(proofArray);
-        int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        NDLine toInsert = new NDLine(newLine);
+        currentProof.addNDLineGoal(new NDLine(newLine), goal);
         
-        NDLine[] temp = new NDLine[proofArray.length + 2];
-        
-        if (goal.getType() > 6 && goal.getType() < 11) {
-            indexOfBlank = findTopOfIdBox(indexOfGoal);
-        }
-        
-        int k = 0;
-        for (int i = 0; i < indexOfBlank; i++) {
-            temp[k] = proofArray[i];
-            k++;
-        }
-        
-        temp[k] = new NDLine(5);
-        k++;
-        
-        temp[k] = toInsert;
-        k++;
-        
-        for (int i = indexOfBlank; i < proofArray.length; i++) {
-//            System.out.println("k " + k);
-//            System.out.println("temp.length " + temp.length);
-            temp[k] = proofArray[i];
-            k++;
-        }
-//        System.out.println("temp.length " + temp.length);
-        proofArray = temp;
-        Globals.currentGoalIndex = goal.indexIn(proofArray);
+        proofArray = currentProof.getProofArray();
+        Globals.currentGoalIndex = -1;
         Globals.rulesUsed.add("cut");
         return proofArray;
     }
@@ -4487,7 +3635,7 @@ public class ProofObject {
             k++;
         }
         
-        temp[k] = new NDLine(goal.getFirstArg() + term, 1);
+        temp[k] = new NDLine(goal.getArg(1) + term, 1);
         temp[k].setContext(goal.getContext());
         assStart = temp[k];
         Globals.currentResourceIndex = k;
@@ -4496,7 +3644,7 @@ public class ProofObject {
         temp[k] = proofArray[indexOfBlank];
         k++;
         
-        temp[k] = new NDLine(goal.getSecondArg(), 2);
+        temp[k] = new NDLine(goal.getArg(2), 2);
         temp[k].setContext(term);
         assEnd = temp[k];
         Globals.currentGoalIndex = k;
@@ -4529,7 +3677,7 @@ public class ProofObject {
             return proofArray;
         }
         String term;
-        if (goal.getLine().equals(resource.getSecondArg())) {
+        if (goal.equalsArgOf(resource, 2)) {
             term = goal.getContext();
         } else {
             magicMode = false;
@@ -4543,12 +3691,12 @@ public class ProofObject {
         
         int indexOfGoal = goal.indexIn(proofArray);
         int indexOfBlank = findIndexOfBlank(indexOfGoal);
-        NDLine antecedentLine = checkForNDLine(findRegEx("",resource.getFirstArg() + "(" + term + ")"), goal, resource.getContext());
+        NDLine antecedentLine = checkForNDLine(findRegEx("",resource.getArg(1) + "(" + term + ")"), goal, resource.getContext());
         
         
         if (antecedentLine != null) {
             NDJust just = new JustBoxElim(resource, antecedentLine);
-            if (goal.getLine().equals(resource.getSecondArg()) && goal.getContext().equals(term)) {
+            if (goal.equalsArgOf(resource, 2) && goal.getContext().equals(term)) {
                 goal.setJustification(just);
                 Globals.currentGoalIndex = -1;
             } else {
@@ -4560,7 +3708,7 @@ public class ProofObject {
                     k++;
                 }
                 
-                temp[k] = new NDLine(resource.getSecondArg());
+                temp[k] = new NDLine(resource.getArg(2));
                 temp[k].setContext(term);
                 temp[k].setJustification(just);
                 Globals.currentResourceIndex = k;
@@ -4576,7 +3724,7 @@ public class ProofObject {
                 
             }
         } else {
-            if (goal.getLine().equals(resource.getSecondArg()) && goal.getContext().equals(term)) {
+            if (goal.equalsArgOf(resource, 2) && goal.getContext().equals(term)) {
                 NDLine[] temp = new NDLine[proofArray.length + 1];
                 int k = 0;
                 
@@ -4585,7 +3733,7 @@ public class ProofObject {
                     k++;
                 }
                 
-                temp[k] = new NDLine(resource.getFirstArg() + term);
+                temp[k] = new NDLine(resource.getArg(1) + term);
                 temp[k].setContext(resource.getContext());
                 antecedentLine = temp[k];
                 Globals.currentGoalIndex = k;
@@ -4609,14 +3757,14 @@ public class ProofObject {
                     k++;
                 }
                 
-                temp[k] = new NDLine(resource.getFirstArg() + term);
+                temp[k] = new NDLine(resource.getArg(1) + term);
                 temp[k].setContext(resource.getContext());
                 antecedentLine = temp[k];
                 Globals.currentGoalIndex = k;
                 k++;
                 NDJust just = new JustBoxElim(resource, antecedentLine);
                 
-                temp[k] = new NDLine(resource.getSecondArg());
+                temp[k] = new NDLine(resource.getArg(2));
                 temp[k].setContext(term);
                 temp[k].setJustification(just);
                 Globals.currentResourceIndex = k;
@@ -4644,13 +3792,13 @@ public class ProofObject {
      * @return The resulting proofArray.
      */
     public NDLine[] diaIntro(NDLine goal, NDLine resource) {
-        ArrayList<Integer> matchingPredLines = checkForAllMatching(goal.getFirstArg() + "(\\([\\w\\(\\)]+\\))", goal);
-        ArrayList<Integer> matchingPropLines = checkForAllMatchingIgnoreContext(goal.getNonUniSecondArgRegEx(), goal);
+        ArrayList<Integer> matchingPredLines = checkForAllMatching(goal.getArg(1) + "(\\([\\w\\(\\)]+\\))", goal);
+        ArrayList<Integer> matchingPropLines = checkForAllMatchingIgnoreContext(goal.getNonQaSecondArgRegEx(), goal);
         
         NDLine matchingPredLine = null;
         NDLine matchingPropLine = null;
         
-        Pattern pattern = Pattern.compile(goal.getFirstArg() + "(\\([\\w\\(\\)]+\\))");
+        Pattern pattern = Pattern.compile(goal.getArg(1) + "(\\([\\w\\(\\)]+\\))");
         
         for (int i = 0; i < matchingPredLines.size() && matchingPredLine == null; i++) {
 //            System.out.println(pattern.pattern());
@@ -4677,8 +3825,8 @@ public class ProofObject {
                 return proofArray;
             }
             
-            matchingPredLine = checkForNDLine(findRegEx("", goal.getFirstArg() + "(" + term + ")"), goal, goal.getContext());
-            matchingPropLine = checkForNDLine(findRegEx("", goal.getSecondArg()), goal, term);
+            matchingPredLine = checkForNDLine(findRegEx("", goal.getArg(1) + "(" + term + ")"), goal, goal.getContext());
+            matchingPropLine = checkForNDLine(findRegEx("", goal.getArg(2)), goal, term);
 //            System.out.println(matchingPredLineNum);
 //            System.out.println(matchingPropLineNum);
             
@@ -4694,7 +3842,7 @@ public class ProofObject {
                 }
 
                 if (Globals.reverse2PremIntro) {
-                    temp[k] = new NDLine(goal.getSecondArg());
+                    temp[k] = new NDLine(goal.getArg(2));
                     temp[k].setContext(term);
                     matchingPropLine = temp[k];
                     k++;
@@ -4703,7 +3851,7 @@ public class ProofObject {
                     k++;
                 }
 
-                temp[k] = new NDLine(goal.getFirstArg() + term);
+                temp[k] = new NDLine(goal.getArg(1) + term);
                 temp[k].setContext(goal.getContext());
                 matchingPredLine = temp[k];
                 k++;
@@ -4712,7 +3860,7 @@ public class ProofObject {
                     temp[k] = new NDLine(5);
                     k++;
 
-                    temp[k] = new NDLine(goal.getSecondArg());
+                    temp[k] = new NDLine(goal.getArg(2));
                     temp[k].setContext(term);
                     matchingPropLine = temp[k];
                     k++;
@@ -4735,7 +3883,7 @@ public class ProofObject {
                     k++;
                 }
 
-                temp[k] = new NDLine(goal.getFirstArg() + term);
+                temp[k] = new NDLine(goal.getArg(1) + term);
                 temp[k].setContext(goal.getContext());
                 matchingPredLine = temp[k];
                 Globals.currentGoalIndex = k;
@@ -4757,7 +3905,7 @@ public class ProofObject {
                     k++;
                 }
 
-                temp[k] = new NDLine(goal.getSecondArg());
+                temp[k] = new NDLine(goal.getArg(2));
                 temp[k].setContext(term);
                 matchingPropLine = temp[k];
                 Globals.currentGoalIndex = k;
@@ -4828,12 +3976,12 @@ public class ProofObject {
             k++;
         }
         
-        temp[k] = new NDLine(resource.getFirstArg() + term, 1);
+        temp[k] = new NDLine(resource.getArg(1) + term, 1);
         temp[k].setContext(resource.getContext());
         assStart1 = temp[k];
         k++;
         
-        temp[k] = new NDLine(resource.getSecondArg());
+        temp[k] = new NDLine(resource.getArg(2));
         temp[k].setJustification(new JustNone(JustNone.ASS_JUST));
         temp[k].setContext(term);
         assStart2 = temp[k];
@@ -4869,7 +4017,7 @@ public class ProofObject {
      * @return The resulting proofArray.
      */
     public NDLine[] atIntro(NDLine goal, NDLine resource) {
-        NDLine prop = checkForNDLine(findRegEx("",goal.getSecondArg()), goal, goal.getFirstArg());
+        NDLine prop = checkForNDLine(findRegEx("",goal.getArg(2)), goal, goal.getArg(1));
         
         if (prop != null) {
             NDJust just = new JustSingle(JustSingle.AT_INTRO, prop);
@@ -4886,8 +4034,8 @@ public class ProofObject {
                 k++;
             }
             
-            temp[k] = new NDLine(goal.getSecondArg());
-            temp[k].setContext(goal.getFirstArg());
+            temp[k] = new NDLine(goal.getArg(2));
+            temp[k].setContext(goal.getArg(1));
             NDJust just = new JustSingle(JustSingle.AT_INTRO, temp[k]);
             goal.setJustification(just);
             Globals.currentGoalIndex = k;
@@ -4913,8 +4061,8 @@ public class ProofObject {
      */
     public NDLine[] atElim(NDLine goal, NDLine resource) {
         NDJust just = new JustSingle(JustSingle.AT_ELIM, resource);
-        if (goal.getContext().equals(resource.getFirstArg())
-                && goal.getLine().equals(resource.getSecondArg())) {
+        if (goal.getContext().equals(resource.getArg(1))
+                && goal.equalsArgOf(resource, 2)) {
             goal.setJustification(just);
             Globals.currentGoalIndex = -1;
         } else {
@@ -4928,9 +4076,9 @@ public class ProofObject {
                 k++;
             }
             
-            temp[k] = new NDLine(resource.getSecondArg());
+            temp[k] = new NDLine(resource.getArg(2));
             temp[k].setJustification(just);
-            temp[k].setContext(resource.getFirstArg());
+            temp[k].setContext(resource.getArg(1));
             Globals.currentResourceIndex = k;
             k++;
             
@@ -4977,7 +4125,7 @@ public class ProofObject {
             }
             
             temp[k] = new NDLine(goal.getContext(), 7);
-            temp[k].setContext(getGoalContext(goal, resource));
+            temp[k].setSameContextAs(goal);
             idStart = temp[k];
             k++;
             
@@ -4985,7 +4133,7 @@ public class ProofObject {
             k++;
             
             temp[k] = new NDLine(goal.getLine(), 9);
-            temp[k].setContext(getGoalContext(goal, resource));
+            temp[k].setSameContextAs(goal);
             Globals.currentGoalIndex = k;
             k++;
             
@@ -5026,8 +4174,8 @@ public class ProofObject {
         eqLine.setContext("");
         eqLine.setLineNum(resource.getLineNum());
         eqLine.setSpecialLineNum(resource.getSpecialNum());
-        String leftSide = eqLine.getFirstArg();
-        String rightSide = eqLine.getSecondArg();
+        String leftSide = eqLine.getArg(1);
+        String rightSide = eqLine.getArg(2);
         
         String leftSideParse = eqLine.parseFirstArg();
         String rightSideParse = eqLine.parseSecondArg();
@@ -5098,7 +4246,7 @@ public class ProofObject {
             if (goLtR) {
                 if (goal.getLine().indexOf(leftSide) == goal.getLine().lastIndexOf(leftSide)) { // If there's only one instance of leftSide in goal
                     temp[k] = new NDLine(goal.replace(goal.getLine(), leftSide, rightSide));
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
 //                    System.out.println("Goal: " + goal.getLine());
 //                    System.out.println("Replace " + leftSide + " with " + rightSide);
 //                    System.out.println("Result: " + temp[k].getLine());
@@ -5114,12 +4262,12 @@ public class ProofObject {
                         return proofArray;
                     }
                     temp[k] = new NDLine(replacement);
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
                 }
             } else {
                 if (goal.getLine().indexOf(rightSide) == goal.getLine().lastIndexOf(rightSide)) { // If there's only one instance of leftSide in goal
                     temp[k] = new NDLine(goal.replace(goal.getLine(), rightSide, leftSide));
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
                 } else { //                                                                     // Otherwise, ask the user which instance(s) to replace
                     magicMode = false;
                     
@@ -5129,7 +4277,7 @@ public class ProofObject {
                         return proofArray;
                     }
                     temp[k] = new NDLine(replacement);
-                    temp[k].setContext(getGoalContext(goal, resource));
+                    temp[k].setSameContextAs(goal);
                 }
             }
             goal.setJustification(new JustDouble(JustDouble.NOM_ELIM, resource, temp[k]));
@@ -5181,8 +4329,8 @@ public class ProofObject {
         eqLine.setLineNum(resource.getLineNum());
         eqLine.setSpecialLineNum(resource.getSpecialNum());
         
-        String leftSide = eqLine.getFirstArg();
-        String rightSide = eqLine.getSecondArg();
+        String leftSide = eqLine.getArg(1);
+        String rightSide = eqLine.getArg(2);
         
         String leftSideParse = eqLine.parseFirstArg();
         String rightSideParse = eqLine.parseSecondArg();
@@ -5278,10 +4426,10 @@ public class ProofObject {
             if (goLtR) {
                 
                 temp[k] = new NDLine(subLtR, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             } else {
                 temp[k] = new NDLine(subRtL, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             }
             Globals.currentGoalIndex = k;
             goal.setJustification(just);
@@ -5289,10 +4437,10 @@ public class ProofObject {
         } else {
             if (goLtR) {
                 temp[k] = new NDLine(subLtR, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             } else {
                 temp[k] = new NDLine(subRtL, 8);
-                temp[k].setContext(getGoalContext(goal, resource));
+                temp[k].setSameContextAs(goal);
             }
             temp[k].setJustification(just);
             Globals.currentGoalIndex = k;
@@ -5323,7 +4471,7 @@ public class ProofObject {
         int indexOfGoal = goal.indexIn(proofArray);
         int indexOfBlank = findIndexOfBlank(indexOfGoal);
         
-        String result = goal.replace(goal.getSecondArg(), goal.getFirstArg(), goal.getContext());
+        String result = goal.replace(goal.getArg(2), goal.getArg(1), goal.getContext());
         NDLine refLine = checkForNDLine(findRegEx("", result), goal);
         
         if (refLine != null) {
@@ -5366,7 +4514,7 @@ public class ProofObject {
             Globals.reverseUndo = true;
             return proofArray;
         }
-        String result = resource.replace(resource.getSecondArg(), resource.getFirstArg(), resource.getContext());
+        String result = resource.replace(resource.getArg(2), resource.getArg(1), resource.getContext());
         NDJust just = new JustSingle(JustSingle.SELF_ELIM, resource);
         
         if (goal.getContext().equals(resource.getContext())
@@ -5413,7 +4561,7 @@ public class ProofObject {
      */
     public NDLine[] sameLine(NDLine goal, NDLine resource) {
         if (goal.isInScopeOf(resource, proofArray) && goal.getLine().equals(resource.getLine())
-                && goal.getIsSameContextAs(resource)) {
+                && goal.hasSameContextAs(resource)) {
             goal.setJustification(new JustSingle(JustSingle.LINE_IS_EQUAL, resource));
         }
         collapseBlanks();
@@ -5428,9 +4576,10 @@ public class ProofObject {
      * EXPERIMENTAL! Starting with the current goal and current resource, expends every automatic rule it can until it hits a choice or the maximum number of steps.
      * @param max The maximum number of steps to complete
      * @return The resulting proofArray.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      */
         
-    public NDLine[] runMagicMode(int max) throws LineNotInProofArrayException { // Automatically expend all possible automatic rules from the current goal and then from the current resource
+    public NDLine[] runMagicMode(int max) throws LineNotInProofArrayException, WrongLineTypeException { // Automatically expend all possible automatic rules from the current goal and then from the current resource
         magicMode = true;
         boolean tempEqIdBoxes = Globals.allowedRules.get("eqIdentityBoxes");
         boolean tempEquIdBoxes = Globals.allowedRules.get("equIdentityBoxes");
@@ -5481,7 +4630,7 @@ public class ProofObject {
     }
     
     // Magic Mode Helpers //
-    private void mMIntroActions(String op, NDLine goal, NDLine resource) {
+    private void mMIntroActions(String op, NDLine goal, NDLine resource) throws LineNotInProofArrayException {
         
         
         // Main Stuff
@@ -5514,7 +4663,7 @@ public class ProofObject {
         }
     }
     
-    private void mMElimActions(String op, NDLine goal, NDLine resource) throws LineNotInProofArrayException {
+    private void mMElimActions(String op, NDLine goal, NDLine resource) throws LineNotInProofArrayException, WrongLineTypeException {
         if (Globals.allowedRules.get("universalsShortcuts")) {
             op = resource.getNonUniMainOp();
         }

@@ -5,6 +5,10 @@
 */
 
 package proofassistant;
+import proofassistant.line.NDLine;
+import proofassistant.line.NDJust;
+import proofassistant.exception.LineNotInProofArrayException;
+import proofassistant.justification.JustFromString;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -22,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
@@ -32,6 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import static proofassistant.Globals.frame;
+import proofassistant.exception.WrongLineTypeException;
 
 /**
  *
@@ -125,7 +132,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         
         
         setSize(Math.max(Globals.proofWidth, 500),Globals.proofHeight + 200);
-        setMinimumSize(new Dimension(500,300));
+        setMinimumSize(new Dimension(1000,600));
         setMaximumSize(new Dimension(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().width, GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds().height));
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (int) ((screen.getWidth() - getWidth()) /2);
@@ -747,7 +754,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
             // Check that there are two arguments and that the conclusion is not blank
             try {
                 NDLine temp = new NDLine(input,6);
-                if (temp.getSecondArg().equals("")) {
+                if (temp.getArg(2).equals("")) {
                     JOptionPane.showMessageDialog(this, "Conclusion is missing", "Parsing Error", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
@@ -849,8 +856,8 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         
         if (input.length() > 8 && input.substring(1,8).equals("sequent")) {
             NDLine temp = new NDLine(input, 6);
-            String premises = temp.getFirstArg();
-            String conclusion = temp.getSecondArg();
+            String premises = temp.getArg(1);
+            String conclusion = temp.getArg(2);
             
             
             // Remove wayward commas
@@ -941,7 +948,13 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
             axioms.setVisible(true);
         } else if (source.equals("runMagicMode")) {
             if (panel != null) {
-                panel.magicMode();
+                try {
+                    panel.magicMode();
+                } catch (LineNotInProofArrayException ex) {
+                    Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (WrongLineTypeException ex) {
+                    Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         } else if (source.equals("newProofFromTeX")) {
             boolean finished = false;
@@ -962,7 +975,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         
                         NDLine temp = new NDLine(s.replaceAll("\\\\,", ""),6);
                         
-                        String[] tempArray = temp.getFirstArg().split(",");
+                        String[] tempArray = temp.getArg(1).split(",");
                         
                         String[] argumentArray;
                         
@@ -979,7 +992,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         
                         argumentArray[i] = "-c";
                         i++;
-                        argumentArray[i] = temp.getSecondArg().replaceAll("\\s+","");
+                        argumentArray[i] = temp.getArg(2).replaceAll("\\s+","");
                         
                         Globals.lineNum = 0;
                         Globals.editable = true;

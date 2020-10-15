@@ -5,6 +5,7 @@
  */
 
 package proofassistant;
+import proofassistant.line.NDLine;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -77,7 +78,7 @@ public class Globals {
         allowedRules.put("qaIntro", true);
         allowedRules.put("qeElim", true);
         allowedRules.put("qeIntro", true);
-        allowedRules.put("falsumElim", false);
+        allowedRules.put("falsumElim", true);
         allowedRules.put("falsNeElim", false);
         allowedRules.put("doubleNegation", false);
         allowedRules.put("eqElim", true);
@@ -140,6 +141,7 @@ public class Globals {
         allowedRules.put("selfIntro", toUse.contains("selfIntro"));
         allowedRules.put("selfElim", toUse.contains("selfElim"));
         allowedRules.put("secondOrder", toUse.contains("secondOrder"));
+        allowedRules.put("falsumElim", true);
     }
     
     // Stacks for Undo
@@ -425,7 +427,7 @@ public class Globals {
     public static final int AUCKLANDSTYLE = 1;
     public static final int STANFORDSTYLE = 2;
     
-    public static int proofStyle = STANFORDSTYLE;
+    public static int proofStyle = AUCKLANDSTYLE;
     
     // Should disjunction introduction require you to select a disjunct that's 
     // available?

@@ -23,6 +23,10 @@
  */
 package proofassistant;
 
+import proofassistant.line.NDLine;
+import proofassistant.line.NDJust;
+import proofassistant.exception.LineNotInProofArrayException;
+
 /**
  * The ProofStage class holds an array of NDLines, and contains various mutator
  methods for this array.
@@ -265,6 +269,34 @@ public class ProofStage {
     }
     
     
+    // BOOLEAN TESTS
+    
+    /**
+     * Checks whether a line is able to access another.
+     * Checks to see if lineB appears above lineA, and in scope.
+     * 
+     * @param lineA The NDLine to check from.
+     * @param lineB The NDLine to check for.
+     * @return true, if lineB is in scope of lineA, false otherwise.
+     */
+    public boolean scopesAllowAccess(NDLine lineA, NDLine lineB) {
+        int scopes = 0;
+        for (int i = findIndexOf(lineA); i >= 0; i--) {
+            if (proofArray[i].getType() == NDLine.ASS_END ||
+                    proofArray[i].getType() == NDLine.ASS_ONE_LINE) {
+                scopes++;
+            }
+            if (scopes == 0 && proofArray[i] == lineB) {
+                return true;
+            }
+            if (proofArray[i].getType() == NDLine.ASS_START ||
+                    proofArray[i].getType() == NDLine.ASS_ONE_LINE) {
+                scopes++;
+            }
+        }
+        return false;
+    }
+    
     // RETRIEVAL METHODS
     
     /**
@@ -370,6 +402,57 @@ public class ProofStage {
         return true;
     }
     
+    /**
+     * Add an NDLine to the current proofArray as a new resource, directly above
+     * the specified goal line.
+     * This method does not check that the relevant insertion point is within 
+     * scope.
+     * 
+     * @param line The new NDLine to add as a resource.
+     * @param goal The NDLine above which the line is to be added.
+     * @return True, upon success.
+     */
+    public boolean addNDLineResource(NDLine line, NDLine goal) {
+        NDLine[] temp = new NDLine[proofArray.length + 1];
+        
+        int k = 0;
+        int indexOfBlank = findIndexOfType(goal, NDLine.BLANK);
+        if (goal.isIdBoxLine() && !line.isIdBoxLine()) {
+            // If we're currently inside an IDBox, and the resource line is not an
+            // IDBox line, we need to add the resource above the IDBox
+            indexOfBlank = findIndexOfType(goal, NDLine.ID_BOX_START);
+            if (indexOfBlank == -1) {
+                indexOfBlank = findIndexOfType(goal, NDLine.EQU_ID_BOX_START);
+            }
+        }
+        
+        for (int j = 0; j < indexOfBlank; j++) {
+            temp[k++] = proofArray[j];
+        }
+        temp[k] = line;
+        k++;
+        for (int j = indexOfBlank; j < proofArray.length; j++) {
+            temp[k++] = proofArray[j];
+        }
+        proofArray = temp;
+        return true;
+    }
+    
+    /**
+     * Add an NDLine to the current proofArray as a new goal, directly above
+     * the specified goal line.
+     * This method does not check that the relevant insertion point is within 
+     * scope. This method leaves a blank between the newly inserted goal and 
+     * the original goal
+     * 
+     * @param line The new NDLine to add as a resource.
+     * @param currentGoal The NDLine above which the line is to be added.
+     * @return True, upon success.
+     */
+    public boolean addNDLineGoal(NDLine line, NDLine currentGoal) {
+        addNDLineResource(new NDLine(NDLine.BLANK), currentGoal);
+        return addNDLineResource(line, currentGoal);
+    }
     
     // HELPER METHODS
     /**
@@ -456,18 +539,45 @@ public class ProofStage {
     }
     
     /**
-     * Find the first blank line before the specified index.
+     * Returns the index of the first line of a particular type, above the 
+     * specified index.
+     * Note that this does not check if the returning line is in scope or not.
      * 
-     * @param index The index of the line to search from
-     * @return The index of the last blank line before the inputted index, or -1
-     *          if none is found
+     * @param index An int representing the index to start from.
+     * @param type An int, the type of line to look for. Line types are defined as 
+     *              constants in the NDLine class.
+     * @return An int, giving the highest index of a line above the input index
+     *          of the relevant type, or -1 if none is found.
      */
-    private int findIndexOfBlank(int index) { // Returns the index of the blank line before the goal. Returns 0 if none found
-        for (int i = 1; i <= index; i++) {
-            if (proofArray[index - i].getType() == NDLine.BLANK) {
-                return index - i;
+    private int findIndexOfType(int index, int type) { // Returns the index of the assumption end before the goal. Returns -1 if none found
+        for (int i = index - 1; i >= 0; i--) {
+            if (proofArray[i].getType() == type) {
+                return i;
             }
         }
         return -1;
+        
+    }
+    
+    /**
+     * Returns the index of the first line of a particular type, above the 
+     * specified index.
+     * Note that this does not check if the returning line is in scope or not.
+     * 
+     * @param index An int representing the index to start from.
+     * @param type An int, the type of line to look for. Line types are defined as 
+     *              constants in the NDLine class.
+     * @return An int, giving the highest index of a line above the input index
+     *          of the relevant type, or -1 if none is found.
+     */
+    private int findIndexOfType(NDLine aLine, int type) { // Returns the index of the assumption end before the goal. Returns -1 if none found
+        int index = findIndexOf(aLine);
+        for (int i = index - 1; i >= 0; i--) {
+            if (proofArray[i].getType() == type) {
+                return i;
+            }
+        }
+        return -1;
+        
     }
 }
