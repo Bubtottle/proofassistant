@@ -26,7 +26,7 @@ Adapted from http://www.java2s.com/Tutorial/Java/0240__Swing/UsingJOptionPanewit
 
 package proofassistant;
 
-import proofassistant.line.NDLine;
+import proofassistant.core.NDLine;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;

@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package proofassistant.line;
+package proofassistant.core;
 
 import proofassistant.justification.JustNone;
 import java.util.ArrayList;
@@ -29,6 +29,7 @@ import proofassistant.util.SymbolHandler;
  */
 public class NDLine {
     
+    public final static int NORMAL_LINE = 0;
     public final static int ASS_START = 1;
     public final static int ASS_END = 2;
     public final static int ASS_ONE_LINE = 3;
@@ -62,11 +63,14 @@ public class NDLine {
      */
     public NDLine(String macro, int type) throws IndexOutOfBoundsException { 
         // Allows specification of line type
-        try {
-            formula = new NDFormula(macro, new SymbolHandler());
-        } catch (MissingArityException ex) {
-            Logger.getLogger(NDLine.class.getName()).log(Level.SEVERE, null, ex);
+        if (type != DUMMY_LINE) {
+            try {
+                formula = new NDFormula(macro, new SymbolHandler());
+            } catch (MissingArityException ex) {
+                Logger.getLogger(NDLine.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+        
         
         id = System.currentTimeMillis();
         if (type == DUMMY_LINE) {
@@ -134,7 +138,50 @@ public class NDLine {
         parsedLine = parseLine();
         Globals.lineNum ++;
         this.lineNum = Globals.lineNum;
-        type = 0;
+        type = NORMAL_LINE;
+        justification = new JustNone();
+        Globals.terms.processLine(context);
+    }
+    
+    /**
+     * Create a new normal NDLine using an NDFormula.
+     * This creates an unjustified line of type NORMAL_LINE.
+     * 
+     * @param form The formula to create a line with.
+     */
+    public NDLine(NDFormula form) {
+        formula = form;
+        id = System.currentTimeMillis();
+        line = formula.getTeX();
+        mainOp = findMainOp(line);
+        firstArg = findFirstArg(line);
+        secondArg = findSecondArg(line);
+        parsedLine = parseLine();
+        Globals.lineNum ++;
+        this.lineNum = Globals.lineNum;
+        type = NORMAL_LINE;
+        justification = new JustNone();
+        Globals.terms.processLine(context);
+    }
+    
+    /**
+     * Create a new NDLine of the specified type using an NDFormula.
+     * This creates an unjustified NDLine of the specified type.
+     * 
+     * @param form The NDFormula to create the line with.
+     * @param tp  The int representing the type of line.
+     */
+    public NDLine(NDFormula form, int tp) {
+        formula = form;
+        id = System.currentTimeMillis();
+        line = formula.getTeX();
+        mainOp = findMainOp(line);
+        firstArg = findFirstArg(line);
+        secondArg = findSecondArg(line);
+        parsedLine = parseLine();
+        Globals.lineNum ++;
+        this.lineNum = Globals.lineNum;
+        type = tp;
         justification = new JustNone();
         Globals.terms.processLine(context);
     }
@@ -1354,6 +1401,15 @@ public class NDLine {
     }
     
     /**
+     * Get the formula for this line.
+     * 
+     * @return An NDFormula containing this line's formula.
+     */
+    public NDFormula getFormula() {
+        return formula;
+    }
+    
+    /**
      * Parses the line to Java text and returns it, with context if required
      * @return The parsed line
      */
@@ -1431,16 +1487,34 @@ public class NDLine {
         }
     }
     
-    public String getArg(){
+    public String getArgAsString(){
         return firstArg;
     }
     
-    public String getArg(int argument) {
+    public String getArgAsString(int argument) {
         switch (argument) {
             case 1 : return firstArg;
             case 2 : return secondArg;
         }
         return "";
+    }
+    
+    /** Gets the first argument from the formula of this NDLine.
+     * 
+     * @return An NDFormula of the first (or only) argument of this NDLine.
+     */
+    public NDFormula getArg() {
+        return formula.getArg();
+    }
+    
+    /** Gets an argument from the formula of this NDLine.
+     * 
+     * @param argument The number of the argument to retrieve. Indexing starts
+     *                  at 1.
+     * @return An NDFormula of the requested argument of this NDLine.
+     */
+    public NDFormula getArg(int argument) {
+        return formula.getArg(argument);
     }
     
     public String parseFirstArg() {
@@ -1510,6 +1584,11 @@ public class NDLine {
         return inScope;
     }
     
+    public boolean usesTerm(NDAtom term) {
+        // NB: formula == null iff type == BLANK
+        return (type == BLANK) ? false : formula.usesTerm(term);
+    }
+    
     public int indexIn(NDLine[] anArray) { // Returns the index of this line in an array of NDLines
         int i = 0;
         while (i < anArray.length) {
@@ -1562,7 +1641,7 @@ public class NDLine {
     }
     
     public String getRegEx(String variable, int arg) {
-        return findRegEx(variable, getArg(arg));
+        return findRegEx(variable, NDLine.this.getArgAsString(arg));
     }
     
     /**
@@ -1573,7 +1652,7 @@ public class NDLine {
      */
     public String getQuantifierRegEx() throws WrongLineTypeException {
         if (getMainOp().equals("qa") || getMainOp().equals("qe")) {
-            return findRegEx(getArg(1), getArg(2));
+            return findRegEx(NDLine.this.getArgAsString(1), NDLine.this.getArgAsString(2));
         } else {
             throw new WrongLineTypeException("Must be a quantified line.");
         }
@@ -1597,17 +1676,17 @@ public class NDLine {
         }
     }
     
-    public String getQuantifierInstance(String term) throws WrongLineTypeException {
+    public String getQuantifierInstanceUsing(String term) throws WrongLineTypeException {
         if (getMainOp().equals("qa") || getMainOp().equals("qe")) {
-            return replace(getArg(2), getArg(1), term);
+            return replace(NDLine.this.getArgAsString(2), NDLine.this.getArgAsString(1), term);
         } else {
             throw new WrongLineTypeException("Must be a quantified line.");
         }
     }
     
-    public String getQuantifierInstance(NDAtom term) throws WrongLineTypeException {
-        if (getMainOp().equals("qa") || getMainOp().equals("qe")) {
-            return formula.instantiateWith(term).getTeX();
+    public NDFormula getQuantifierInstanceUsing(NDAtom term) throws WrongLineTypeException {
+        if (formula.isQuantifier()) {
+            return formula.instantiateWith(term);
         } else {
             throw new WrongLineTypeException("Must be a quantified line.");
         }
@@ -1648,8 +1727,8 @@ public class NDLine {
      */
     public boolean equalsArgOf(NDLine otherLine, int arg) {
         switch (arg) {
-            case 1 : return getLine().equals(otherLine.getArg(1));
-            case 2 : return getLine().equals(otherLine.getArg(2));
+            case 1 : return getLine().equals(otherLine.getArgAsString(1));
+            case 2 : return getLine().equals(otherLine.getArgAsString(2));
             default : return false;
         }
     }

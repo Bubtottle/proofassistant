@@ -8,10 +8,10 @@ package proofassistant.justification;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDLine;
 
 /**
  * The JustInduction class implements NDJust for induction

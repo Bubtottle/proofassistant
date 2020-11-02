@@ -24,7 +24,9 @@
 package proofassistant.util;
 
 import java.util.HashMap;
+import java.util.Map;
 import proofassistant.exception.MissingArityException;
+import proofassistant.core.NDAtom;
 
 /** The SymbolHandler class deals with parsing symbols.
  * It contains methods for converting symbols to TeX and Java format, and keeps
@@ -35,8 +37,8 @@ import proofassistant.exception.MissingArityException;
  * @author Declan Thompson
  */
 public class SymbolHandler {
-    private HashMap<String, String> operators;   
-    private HashMap<String, Integer> arities;
+    private Map<String, String> operators;   
+    private TermStore terms;
     
     /**
      * Class constructor.
@@ -45,8 +47,7 @@ public class SymbolHandler {
     public SymbolHandler() {
         operators  = new HashMap<>();
         setDefaultOps();
-        arities = new HashMap<>();
-        startArities();
+        terms = new TermStore();
     }
     
     
@@ -76,12 +77,18 @@ public class SymbolHandler {
         return "\\" + symbol;
     }
     
+    /**
+     * Get the arity of a term.
+     * @param term a string, the term to find the arity of.
+     * @return An integer, the arity of the term.
+     * @throws MissingArityException if terms doesn't know this term.
+     */
     public int getArity(String term) throws MissingArityException {
-        if (arities.containsKey(term)) {
-            return arities.get(term);
-        } else {
-            throw new MissingArityException("Cannot determine arity of " + term);
-        }
+        return terms.getArity(term);
+    }
+    
+    public NDAtom getNewTerm() {
+        return terms.getNewTerm();
     }
     
     // MUTATOR METHODS
@@ -110,35 +117,9 @@ public class SymbolHandler {
         operators.put("self", "\u2193");
     }
     
-    public static String aritiyS = "a0, b0, c0, d0, e0, f1, g1, h2, S1, s0, t0, u0";
-    public void startArities() {
-//        System.out.println("arityS is " + arityS);
-        String currentLetter = "";
-        String currentArity = "";
-        for (int i = 0; i < aritiyS.length(); i++) {
-            char c = aritiyS.charAt(i);
-            if (c == ',' && !currentLetter.equals("")) {
-                if (currentArity.equals("")) {
-                    arities.remove(currentLetter);
-                } else {
-//                System.out.println(currentLetter + Integer.parseInt(currentArity));
-                    arities.put(currentLetter, Integer.parseInt(currentArity));
-                }
-                currentLetter = "";
-                currentArity = "";
-            } else if ((c > 64 && c < 91) || (c > 96 && c < 123) || c == '\'') {
-                currentLetter = currentLetter + c;
-            } else if (c > 47 && c < 58) {
-                currentArity = currentArity + c;
-            }
-        }
-        if (!currentLetter.equals("")){
-            if (currentArity.equals("")) {
-                arities.remove(currentLetter);
-            } else {
-//            System.out.println(currentLetter + Integer.parseInt(currentArity));
-                arities.put(currentLetter, Integer.parseInt(currentArity));
-            }
-        }
+    public void processTerm(NDAtom term) {
+        terms.processLine(term.getTeX());
     }
+    
+    
 }

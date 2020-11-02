@@ -27,10 +27,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import proofassistant.Globals;
 import proofassistant.Globals;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDLine;
 
 /**
  * The JustDouble class implements NDJust for justifications requiring 2 args

@@ -5,7 +5,9 @@
  */
 
 package proofassistant;
-import proofassistant.line.NDLine;
+import proofassistant.core.ProofObject;
+import proofassistant.util.TermStore;
+import proofassistant.core.NDLine;
 import java.util.*;
 import java.util.regex.Pattern;
 import javax.swing.*;

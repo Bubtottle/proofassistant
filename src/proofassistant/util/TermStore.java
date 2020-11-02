@@ -22,13 +22,18 @@
  * THE SOFTWARE.
  */
 
-package proofassistant;
+package proofassistant.util;
 
-import proofassistant.line.NDLine;
+import proofassistant.core.NDLine;
 import java.util.*;
+import proofassistant.Globals;
+import proofassistant.exception.MissingArityException;
+import proofassistant.core.NDAtom;
 
-/**
+/** The TermStore class provides methods for dealing with terms.
  *
+ * @since ProofAssistant 1.0
+ * @version 2.0
  * @author Declan Thompson
  */
 public class TermStore {
@@ -36,12 +41,34 @@ public class TermStore {
     private final String[] termAlphabet = "a b c d e".split(" ");
     private final String[] contextAlphabet = "s t u".split(" ");
     private final String[] propositionAlphabet = "p q r".split(" ");
+    private HashMap<String, Integer> arities;
     
+    public static String aritiyS = "a0, b0, c0, d0, e0, f1, g1, h2, S1, s0, t0, u0";
+    
+    /**
+     * Default constructor.
+     */
     public TermStore() {
         listOfUsedTerms = new ArrayList<>();
+        arities = new HashMap<>();
+        startArities();
     }
     
-    public String getNewTerm() { // Find a term from termAlphabet that is not in listOfUsedTerms
+    /**
+     * Get the arity of a term.
+     * @param term A String, the term to find the arity of.
+     * @return An integer, the arity of the term.
+     * @throws MissingArityException if the term isn't known to this TermStore.
+     */
+    public int getArity(String term) throws MissingArityException {
+        if (arities.containsKey(term)) {
+            return arities.get(term);
+        } else {
+            throw new MissingArityException("Cannot determine arity of " + term);
+        }
+    }
+    
+    public String getNewTermString() { // Find a term from termAlphabet that is not in listOfUsedTerms
         String termToReturn = "";
         boolean foundATerm = false;
         
@@ -61,6 +88,10 @@ public class TermStore {
         }
         Globals.arity.put(termToReturn, 0);
         return termToReturn;
+    }
+    
+    public NDAtom getNewTerm() {
+        return new NDAtom(getNewTermString(), new ArrayList<NDAtom>(), NDAtom.TERM);
     }
     
     public String getNewContext() { // Find a term from conextAlphabet that is not in listOfUsedTerms
@@ -165,5 +196,36 @@ public class TermStore {
     
     public ArrayList<String> getListOfUsedTerms() {
         return listOfUsedTerms;
+    }
+    
+    private void startArities() {
+//        System.out.println("arityS is " + arityS);
+        String currentLetter = "";
+        String currentArity = "";
+        for (int i = 0; i < aritiyS.length(); i++) {
+            char c = aritiyS.charAt(i);
+            if (c == ',' && !currentLetter.equals("")) {
+                if (currentArity.equals("")) {
+                    arities.remove(currentLetter);
+                } else {
+//                System.out.println(currentLetter + Integer.parseInt(currentArity));
+                    arities.put(currentLetter, Integer.parseInt(currentArity));
+                }
+                currentLetter = "";
+                currentArity = "";
+            } else if ((c > 64 && c < 91) || (c > 96 && c < 123) || c == '\'') {
+                currentLetter = currentLetter + c;
+            } else if (c > 47 && c < 58) {
+                currentArity = currentArity + c;
+            }
+        }
+        if (!currentLetter.equals("")){
+            if (currentArity.equals("")) {
+                arities.remove(currentLetter);
+            } else {
+//            System.out.println(currentLetter + Integer.parseInt(currentArity));
+                arities.put(currentLetter, Integer.parseInt(currentArity));
+            }
+        }
     }
 }

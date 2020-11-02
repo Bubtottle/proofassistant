@@ -6,6 +6,7 @@
 
 package proofassistant;
 
+import proofassistant.core.ProofObject;
 import java.awt.event.InputEvent;
 import java.io.File;
 

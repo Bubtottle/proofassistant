@@ -21,10 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package proofassistant.line;
+package proofassistant.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import proofassistant.exception.MissingArityException;
@@ -45,8 +46,7 @@ public class NDAtom {
     static final public int TERM = 3;
     
     private final String operator;
-    private final ArrayList<NDAtom> arguments;
-    private SymbolHandler symbols;
+    private final List<NDAtom> arguments;
     private int type;
     
     /**
@@ -59,8 +59,7 @@ public class NDAtom {
      * @param syms
      * @throws MissingArityException 
      */
-    public NDAtom(String macro, SymbolHandler syms) throws MissingArityException {
-        symbols = syms;
+    public NDAtom(String macro) throws MissingArityException {
         arguments = new ArrayList<>();
         
         macro = macro.replace("[", "").replace("]", "");
@@ -103,7 +102,7 @@ public class NDAtom {
                         }
                         i++;
                     }
-                    arguments.add(new NDAtom(macro.substring(start, i), syms));
+                    arguments.add(new NDAtom(macro.substring(start, i)));
                     i++;
                 }         
             }
@@ -117,11 +116,10 @@ public class NDAtom {
      * @param tp
      * @param syms 
      */
-    public NDAtom(String op, ArrayList<NDAtom> args, int tp, SymbolHandler syms) {
+    public NDAtom(String op, List<NDAtom> args, int tp) {
         operator = op;
         arguments = args;
         type = tp;
-        symbols = syms;
     }
             
     // PREDICATES
@@ -171,6 +169,20 @@ public class NDAtom {
     }
     
     /**
+     * Checks to see if this atom makes use of a given term.
+     * 
+     * @param term An NDAtom term to look for.
+     * @return True, if this atom contains the term, and false otherwise.
+     */
+    public boolean containsTerm(NDAtom term) {
+        if (equals(term)) return true;
+        for (NDAtom arg : arguments) {
+            if (arg.containsTerm(term)) return true;
+        }
+        return false;
+    }
+    
+    /**
      * Checks to see that this atom is the same sort of atom as another.
      * In particular, this checks that
      * - The two atoms are of the same type
@@ -216,14 +228,13 @@ public class NDAtom {
             for (NDAtom arg : arguments) {
                 newArgs.add(arg.getInstanceUsing(assignments));
             }
-            return new NDAtom(operator, newArgs, type, symbols);
+            return new NDAtom(operator, newArgs, type);
         }
     }
     
     public String getTeX() {
         String tex = operator;
         for (NDAtom arg : arguments) {
-            System.out.println("Adding " + arg.getTeX());
             tex += arg.getTeX();
         }
         return tex;
@@ -235,5 +246,20 @@ public class NDAtom {
             out += arg.getParse();
         }
         return out;
+    }
+    
+    /**
+     * Get the number of distinct times a given atom is used inside this atom.
+     * 
+     * @param at The NDAtom to search for.
+     * @return The number of times at is used in this NDAtom.
+     */
+    public int numberOfUsesOf(NDAtom at) {
+        if (equals(at)) return 1;
+        int total = 0;
+        for (NDAtom arg : arguments) {
+            total += arg.numberOfUsesOf(at);
+        }
+        return total;
     }
 }

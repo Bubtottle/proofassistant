@@ -5,8 +5,9 @@
 */
 
 package proofassistant;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDJust;
+import proofassistant.core.ProofObject;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDJust;
 import proofassistant.exception.LineNotInProofArrayException;
 import proofassistant.justification.JustFromString;
 import java.awt.*;
@@ -754,7 +755,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
             // Check that there are two arguments and that the conclusion is not blank
             try {
                 NDLine temp = new NDLine(input,6);
-                if (temp.getArg(2).equals("")) {
+                if (temp.getArgAsString(2).equals("")) {
                     JOptionPane.showMessageDialog(this, "Conclusion is missing", "Parsing Error", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
@@ -856,8 +857,8 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         
         if (input.length() > 8 && input.substring(1,8).equals("sequent")) {
             NDLine temp = new NDLine(input, 6);
-            String premises = temp.getArg(1);
-            String conclusion = temp.getArg(2);
+            String premises = temp.getArgAsString(1);
+            String conclusion = temp.getArgAsString(2);
             
             
             // Remove wayward commas
@@ -975,7 +976,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         
                         NDLine temp = new NDLine(s.replaceAll("\\\\,", ""),6);
                         
-                        String[] tempArray = temp.getArg(1).split(",");
+                        String[] tempArray = temp.getArgAsString(1).split(",");
                         
                         String[] argumentArray;
                         
@@ -992,7 +993,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         
                         argumentArray[i] = "-c";
                         i++;
-                        argumentArray[i] = temp.getArg(2).replaceAll("\\s+","");
+                        argumentArray[i] = temp.getArgAsString(2).replaceAll("\\s+","");
                         
                         Globals.lineNum = 0;
                         Globals.editable = true;

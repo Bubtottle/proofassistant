@@ -24,7 +24,7 @@
 
 package proofassistant;
 
-import proofassistant.line.NDLine;
+import proofassistant.core.NDLine;
 import static proofassistant.Globals.assist;
 import static proofassistant.Globals.createExtraLines;
 import static proofassistant.Globals.currentGoalIndex;

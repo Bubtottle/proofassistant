@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package proofassistant.line;
+package proofassistant.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +65,7 @@ public class NDFormula {
             // This formula is atomic
             mainOp = null;
             mainOpArg = null;
-            atom = new NDAtom(macro, syms);
+            atom = new NDAtom(macro);
         } else {
             // This formula is an operator
             atom = null;
@@ -83,7 +83,7 @@ public class NDFormula {
                     // The macro looks like \qa{ ___ }{ ___ } or \qe{ ___ }{ ___ }
                     mainOpArg = new NDAtom("(" + 
                             macro.substring(bracketLocation + 1, macro.indexOf("}"))
-                            + ")", syms);
+                            + ")");
                     bracketLocation = macro.indexOf("}") + 1;
                 } else {
                     // The mainOp doesn't take an argument
@@ -168,6 +168,25 @@ public class NDFormula {
         HashMap<NDAtom, NDAtom> assignments = new HashMap<>();
         assignments.put(qform.mainOpArg, null);
         return isInstanceUsing(qform.getArg(), assignments);
+    }
+    
+    /**
+     * Checks to see if this formula makes use of a given term.
+     * If the supplied term is used only within scope of a quantifier, quantifying
+     * with that term, this method returns false. E.g. This method will say that
+     * x does not appear in \con{Fa}{\qa{x}{Fx}}, since it's bound by the 
+     * quantifier.
+     * 
+     * @param term The NDAtom to look for.
+     * @return True, if this formula contains the term unbounded, and false otherwise.
+     */
+    public boolean usesTerm(NDAtom term) {
+        if (isAtomic()) return atom.containsTerm(term);
+        if (isQuantifier() && mainOpArg.equals(term)) return false;
+        for (NDFormula arg : arguments) {
+            if (arg.usesTerm(term)) return true;
+        }
+        return false;
     }
     
     /**
@@ -268,7 +287,7 @@ public class NDFormula {
      * Returns a version of this formula, changing variables using assignments.
      * 
      * @param assignments A HashMap mapping NDAtom variables to NDAtoms
-     * @return This NDFormula, but with the variables replaced by their assignemnts.
+     * @return This NDFormula, but with the variables replaced by their assignments.
      */
     public NDFormula getInstanceUsing(Map<NDAtom, NDAtom> assignments) {
         if (isAtomic()) {
@@ -359,6 +378,29 @@ public class NDFormula {
                 }
                 return out.substring(0, out.length() - 1) + ")";
         }
+    }
+    
+    /**
+     * If this line is atomic, return its atom.
+     * 
+     * @return The atom that this line is.
+     * @throws WrongLineTypeException If this line is not atomic.
+     */
+    public NDAtom getAtom() throws WrongLineTypeException {
+        if (!isAtomic()) {
+            throw new WrongLineTypeException(getParse() + " is not atomic");
+        } else {
+            return atom;
+        }
+    }
+    
+    public int numberOfUsesOf(NDAtom at) {
+        if (isAtomic()) return atom.numberOfUsesOf(at);
+        int total = 0;
+        for (NDFormula arg : arguments) {
+            total += arg.numberOfUsesOf(at);
+        }
+        return total;
     }
     
     // HELPER METHODS

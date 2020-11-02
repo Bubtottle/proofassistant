@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package proofassistant;
+package proofassistant.core;
 
-import proofassistant.line.NDLine;
-import proofassistant.line.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDJust;
 import proofassistant.exception.LineNotInProofArrayException;
+import proofassistant.core.NDAtom;
 
 /**
  * The ProofStage class holds an array of NDLines, and contains various mutator
@@ -280,18 +281,51 @@ public class ProofStage {
      * @return true, if lineB is in scope of lineA, false otherwise.
      */
     public boolean scopesAllowAccess(NDLine lineA, NDLine lineB) {
+        return scopesAllowAccess(findIndexOf(lineA), findIndexOf(lineB));
+    }
+    
+    /**
+     * Checks whether a line is able to access another.
+     * Checks to see if indexB appears above indexA, and in scope.
+     * 
+     * @param lineA The index of the NDLine to check from.
+     * @param lineB The index of the NDLine to check for.
+     * @return true, if indexB is in scope of indexA, false otherwise.
+     */
+    private boolean scopesAllowAccess(int indexA, int indexB) {
+        if (indexA < indexB || indexB < 0) return false;
         int scopes = 0;
-        for (int i = findIndexOf(lineA); i >= 0; i--) {
-            if (proofArray[i].getType() == NDLine.ASS_END ||
-                    proofArray[i].getType() == NDLine.ASS_ONE_LINE) {
+        for (int i = indexA - 1; i > indexB; i--) {
+            if (proofArray[i].getType() == NDLine.ASS_END) {
                 scopes++;
+            } else if (proofArray[i].getType() == NDLine.ASS_START) {
+                scopes--;
             }
-            if (scopes == 0 && proofArray[i] == lineB) {
+            if (scopes < 0) scopes = 0;
+        }
+        if (proofArray[indexB].getType() == NDLine.ASS_END ||
+                proofArray[indexB].getType() == NDLine.ASS_ONE_LINE) {
+            scopes ++;
+        }
+        return scopes == 0;
+    }
+    
+    /**
+     * Checks to see if a term appears unbounded in this NDLine.
+     * 
+     * @param term The NDAtom term to look for.
+     * @param line The NDLine to look in.
+     * @return True, if the term appears in the line, unbounded by a quantifier.
+     * @throws LineNotInProofArrayException If the line is not found.
+     */
+    public boolean termUsedInScopeOf(NDAtom term, NDLine line) throws LineNotInProofArrayException {
+        int lineIndex = findIndexOf(line);
+        if (lineIndex == -1) {
+            throw new LineNotInProofArrayException(line.parseLine() + " not in proofArray");
+        }
+        for (int i = lineIndex - 1; i >= 0; i--) {
+            if (scopesAllowAccess(lineIndex, i) && proofArray[i].usesTerm(term)) {
                 return true;
-            }
-            if (proofArray[i].getType() == NDLine.ASS_START ||
-                    proofArray[i].getType() == NDLine.ASS_ONE_LINE) {
-                scopes++;
             }
         }
         return false;
@@ -308,6 +342,7 @@ public class ProofStage {
      * @return  An NDLine in proofArray, within scope of goal and matching the
      *          supplied regular expression. If no matching line is found, 
      *          returns null.
+     * @throws proofassistant.exception.LineNotInProofArrayException
      */
     public NDLine checkForNDLine(String regEx, NDLine goal) throws LineNotInProofArrayException { 
         int indexOfGoal = findIndexOf(goal);
@@ -377,6 +412,50 @@ public class ProofStage {
         return null;
     }
     
+    /**
+     * Gets an NDLine above the goal whose formula equals the supplied formula.
+     * NB: Unlike legacy CheckForNDLine methods, this does not accept regular 
+     * expressions.
+     * 
+     * @param form The formula to look for.
+     * @param goal The line to look for a NDLine in scope of.
+     * @param context
+     * @return A matching NDLine, or null if none is found.
+     * @throws LineNotInProofArrayException 
+     */
+    public NDLine checkForNDLine(NDFormula form, NDLine goal, String context) 
+            throws LineNotInProofArrayException {
+        int indexOfGoal = findIndexOf(goal);
+        if (indexOfGoal == -1) {
+            throw new LineNotInProofArrayException(goal.getLine());
+        }
+        int scopes = 0;
+        int lineType;
+        for (int i = indexOfGoal - 1; i >= 0; i--) { // Move from current goal up to top of proof
+            lineType = proofArray[i].getType();
+            // If we hit an assumption scope, increment scopes
+            if (proofArray[i].getType() == NDLine.ASS_END 
+                    || proofArray[i].getType() == NDLine.ASS_ONE_LINE) { 
+                scopes++;
+            }
+            // Check line against what we want, but ignore if scopes>0
+            if (scopes == 0 
+                    && proofArray[i].getType() != NDLine.BLANK
+                    && proofArray[i].getFormula().equals(form)
+                    && proofArray[i].getIsAllowedInContext(context)) { 
+                return proofArray[i];
+            }
+            // If we hit a start-of-ass line, decrease scopes count
+            if (proofArray[i].getType() == NDLine.ASS_START 
+                    || proofArray[i].getType() == NDLine.ASS_ONE_LINE) { 
+                scopes--;
+                if (scopes < 0) { // Make sure scopes doesn't go below 0
+                    scopes = 0;
+                }
+            }
+        }
+        return null;
+    }
     
     // MUTATOR METHODS
     /**

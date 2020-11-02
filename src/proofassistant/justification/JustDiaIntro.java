@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import proofassistant.Globals;
 import proofassistant.Globals;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDLine;
 
 /**
  * The JustDiaIntro class implements NDJust for diamond introduction
@@ -36,14 +36,14 @@ public class JustDiaIntro implements NDJust {
     @Override
     public String getJava() {
         return pred.getLineNumOutput() + ", " + prop.getLineNumOutput() + ", " 
-                + Globals.operators.get("LEFTdia") + goal.getArg(1) 
+                + Globals.operators.get("LEFTdia") + goal.getArgAsString(1) 
                 + Globals.operators.get("RIGHTdia") + "I";
     }
     
     @Override
     public String getTeX() {
         return pred.getLineNumOutput() + ", " + prop.getLineNumOutput() 
-                + ", $\\langle " + goal.getArg(1) + "\\rangle\\rulename{I}$";
+                + ", $\\langle " + goal.getArgAsString(1) + "\\rangle\\rulename{I}$";
     }
     
     public boolean getBlank() {

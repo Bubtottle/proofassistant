@@ -24,7 +24,7 @@
 
 package proofassistant;
 
-import proofassistant.line.NDLine;
+import proofassistant.core.NDLine;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;

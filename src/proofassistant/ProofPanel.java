@@ -5,13 +5,16 @@
  */
 
 package proofassistant;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDLine;
 import proofassistant.exception.LineNotInProofArrayException;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
+import proofassistant.exception.MissingArityException;
 import proofassistant.exception.WrongLineTypeException;
 
 /**
@@ -173,7 +176,7 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
                     if (!proofArray[i].parseMainOp().equals("") && !proofArray[i].parseMainOp().equals("\u22a5") // If the main op is not " " or falsum
                             && !(proofArray[i].getType() > 6 && proofArray[i].getType() < 11) //                     and we're not in an id box
                             && (!proofArray[i].parseMainOp().equals("=") //                                          and if it's not =
-                                  || proofArray[i].getArg(1).equals(proofArray[i].getArg(2)) //                   or both arguments are the same
+                                  || proofArray[i].getArgAsString(1).equals(proofArray[i].getArgAsString(2)) //                   or both arguments are the same
                                   || Globals.allowedRules.get("eqIdentityBoxes")) //                                                           or we're using identity boxes
                             && Globals.allowedRules.containsKey(proofArray[i].getSMainOp() + "Intro")
                             && Globals.allowedRules.get(proofArray[i].getSMainOp() + "Intro")
@@ -705,9 +708,21 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         } else if (op.equals("neg")) {
             proofArray = Globals.assist.negIntro(proofArray[goal],proofArray[resource]);
         } else if (op.equals("qa")) {
-            proofArray = Globals.assist.qaIntro(proofArray[goal], proofArray[resource]);
+            try {
+                proofArray = Globals.assist.qaIntro(proofArray[goal], proofArray[resource]);
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (WrongLineTypeException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (op.equals("qe")) {
-            proofArray = Globals.assist.qeIntro(proofArray[goal], proofArray[resource]);
+            try {
+                proofArray = Globals.assist.qeIntro(proofArray[goal], proofArray[resource]);
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (WrongLineTypeException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (op.equals("eq")) {
             proofArray = Globals.assist.eqIntro(proofArray[goal], proofArray[resource]);
         } else if (op.equals("IND")) {
@@ -715,7 +730,11 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         } else if (op.equals("at")) {
             proofArray = Globals.assist.atIntro(proofArray[goal], proofArray[resource]);
         } else if (op.equals("box")) {
-            proofArray = Globals.assist.boxIntro(proofArray[goal], proofArray[resource]);
+            try {
+                proofArray = Globals.assist.boxIntro(proofArray[goal], proofArray[resource]);
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (op.equals("dia")) {
             proofArray = Globals.assist.diaIntro(proofArray[goal], proofArray[resource]);
         } else if (op.equals("nom")) {
@@ -783,19 +802,33 @@ public class ProofPanel extends JPanel implements MouseListener,  ActionListener
         } else if (op.equals("qa")) {
             proofArray = Globals.assist.qaElim(proofArray[goal],proofArray[resource]);
         } else if (op.equals("qe")) {
-            proofArray = Globals.assist.qeElim(proofArray[goal],proofArray[resource]);
+            try {
+                proofArray = Globals.assist.qeElim(proofArray[goal],proofArray[resource]);
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (op.equals("eq")) {
             if (proofArray[goal].getType() > 6 && proofArray[goal].getType() < 11) { // If we're in an identity box
                 proofArray = Globals.assist.idBoxEqElim(proofArray[goal], proofArray[resource]);
             } else {
-                proofArray = Globals.assist.eqElim(proofArray[goal], proofArray[resource]);
+                try {
+                    proofArray = Globals.assist.eqElim(proofArray[goal], proofArray[resource]);
+                } catch (IndexOutOfBoundsException ex) {
+                    Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (MissingArityException ex) {
+                    Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         } else if (op.equals("at")) {
             proofArray = Globals.assist.atElim(proofArray[goal], proofArray[resource]);
         } else if (op.equals("box")) {
             proofArray = Globals.assist.boxElim(proofArray[goal], proofArray[resource]);
         } else if (op.equals("dia")) {
-            proofArray = Globals.assist.diaElim(proofArray[goal], proofArray[resource]);
+            try {
+                proofArray = Globals.assist.diaElim(proofArray[goal], proofArray[resource]);
+            } catch (MissingArityException ex) {
+                Logger.getLogger(ProofPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else if (op.equals("nom")) {
             if (proofArray[goal].getType() > 6 && proofArray[goal].getType() < 11) { // If we're in an identity box
                 proofArray = Globals.assist.idBoxNomElim(proofArray[goal], proofArray[resource]);

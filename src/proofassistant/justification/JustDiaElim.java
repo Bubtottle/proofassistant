@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import proofassistant.Globals;
 import proofassistant.Globals;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDLine;
 
 /**
  * The JustDiaElim class implements NDJust for diamond elimination
@@ -42,7 +42,7 @@ public class JustDiaElim implements NDJust {
         return diamond.getLineNumOutput() + ", " 
                 + rangeS1.getLineNumOutput() + "-" + rangeE.getLineNumOutput() 
                 + ", " + Globals.operators.get("LEFTdia") 
-                + diamond.getArg(1) 
+                + diamond.getArgAsString(1) 
                 + Globals.operators.get("RIGHTdia") + "E"
                 + (legal ? "" : "!");
     }
@@ -51,7 +51,7 @@ public class JustDiaElim implements NDJust {
     public String getTeX() {
         return diamond.getLineNumOutput() + ", " 
                 + rangeS1.getLineNumOutput() + "-" + rangeE.getLineNumOutput() 
-                + ", $\\langle " + diamond.getArg(1) 
+                + ", $\\langle " + diamond.getArgAsString(1) 
                 + "\\rangle\\rulename{E}$"
                 + (legal ? "" : "\\illegalflag");
     }

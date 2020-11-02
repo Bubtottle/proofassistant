@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import proofassistant.Globals;
 import proofassistant.Globals;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDJust;
-import proofassistant.line.NDLine;
-import proofassistant.line.NDLine;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDJust;
+import proofassistant.core.NDLine;
+import proofassistant.core.NDLine;
 
 /**
  * The JustBoxIntro class implements NDJust for box introduction
@@ -36,14 +36,14 @@ public class JustBoxIntro implements NDJust {
     @Override
     public String getJava() {
         return aStart.getLineNumOutput() + "-" + aEnd.getLineNumOutput() + ", " 
-                + Globals.operators.get("LEFTBOX") + goal.getArg(1) 
+                + Globals.operators.get("LEFTBOX") + goal.getArgAsString(1) 
                 + Globals.operators.get("RIGHTBOX") + "I";
     }
     
     @Override
     public String getTeX() {
         return aStart.getLineNumOutput() + "-" + aEnd.getLineNumOutput() 
-                + ", $[ " + goal.getArg(1) + "]\\rulename{I}$";
+                + ", $[ " + goal.getArgAsString(1) + "]\\rulename{I}$";
     }
     
     public boolean getBlank() {

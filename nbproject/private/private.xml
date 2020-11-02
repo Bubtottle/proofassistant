@@ -4,19 +4,20 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/util/SymbolHandler.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/line/NDAtom.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/NDJust.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofFrame.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/line/NDJust.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/line/NDLine.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/NDLine.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/ProofObject.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/Globals.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/line/NDFormula.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofObject.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/ProofStage.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/NDFormula.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/justification/JustBoxIntro.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/exception/MissingArityException.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ScopeLine.java</file>
-            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofStage.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/justification/JustBoxElim.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/ProofPanel.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/core/NDAtom.java</file>
+            <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/util/TermStore.java</file>
             <file>file:/C:/Users/bubto/OneDrive/University/Coding/proofassistant/src/proofassistant/Test.java</file>
         </group>
     </open-files>
