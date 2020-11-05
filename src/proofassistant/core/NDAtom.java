@@ -103,7 +103,6 @@ public class NDAtom {
                         i++;
                     }
                     arguments.add(new NDAtom(macro.substring(start, i)));
-                    i++;
                 }         
             }
         }

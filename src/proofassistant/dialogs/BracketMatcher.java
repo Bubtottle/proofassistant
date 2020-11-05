@@ -1,4 +1,4 @@
-package proofassistant;
+package proofassistant.dialogs;
 
 import javax.swing.*;
 import javax.swing.text.*;

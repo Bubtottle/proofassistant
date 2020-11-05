@@ -5,6 +5,7 @@
 */
 
 package proofassistant;
+import proofassistant.dialogs.AxiomInputDialog;
 import proofassistant.core.ProofObject;
 import proofassistant.core.NDLine;
 import proofassistant.core.NDJust;
@@ -39,7 +40,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import static proofassistant.Globals.frame;
+import proofassistant.exception.MissingArityException;
 import proofassistant.exception.WrongLineTypeException;
+import proofassistant.util.SymbolHandler;
 
 /**
  *
@@ -526,6 +529,11 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         newFromTeXItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()+java.awt.event.InputEvent.SHIFT_MASK));
         advanced.add(newFromTeXItem);
         
+        JMenuItem newPlaceHolder = new JMenuItem("New Proof from TeX Code (2.0)...");
+        newPlaceHolder.addActionListener(this);
+        newPlaceHolder.setActionCommand("newPlaceHolder");
+        advanced.add(newPlaceHolder);
+        
         file.add(advanced);
         
         JMenuItem saveItem = new JMenuItem("Save...");
@@ -809,50 +817,89 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         return true;
     }
     
-    private String parseInput(String input) {
+    /*
+    Takes in a line of the form \sequent{}{} and cleans it.
+    */
+    private String parseSequentInput(String input) {
+        // Remove all carriage returns/line feeds (\r or \n) and exclamations
         input = input.replaceAll("(\\r|\\n)", "").replaceAll("\\\\\\!","");
         
         // Figure out written lines //
         Pattern pattern;
-        Matcher matcher;
-        
+        Matcher matcher;        
         pattern = Pattern.compile("(\\w+) is injective");
         matcher = pattern.matcher(input);
         if (matcher.find()) {
             input = input.replaceAll("(\\w+) is injective", "\\\\qa{x}{\\\\qe{y}{" + matcher.group(1) + "x=y}}");
-        }
-        
+        }        
         pattern = Pattern.compile("(\\w+) is reflexive");
         matcher = pattern.matcher(input);
         if (matcher.find()) {
             input = input.replaceAll("(\\w+) is reflexive", "\\\\qa{x}{" + matcher.group(1) + "xx}");
-        }
-        
+        }        
         pattern = Pattern.compile("(\\w+) is symmetric");
         matcher = pattern.matcher(input);
         if (matcher.find()) {
             input = input.replaceAll("(\\w+) is symmetric", "\\\\qa{x}{\\\\qa{y}{\\\\imp{" + matcher.group(1) + "xy}{" + matcher.group(1) +"yx}}}");
-        }
-        
+        }        
         pattern = Pattern.compile("(\\w+) is transitive");
         matcher = pattern.matcher(input);
         if (matcher.find()) {
             input = input.replaceAll("(\\w+) is transitive", "\\\\qa{x}{\\\\qa{y}{\\\\qa{z}{\\\\imp{\\\\con{" + matcher.group(1) + "xy}{" + matcher.group(1) + "yz}}{" + matcher.group(1) +"xz}}}}");
-        }
-        
+        }        
         pattern = Pattern.compile("(\\w+) is irreflexive");
         matcher = pattern.matcher(input);
         if (matcher.find()) {
             input = input.replaceAll("(\\w+) is irreflexive", "\\\\qa{x}{\\\\neg{" + matcher.group(1) + "xx}}");
         }
         
-        
-        
-        
+        // Now remove spaces
         input = input.replaceAll("\\s+", "");
-        
+        // Replace \cdot with an actual centre dot
         input = input.replaceAll("\\\\cdot", "⋅");
+        return input;
+    }
+    
+    /*
+    Parse String input in TeX code format.
+    */
+    private String parseInput(String input) {
+        // Remove all carriage returns/line feeds (\r or \n) and exclamations
+        input = input.replaceAll("(\\r|\\n)", "").replaceAll("\\\\\\!","");
         
+        // Figure out written lines //
+        Pattern pattern;
+        Matcher matcher;        
+        pattern = Pattern.compile("(\\w+) is injective");
+        matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            input = input.replaceAll("(\\w+) is injective", "\\\\qa{x}{\\\\qe{y}{" + matcher.group(1) + "x=y}}");
+        }        
+        pattern = Pattern.compile("(\\w+) is reflexive");
+        matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            input = input.replaceAll("(\\w+) is reflexive", "\\\\qa{x}{" + matcher.group(1) + "xx}");
+        }        
+        pattern = Pattern.compile("(\\w+) is symmetric");
+        matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            input = input.replaceAll("(\\w+) is symmetric", "\\\\qa{x}{\\\\qa{y}{\\\\imp{" + matcher.group(1) + "xy}{" + matcher.group(1) +"yx}}}");
+        }        
+        pattern = Pattern.compile("(\\w+) is transitive");
+        matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            input = input.replaceAll("(\\w+) is transitive", "\\\\qa{x}{\\\\qa{y}{\\\\qa{z}{\\\\imp{\\\\con{" + matcher.group(1) + "xy}{" + matcher.group(1) + "yz}}{" + matcher.group(1) +"xz}}}}");
+        }        
+        pattern = Pattern.compile("(\\w+) is irreflexive");
+        matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            input = input.replaceAll("(\\w+) is irreflexive", "\\\\qa{x}{\\\\neg{" + matcher.group(1) + "xx}}");
+        }
+        
+        // Now remove spaces
+        input = input.replaceAll("\\s+", "");
+        // Replace \cdot with an actual centre dot
+        input = input.replaceAll("\\\\cdot", "⋅");
         
         
         if (input.length() > 8 && input.substring(1,8).equals("sequent")) {
@@ -1049,6 +1096,8 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                 }
             }
             checkTitle();
+        } else if (source.equals("newPlaceHolder")) {
+            newProofFromTeX();
         } else if (source.equals("newProof")) {
             boolean finished = false;
             while (!finished) {
@@ -1481,6 +1530,58 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                 Globals.rulePal.setVisible(true);
             }
         }
+    }
+    
+    private void newProofFromTeX() {
+        boolean finished = false;
+            while (!finished) {
+                
+                String s = (String)JOptionPane.showInputDialog(this, 
+                        "Enter your sequent. \n"
+                                + "Use the form "
+                                + "\\sequent{[premises]}{[conclusion]}",
+                        "New Proof", JOptionPane.PLAIN_MESSAGE, null, null, 
+                        newProofBoxContents);
+                newProofBoxContents = s;
+                if (s != null && s.equals("open the pod bay doors")) {
+                    JOptionPane.showMessageDialog(this, "I'm sorry Dave, I'm afraid I can't do that");
+                    finished = true;
+                } else if ( s!= null && inputIsGood(s)) {
+                    try {
+                        Globals.assist = new ProofObject(parseSequentInput(s), new SymbolHandler());
+                        Globals.lineNum = 0;
+                        Globals.editable = true;
+                        Globals.specialLineNum = -10;
+                        resetStacks(); // Empty all the stacks
+                        Globals.terms.empty();
+                        Globals.currentGoalIndex = -1;
+                        Globals.currentResourceIndex = -1;
+                        Globals.proofArray = Globals.assist.getProofArray();
+                        panel = new ProofPanel(Globals.proofArray);
+                        Globals.scrollpane = new JScrollPane(panel);
+                        Globals.scrollpane.setBorder(null);
+                        Globals.scrollpane.getVerticalScrollBar().setUnitIncrement(scrollspeed);
+                        getContentPane().removeAll();
+                        getContentPane().add(Globals.scrollpane);
+                        getContentPane().add(status, BorderLayout.SOUTH);
+                        status.updateRuleSystem();
+                        status.setArityButtonToolTip();
+                        status.setDogsBodyText("");
+                        int isMaximised = this.getExtendedState();
+                        revalidate();
+                        this.setTitle("Natural Deduction Planner");
+                        finished = true;
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
+                        finished = false;
+                    } catch (IndexOutOfBoundsException | MissingArityException ex) {
+                        Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else if (s == null) {
+                    finished = true;
+                }
+            }
+            checkTitle();
     }
     
     private void resetProof() {

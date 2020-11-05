@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package proofassistant;
+package proofassistant.dialogs;
 
 import proofassistant.core.NDLine;
 import java.awt.Color;
@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JLabel;
+import proofassistant.Globals;
 
 /**
  *

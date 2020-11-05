@@ -50,7 +50,7 @@ public class ProofObject {
     private boolean magicMode = false;
     private boolean usingExtraLines = false;
     
-    private SymbolHandler symbols = new SymbolHandler();
+    private SymbolHandler symbols;
 
     /**
      * Create a new ProofMethods object with a supplied sequent
@@ -62,6 +62,7 @@ public class ProofObject {
         } catch (IndexOutOfBoundsException ex) {
             Logger.getLogger(ProofObject.class.getName()).log(Level.SEVERE, null, ex);
         }
+        symbols = new SymbolHandler();
         currentProof = new ProofStage(proofArray);
 //        setArities();
     }
@@ -72,8 +73,92 @@ public class ProofObject {
      */
     public ProofObject(NDLine[] newArray) {
         proofArray = newArray;
+        symbols = new SymbolHandler();
         currentProof = new ProofStage(proofArray);
     }
+    
+    /**
+     * Create a new ProofObject from a sequent string.
+     * This constructor is primarily transitional, in moving to version 2.0. 
+     * It will mainly be used as a way to get terms up and running properly.
+     * If it's being used more than that, update this!
+     * 
+     * @since Proof Assistant 2.0
+     * @param sequent A String of the form \sequent{}{}, where the contents
+     *                  includes LaTeX macros.
+     * @param syms A SymbolHandler to use in this ProofObject
+     */
+    public ProofObject(String sequent, SymbolHandler syms) 
+            throws IndexOutOfBoundsException, MissingArityException {
+        symbols = syms;
+        if (sequent.length() < 12 
+                || !sequent.substring(0, 9).equals("\\sequent{")) {
+            throw new IllegalArgumentException("The argument must be of the form"
+                    + "'\\sequent{[PREMISES]}{[CONCLUSION]}'\n"
+                    + sequent + " + does not begin with ''\\sequent{'");
+        }
+        
+        // Determine the premises
+        ArrayList<String> premises = new ArrayList<>();
+        int s = 9; // For each premise, the index where it begins
+        int e = s; // For each premise, the index where it ends
+        char c;
+        int brackets = 0;
+        while (e > 0) { // Once we finish, we'll set e = -1
+            switch(sequent.charAt(e)) {
+                case '}' : 
+                    if (brackets == 0) { // We've finished adding all premises
+                        premises.add(sequent.substring(s, e));
+                        s = e;
+                        e = -1;
+                        break;
+                    } 
+                    // Otherwise, this was just a close bracket at high level
+                    brackets--;
+                    e++;
+                    break;
+                case ',' : 
+                    if (brackets == 0) { // We've finished a single premise
+                        premises.add(sequent.substring(s, e));
+                        s = ++e;
+                        break;
+                    }
+                    // Otherwise, this was just a comma at a high level
+                    e++;
+                    break;
+                case '{' : // We're adding an active bracket, then fall through
+                    brackets++;
+                default : // Any other character, we just continue
+                    e++;
+            }
+            if (e > sequent.length()) {
+                throw new IllegalArgumentException("The argument must be of the form"
+                    + "'\\sequent{[PREMISES]}{[CONCLUSION]}'\n"
+                    + sequent + " has bracketing problems in the premise");
+            }
+        }
+        
+        // Now look at the conclusion
+        s++;
+        if (sequent.charAt(s) != '{' || !sequent.endsWith("}")) {
+            throw new IllegalArgumentException("The argument must be of the form"
+                + "'\\sequent{[PREMISES]}{[CONCLUSION]}'\n"
+                + sequent + " has a problem with its conclusion");
+        }
+        String conclusion = sequent.substring(s + 1, sequent.length() - 1);
+        
+        // Create the ProofStage
+        int numPrem = premises.size();
+        proofArray = new NDLine[numPrem + 2];
+        for (int i = 0; i < numPrem; i++) {
+            proofArray[i] = new NDLine(new NDFormula(premises.get(i), symbols),
+                    NDLine.PREMISE);
+        }
+        proofArray[numPrem] = new NDLine(NDLine.BLANK);
+        proofArray[numPrem + 1] = new NDLine(new NDFormula(conclusion, symbols));
+        currentProof = new ProofStage(proofArray);
+    }
+    
 
     /**
      * Returns this instance's proofArray

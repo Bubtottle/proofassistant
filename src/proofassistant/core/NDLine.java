@@ -97,27 +97,7 @@ public class NDLine {
         }
         
         this.type = type;
-        switch (type) {
-            case PREMISE:
-                justification = new JustNone(JustNone.PREMISE_JUST);
-                break;
-            case ASS_START:
-            case ASS_ONE_LINE:
-                justification = new JustNone(JustNone.ASS_JUST);
-                break;
-            case ID_BOX_START:
-                justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
-                break;
-            case EQU_ID_BOX_START:
-                justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
-                break;
-            case AXIOM:
-                justification = new JustNone(JustNone.AXIOM);
-                break;
-            default:
-                justification = new JustNone();
-                break;
-        }
+        setTypeJustification(type);
     }
     
     /**
@@ -182,8 +162,31 @@ public class NDLine {
         Globals.lineNum ++;
         this.lineNum = Globals.lineNum;
         type = tp;
-        justification = new JustNone();
+        setTypeJustification(type);
         Globals.terms.processLine(context);
+    }
+    
+    private void setTypeJustification(int tp) {
+        switch (tp) {
+            case PREMISE:
+                justification = new JustNone(JustNone.PREMISE_JUST);
+                break;
+            case ASS_START:
+            case ASS_ONE_LINE:
+                justification = new JustNone(JustNone.ASS_JUST);
+                break;
+            case ID_BOX_START:
+                justification = new JustNone(JustNone.ASS_JUST_ID_BOX);
+                break;
+            case EQU_ID_BOX_START:
+                justification = new JustNone(JustNone.ASS_JUST_EQU_ID_BOX);
+                break;
+            case AXIOM:
+                justification = new JustNone(JustNone.AXIOM);
+                break;
+            default:
+                justification = new JustNone();
+        }
     }
     
     /**

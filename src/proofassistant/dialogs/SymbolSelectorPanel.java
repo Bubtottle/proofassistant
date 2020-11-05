@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package proofassistant;
+package proofassistant.dialogs;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -39,6 +39,7 @@ import java.util.Iterator;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import proofassistant.Globals;
 
 /**
  *

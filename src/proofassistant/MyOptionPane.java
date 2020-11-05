@@ -26,6 +26,9 @@ Adapted from http://www.java2s.com/Tutorial/Java/0240__Swing/UsingJOptionPanewit
 
 package proofassistant;
 
+import proofassistant.dialogs.TermSelectorPanel;
+import proofassistant.dialogs.FriendlyLineInput;
+import proofassistant.dialogs.FriendlyInput;
 import proofassistant.core.NDLine;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

@@ -93,7 +93,7 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="proofassistant.SymbolSelectorPanel" name="symbolSelectorPanel1">
+    <Component class="proofassistant.dialogs.SymbolSelectorPanel" name="symbolSelectorPanel1">
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="symbolSelectorPanel1.addActionListener(this);"/>
       </AuxValues>

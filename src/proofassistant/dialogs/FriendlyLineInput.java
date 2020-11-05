@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package proofassistant;
+package proofassistant.dialogs;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +31,8 @@ import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import proofassistant.Globals;
+import proofassistant.RequestFocusListener;
 
 /**
  *
@@ -116,7 +118,7 @@ public class FriendlyLineInput extends javax.swing.JPanel implements ActionListe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        symbolSelectorPanel1 = new proofassistant.SymbolSelectorPanel();
+        symbolSelectorPanel1 = new proofassistant.dialogs.SymbolSelectorPanel();
         lineField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -243,7 +245,7 @@ public class FriendlyLineInput extends javax.swing.JPanel implements ActionListe
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JTextField lineField;
-    private proofassistant.SymbolSelectorPanel symbolSelectorPanel1;
+    private proofassistant.dialogs.SymbolSelectorPanel symbolSelectorPanel1;
     private javax.swing.JCheckBox useTeXCheckBox;
     // End of variables declaration//GEN-END:variables
 

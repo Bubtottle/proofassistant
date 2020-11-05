@@ -22,8 +22,9 @@
  * THE SOFTWARE.
  */
 
-package proofassistant;
+package proofassistant.dialogs;
 
+import proofassistant.Globals;
 import proofassistant.core.NDLine;
 import static proofassistant.Globals.assist;
 import static proofassistant.Globals.createExtraLines;
