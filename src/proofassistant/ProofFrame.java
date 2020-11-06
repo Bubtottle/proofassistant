@@ -529,9 +529,9 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         newFromTeXItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()+java.awt.event.InputEvent.SHIFT_MASK));
         advanced.add(newFromTeXItem);
         
-        JMenuItem newPlaceHolder = new JMenuItem("New Proof from TeX Code (2.0)...");
+        JMenuItem newPlaceHolder = new JMenuItem("New Proof from TeX Code (Legacy)...");
         newPlaceHolder.addActionListener(this);
-        newPlaceHolder.setActionCommand("newPlaceHolder");
+        newPlaceHolder.setActionCommand("newProofFromTeXLegacy");
         advanced.add(newPlaceHolder);
         
         file.add(advanced);
@@ -817,7 +817,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         return true;
     }
     
-    /*
+    /**
     Takes in a line of the form \sequent{}{} and cleans it.
     */
     private String parseSequentInput(String input) {
@@ -860,7 +860,7 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         return input;
     }
     
-    /*
+    /**
     Parse String input in TeX code format.
     */
     private String parseInput(String input) {
@@ -976,57 +976,143 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
         return input;
     }
     
+    /**
+     * Actions to perform when the user clicks a menu item.
+     * @param e an ActionEvent, giving details of the menu item selected.
+     */
     public void actionPerformed(ActionEvent e) {
         String source = e.getActionCommand();
         
-        if (source.equals("closeAll")) {
-//            funTime = System.currentTimeMillis();
-            saveSetup();
-//            System.out.println("" + (System.currentTimeMillis()-funTime));
-            
-            dispose();
-        } else if (source.equals("openSettings")) {
-            Settings sett = new Settings(this, true);
-            sett.setVisible(true);
-            if (panel != null) {
-                panel.printLines();
+        switch (source) {
+            case "closeAll":
+                closeActions();
+                break;
+            case "openSettings":
+                Settings sett = new Settings(this, true);
+                sett.setVisible(true);
+                if (panel != null) {
+                    panel.printLines();
+                }   break;
+            case "openAxioms":
+                AxiomInputDialog axioms = new AxiomInputDialog(this, true);
+                axioms.setVisible(true);
+                break;
+            case "runMagicMode":
+                magicModeActions();
+                break;
+            case "newProofFromTeX":
+                newProofFromTeXActions();
+                break;
+            case "newProofFromTeXLegacy":
+                newProofFromTeXActionsLegacy();
+                break;
+            case "newProof":
+                newProofActions();
+                break;
+            case "exportTeXProof":
+                exportTeXActions();
+                break;
+            case "exportTextProof":
+                exportTextActions();
+                break;
+            case "exportPNGProof":
+                exportPNGActions();
+                break;
+            case "exportGIFProof":
+                exportGIFActions();
+                break;
+            case "exportClipboardProof":
+                copyToClipboardActions();
+                break;
+            case "undoStep":
+                undoActionsLegacy();
+                break;
+            case "redoStep":
+                redoActionsLegacy();
+                break;
+            case "aboutApp":
+                aboutActions();
+                break;
+            case "debugApp":
+                debugActions();
+                break;
+            case "theZoom":
+                zoomActions("adjust");
+                break;
+            case "increaseZoom":
+                zoomActions("increase");
+                break;
+            case "decreaseZoom":
+                zoomActions("decrease");
+                break;
+            case "cutALine":
+                cutActions();
+                break;
+            case "saveProof":
+                saveActions();
+                break;
+            case "openProof":
+                openActions();
+                break;
+            case "showRulePalette":
+                showRulePaletteDialog();
+                break;
+            default:
+                break;
+        }
+    }
+    
+    // HELPER FUNCTIONS FOR ACTIONPERFORMED
+    
+    /**
+     * Helper function executed when Proof Assistant is requested to close.
+     */
+    private void closeActions() {
+        saveSetup();
+        dispose();
+    }
+    
+    /** Helper function executed when Magic Mode is requested.
+     * 
+     */
+    private void magicModeActions() {
+        if (panel != null) {
+            try {
+                panel.magicMode();
+            } catch (LineNotInProofArrayException ex) {
+                Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (WrongLineTypeException ex) {
+                Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else if (source.equals("openAxioms")) {
-            AxiomInputDialog axioms = new AxiomInputDialog(this, true);
-            axioms.setVisible(true);
-        } else if (source.equals("runMagicMode")) {
-            if (panel != null) {
+        }   
+    }
+    
+    /**
+     * Legacy helper function to create a new proof from TeX code.
+     */
+    private void newProofFromTeXActionsLegacy() {
+        boolean finished = false;
+        while (!finished) {
+
+            String s = (String)JOptionPane.showInputDialog(this, "Enter your sequent. \nUse commas to separate each premise. \nWrite \"->\" before the conclusion. \nAlternatively, use the form \\sequent{[premises]}{[conclusion]}",
+                    "New Proof", JOptionPane.PLAIN_MESSAGE, null, null, newProofBoxContents);
+            newProofBoxContents = s;
+            if (s != null && s.equals("open the pod bay doors")) {
+                JOptionPane.showMessageDialog(this, "I'm sorry Dave, I'm afraid I can't do that");
+                finished = true;
+            } else if ( s!= null && inputIsGood(s)) {
+                finished = true;
+                s = parseInput(s);
+                System.out.println("problem " + s);
                 try {
-                    panel.magicMode();
-                } catch (LineNotInProofArrayException ex) {
-                    Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (WrongLineTypeException ex) {
-                    Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        } else if (source.equals("newProofFromTeX")) {
-            boolean finished = false;
-            while (!finished) {
-                
-                String s = (String)JOptionPane.showInputDialog(this, "Enter your sequent. \nUse commas to separate each premise. \nWrite \"->\" before the conclusion. \nAlternatively, use the form \\sequent{[premises]}{[conclusion]}",
-                        "New Proof", JOptionPane.PLAIN_MESSAGE, null, null, newProofBoxContents);
-                newProofBoxContents = s;
-                if (s != null && s.equals("open the pod bay doors")) {
-                    JOptionPane.showMessageDialog(this, "I'm sorry Dave, I'm afraid I can't do that");
-                    finished = true;
-                } else if ( s!= null && inputIsGood(s)) {
-                    finished = true;
-                    s = parseInput(s);
-                    System.out.println("problem " + s);
-                    try {
                     if (s.length() > 8 && s.substring(1,8).equals("sequent")) { // If we're using the form \sequent{p, q}{r}
-                        
+
                         NDLine temp = new NDLine(s.replaceAll("\\\\,", ""),6);
-                        
+
                         String[] tempArray = temp.getArgAsString(1).split(",");
-                        
+
                         String[] argumentArray;
-                        
+
                         int i = 0;
                         if (tempArray[0].equals("")) {
                             argumentArray = new String[2];
@@ -1037,11 +1123,11 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                                 i++;
                             }
                         }
-                        
+
                         argumentArray[i] = "-c";
                         i++;
                         argumentArray[i] = temp.getArgAsString(2).replaceAll("\\s+","");
-                        
+
                         Globals.lineNum = 0;
                         Globals.editable = true;
                         Globals.specialLineNum = -10;
@@ -1087,452 +1173,24 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         revalidate();
                         this.setTitle("Natural Deduction Planner");
                     }
-                    } catch (Exception exc) {
-                        JOptionPane.showMessageDialog(this, exc.toString(), "Error", JOptionPane.ERROR_MESSAGE);
-                        exc.printStackTrace();
-                    }
-                } else if (s == null) {
-                    finished = true;
-                }
-            }
-            checkTitle();
-        } else if (source.equals("newPlaceHolder")) {
-            newProofFromTeX();
-        } else if (source.equals("newProof")) {
-            boolean finished = false;
-            while (!finished) {
-                try {
-                String s = MyOptionPane.showFriendlyInputDialog();
-                if (s!= null && s.contains("ERROR:")) {
-                    throw new Exception(s.substring(s.indexOf("ERROR:"), s.indexOf(";")));
-                } else if  ( s!= null && inputIsGood(s)) {
-                    finished = true;
-                    s = parseInput(s);
-                    try {
-                    Globals.editable = true;
-                    Globals.lineNum = 0;
-                    Globals.specialLineNum = -10;
-                    resetStacks(); // Empty all the stacks
-//                    System.out.println("proofframe says " + Globals.terms.getListOfUsedTerms().contains("s"));
-                    Globals.terms.empty();
-//                    System.out.println("proofframe says " + Globals.terms.getListOfUsedTerms().contains("s"));
-                    Globals.currentGoalIndex = -1;
-                    Globals.currentResourceIndex = -1;
-                    Globals.assist = new ProofObject(s.split(","));
-                    Globals.proofArray = Globals.assist.getProofArray();
-                    panel = new ProofPanel(Globals.proofArray);
-                    Globals.scrollpane = new JScrollPane(panel);
-                    Globals.scrollpane.setBorder(null);
-                    Globals.scrollpane.getVerticalScrollBar().setUnitIncrement(scrollspeed);
-                    getContentPane().removeAll();
-                    getContentPane().add(Globals.scrollpane);
-                    getContentPane().add(status, BorderLayout.SOUTH);
-                    status.updateRuleSystem();
-//                    System.out.println("hi");
-                    status.setArityButtonToolTip();
-                    status.setDogsBodyText("");
-//                    setContentPane(Globals.scrollpane);
-                    
-                    
-                    revalidate();
-                    this.setTitle("Natural Deduction Planner");
-                    } catch (Exception exc) {
-                        JOptionPane.showMessageDialog(this, exc.toString(), "Error", JOptionPane.ERROR_MESSAGE);
-                        exc.printStackTrace();
-                    }
-                } else if (s == null) {
-                    finished = true;
-                }
                 } catch (Exception exc) {
-                    JOptionPane.showMessageDialog(this, exc.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, exc.toString(), "Error", JOptionPane.ERROR_MESSAGE);
                     exc.printStackTrace();
                 }
+            } else if (s == null) {
+                finished = true;
             }
-            checkTitle();
-        } else if (source.equals("exportTeXProof")) {
-            JFrame export;
-            if (Globals.assist != null) {
-                export = new ExportFrame(Globals.assist.getTeXCodeString(),"Export to TeX","The TeX code below makes use of ndproof.sty.");
-                export.setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("exportTextProof")) {
-            JFrame export;
-            if (Globals.assist != null) {
-                export = new ExportFrame(Globals.assist.getPlainTextString(),"Export to Plain Text","The plain text below will look best in a fixed-width font.");
-                export.setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("exportPNGProof")) {
-            if (Globals.assist != null) {
-                
-                BufferedImage bi = panel.getImage();
-                
-                
-                int returnVal = pngFileChooser.showSaveDialog(this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    if (pngFileChooser.getFileFilter().accept(pngFileChooser.getSelectedFile())) {
-                        try{ImageIO.write(bi,"png",pngFileChooser.getSelectedFile());}catch (Exception exception) {}
-                    } else {
-                        try{ImageIO.write(bi,"png",new File(pngFileChooser.getSelectedFile() + ".png"));}catch (Exception exception) {}
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("exportGIFProof")) {
-            if (Globals.assist != null) {
-                try {
-                BufferedImage bi = panel.getImage();
-                ImageOutputStream output = null;
-                
-                int returnVal = gifFileChooser.showSaveDialog(this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    if (gifFileChooser.getFileFilter().accept(gifFileChooser.getSelectedFile())) {
-                        try{output = new FileImageOutputStream(gifFileChooser.getSelectedFile());}catch (Exception exception) {}
-                    } else {
-                        try{output = new FileImageOutputStream(new File(gifFileChooser.getSelectedFile() + ".gif"));}catch (Exception exception) {}
-                    }
-                }
-                
-                if (output!= null ) {
-                    GifSequenceWriter writer = new GifSequenceWriter(output, bi.getType(), 1000, true); 
-
-                    resetProof();
-                    
-                    ArrayList<BufferedImage> frames = new ArrayList<>();
-                    for (int i = 0; !Globals.proofsForRedo.isEmpty(); i++) {
-                        frames.add(panel.getImage());
-                        actionPerformed(new ActionEvent(this, 1, "redoStep"));
-                    }
-                    int maxWidth = 0;
-                    int maxHeight = 0;
-                    for (int i = 0; i < frames.size(); i++) {
-                        if (frames.get(i).getWidth() > 0) {
-                            maxWidth = frames.get(i).getWidth();
-                        }
-                        if (frames.get(i).getHeight() > 0) {
-                            maxHeight = frames.get(i).getHeight();
-                        }
-                    }
-                    
-                    resetProof();
-                    int i = 0;
-                    while (!Globals.proofsForRedo.isEmpty()) {
-                        bi = panel.getImage(maxWidth, maxHeight);
-                        ImageIO.write(bi,"png",new File(i + ".png"));
-                        writer.writeToSequence(panel.getImage(maxWidth, maxHeight));
-                        actionPerformed(new ActionEvent(this, 1, "redoStep"));
-                        i++;
-                    }
-                    
-                    
-                    bi = panel.getImage(maxWidth, maxHeight);
-//                    System.out.println(Globals.assist.getProofArray().length);
-                    writer.writeToSequence(bi);
-                    writer.writeToSequence(bi);
-                    writer.writeToSequence(bi);
-                    writer.close();
-
-
-                    output.close();
-                }
-                } catch (IOException except) {
-                    JOptionPane.showMessageDialog(this, "Export to GIF failed!", "Export Error", JOptionPane.ERROR_MESSAGE);
-                    except.printStackTrace();
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("exportClipboardProof")) {
-            if (Globals.assist != null) {
-                Image bi = panel.getImage();
-                Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
-                
-                TransferableImage trans = new TransferableImage(bi);
-                clip.setContents(trans, this);
-                
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("undoStep")) {
-            if (!Globals.proofsForUndo.isEmpty()) {
-                // Push to Redo
-                if (Globals.assist != null) {
-                    NDLine[] proofArray = Globals.assist.getProofArray();
-                    NDLine[] tempArray = new NDLine[proofArray.length];
-                    for (int i = 0; i < proofArray.length; i++) {
-                        tempArray[i] = proofArray[i].clone();
-                    }
-                    Globals.proofsForRedo.push(tempArray);
-                    Globals.goalsForRedo.push(Globals.currentGoalIndex);
-                    Globals.resourcesForRedo.push(Globals.currentResourceIndex);
-                    Globals.lineNumsForRedo.push(Globals.lineNum);
-                    Globals.rulesUsedForRedo.push((HashSet<String>)Globals.rulesUsed.clone());
-                    Globals.termsUsedForRedo.push((HashSet<String>)Globals.termsUsed.clone());
-                }
-                
-                // Pop from Undo
-                NDLine[] prior = (NDLine[])Globals.proofsForUndo.pop();
-                Globals.assist = new ProofObject(prior);
-                Globals.setArities();
-                Globals.currentGoalIndex = (int)Globals.goalsForUndo.pop();
-//                System.out.println("popped " + Globals.currentGoalIndex);
-                Globals.currentResourceIndex = (int)Globals.resourcesForUndo.pop();
-                Globals.lineNum = (int)Globals.lineNumsForUndo.pop();
-//                System.out.println(Globals.rulesUsed.size());
-//                Iterator fun = Globals.rulesUsed.iterator();
-//            while(fun.hasNext()) {
-////                System.out.println(fun.next());
-//            }
-                Globals.rulesUsed = (HashSet<String>)Globals.rulesUsedForUndo.pop();
-                Globals.termsUsed = (HashSet<String>)Globals.termsUsedForUndo.pop();
-//                System.out.println("popped");
-                
-                // Set up proof
-                Globals.terms.empty();
-                panel.setProofArray(Globals.assist.getProofArray());
-                Globals.proofArray = Globals.assist.getProofArray();
-                Globals.terms.processNDLineArray(Globals.proofArray);
-                panel.printLines();
-            }
-            undoItem.setEnabled(!Globals.proofsForUndo.isEmpty());
-            redoItem.setEnabled(!Globals.proofsForRedo.isEmpty());
-            status.setArityButtonToolTip();
-//            System.out.println("_____________________________________");
-//            Iterator fun = Globals.rulesUsed.iterator();
-//            while(fun.hasNext()) {
-////                System.out.println(fun.next());
-//            }
-            
-            checkTitle();
-        } else if (source.equals("redoStep")) {
-            if (!Globals.proofsForRedo.isEmpty()) {
-                // Push to Undo
-                if (Globals.assist != null) {
-                    NDLine[] proofArray = Globals.assist.getProofArray();
-                    NDLine[] tempArray = new NDLine[proofArray.length];
-                    for (int i = 0; i < proofArray.length; i++) {
-                        tempArray[i] = proofArray[i].clone();
-                    }
-                    Globals.proofsForUndo.push(proofArray);
-                    proofArray = tempArray;
-                    Globals.goalsForUndo.push(Globals.currentGoalIndex);
-                    Globals.resourcesForUndo.push(Globals.currentResourceIndex);
-                    Globals.lineNumsForUndo.push(Globals.lineNum);
-                    Globals.rulesUsedForUndo.push((HashSet<String>)Globals.rulesUsed.clone());
-                    Globals.termsUsedForUndo.push((HashSet<String>)Globals.termsUsed.clone());
-                }
-                
-                // Pop from Redo
-                NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
-                Globals.assist = new ProofObject(prior);
-                Globals.setArities();
-                Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
-                Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
-                Globals.lineNum = (int)Globals.lineNumsForRedo.pop();
-                Globals.rulesUsed = Globals.rulesUsedForRedo.pop();
-                Globals.termsUsed = Globals.termsUsedForRedo.pop();
-                
-                // Set up proof
-                Globals.terms.empty();
-                panel.setProofArray(Globals.assist.getProofArray());
-                Globals.proofArray = Globals.assist.getProofArray();
-                Globals.terms.processNDLineArray(Globals.proofArray);
-                panel.printLines();
-            }
-            undoItem.setEnabled(!Globals.proofsForUndo.isEmpty());
-            redoItem.setEnabled(!Globals.proofsForRedo.isEmpty());
-            status.setArityButtonToolTip();
-            checkTitle();
-        } else if (source.equals("aboutApp")) {
-            JOptionPane.showMessageDialog(this, "Natural Deduction Planner\n"
-                    + "Version " + versionNum + "\n" + date + "\n\n" + "Author: Declan Thompson", "About", JOptionPane.INFORMATION_MESSAGE);
-            if (System.currentTimeMillis()-funTime < 2000) {
-                (new Thread(new Test())).start();
-            } else {
-                funTime = System.currentTimeMillis();
-            }
-            if (Globals.assist != null) {
-                Globals.assist.printProofArray();
-                Globals.assist.printProofArrayLines();
-            }
-        } else if (source.equals("debugApp")) {
-            if (Globals.assist != null) {
-                Globals.assist.printProofArray();
-                Globals.assist.printProofArrayLines();
-            }
-        } else if (source.equals("theZoom")) {
-            if (panel != null) {
-                float zoom = (float)(MyOptionPane.showJSliderDialog("Choose your zoom level", "Zoom", 50, 550, (int)(panel.getZoomFactor()*100)))/100;
-                panel.setZoomFactor(zoom);
-                panel.printLines();
-                Globals.zoomFactor = zoom;
-            } else {
-                Globals.zoomFactor = (float)(MyOptionPane.showJSliderDialog("Choose your zoom level", "Zoom", 50, 550, (int)(Globals.zoomFactor*100)))/100;
-            }
-        } else if (source.equals("increaseZoom")) {
-            if (panel != null) {
-                float zoom = Globals.zoomFactor + (float)0.2;
-                panel.setZoomFactor(zoom);
-                panel.printLines();
-                Globals.zoomFactor = zoom;
-            } else {
-                Globals.zoomFactor = (float)(MyOptionPane.showJSliderDialog("Choose your zoom level", "Zoom", 50, 550, (int)(Globals.zoomFactor*100)))/100;
-            }
-        } else if (source.equals("decreaseZoom")) {
-            if (panel != null) {
-                float zoom = Globals.zoomFactor - (float)0.2;
-                if (zoom < (float)0.05) {
-                    zoom = (float)0.05;
-                }
-                panel.setZoomFactor(zoom);
-                panel.printLines();
-                Globals.zoomFactor = zoom;
-            } else {
-                Globals.zoomFactor = (float)(MyOptionPane.showJSliderDialog("Choose your zoom level", "Zoom", 50, 550, (int)(Globals.zoomFactor*100)))/100;
-            }
-        } else if (source.equals("cutALine")) {
-            if (panel != null) {
-                if (Globals.currentGoalIndex < 0) {
-                    JOptionPane.showMessageDialog(this, "Please select a current goal first!", "Cut Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    String newLine = MyOptionPane.showFriendlyLineInputDialog();
-                    if (newLine != null && lineInputIsGood(newLine)) {
-                        newLine = parseInput(newLine);
-                        panel.cutALine(newLine);
-                    }
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "There is no proof to cut in!", "Cut Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (source.equals("saveProof")) {
-            int returnVal = myFileChooser.showSaveDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                Charset charset = Charset.forName("UTF-8");
-                boolean makeItSo = true;
-                if (myFileChooser.getSelectedFile().exists()) {
-                    int result = JOptionPane.showConfirmDialog(this, "File already exists!\nOverwrite?", "Save Proof", JOptionPane.YES_NO_OPTION);
-                    if (result != JOptionPane.YES_OPTION) {
-                        makeItSo = false;
-                    }
-                }
-                if (myFileChooser.getFileFilter().accept(myFileChooser.getSelectedFile()) && makeItSo) {
-                    try (BufferedWriter writer = Files.newBufferedWriter(myFileChooser.getSelectedFile().toPath(), charset)) {
-                        saveProof(writer);
-                        writer.close();
-                    } catch (IOException x) {
-                        System.err.format("IOException: %s%n", x);
-                        x.printStackTrace();
-                    }
-                } else if (makeItSo) {
-                    String extension = ((FileNameExtensionFilter)myFileChooser.getFileFilter()).getExtensions()[0];
-                    try (BufferedWriter writer = Files.newBufferedWriter((new File (myFileChooser.getSelectedFile() + "." + extension)).toPath(), charset)) {
-                        saveProof(writer);
-                        writer.close();
-                    } catch (IOException x) {
-                        System.err.format("IOException: %s%n", x);
-                        x.printStackTrace();
-                    }
-                }
-            }
-        } else if (source.equals("openProof")) {
-            int returnVal = myFileChooser.showOpenDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                Charset charset = Charset.forName("UTF-8");
-                try (BufferedReader reader = Files.newBufferedReader(myFileChooser.getSelectedFile().toPath(), charset)) {
-                    openProof(reader);
-                    reader.close();
-                    this.setTitle(myFileChooser.getSelectedFile().getName());
-                    if (myFileChooser.getSelectedFile().getName().substring(myFileChooser.getSelectedFile().getName().lastIndexOf(".") + 1).equals("ndu")) {
-                        Globals.editable = false;
-                        
-                        // Push to Redo
-                        if (Globals.assist != null) {
-                            NDLine[] proofArray = Globals.assist.getProofArray();
-                            NDLine[] tempArray = new NDLine[proofArray.length];
-                            for (int i = 0; i < proofArray.length; i++) {
-                                tempArray[i] = proofArray[i].clone();
-                            }
-                            Globals.proofsForRedo.push(tempArray);
-                            Globals.goalsForRedo.push(Globals.currentGoalIndex);
-                            Globals.resourcesForRedo.push(Globals.currentResourceIndex);
-                            Globals.lineNumsForRedo.push(Globals.lineNum);
-                            Globals.rulesUsedForRedo.push((HashSet<String>)Globals.rulesUsed.clone());
-                            Globals.termsUsedForRedo.push((HashSet<String>)Globals.termsUsed.clone());
-                        }
-                        
-                        // Push all undo to redo
-                        while (!Globals.proofsForUndo.isEmpty()) {
-                            Globals.proofsForRedo.push(Globals.proofsForUndo.pop());
-                            Globals.goalsForRedo.push(Globals.goalsForUndo.pop());
-                            Globals.resourcesForRedo.push(Globals.resourcesForUndo.pop());
-                            Globals.lineNumsForRedo.push(Globals.lineNumsForUndo.pop());
-                            Globals.rulesUsedForRedo.push(Globals.rulesUsedForUndo.pop());
-                            Globals.termsUsedForRedo.push(Globals.termsUsedForUndo.pop());
-                        }
-                        
-                        
-                        // Pop from Redo
-                        NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
-                        Globals.assist = new ProofObject(prior);
-                        Globals.setArities();
-                        Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
-                        Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
-                        Globals.lineNum = (int)Globals.lineNumsForRedo.pop();
-                        Globals.rulesUsed = Globals.rulesUsedForRedo.pop();
-                        Globals.termsUsed = Globals.termsUsedForRedo.pop();
-
-                        // Set up proof
-                        Globals.terms.empty();
-                        panel.setProofArray(Globals.assist.getProofArray());
-                        Globals.proofArray = Globals.assist.getProofArray();
-                        Globals.terms.processNDLineArray(Globals.proofArray);
-                        panel.printLines();
-                        
-                        setUndoable(!Globals.proofsForUndo.isEmpty());
-                        setRedoable(!Globals.proofsForRedo.isEmpty());
-                        
-                        JPanel controlPanel = new JPanel();
-                        JButton nextButton = new JButton("Step forward");
-                        nextButton.addActionListener(this);
-                        nextButton.setActionCommand("redoStep");
-                        JButton backButton = new JButton("Step back");
-                        backButton.setSize(nextButton.getSize());
-                        backButton.addActionListener(this);
-                        backButton.setActionCommand("undoStep");
-                        controlPanel.add(backButton);
-                        controlPanel.add(nextButton);
-                        
-                        getContentPane().add(controlPanel, BorderLayout.NORTH);
-                    } else {
-                        Globals.editable = true;
-                    }
-                } catch (IOException x) {
-                    System.err.format("IOException: %s%n", x);
-                } catch (Exception x) {
-                    JOptionPane.showMessageDialog(this, "File is corrupted!", "Open Error", JOptionPane.ERROR_MESSAGE);
-                    x.printStackTrace();
-                }
-            }
-            
-        } else if (source.equals("showRulePalette")) {
-            if (Globals.rulePal != null && Globals.rulePal.isVisible()) {
-                Globals.rulePal.dispose();
-            } else {
-                if (status != null) {
-                    Globals.rulePal = new RulePalette(frame, status.getRuleSystemButton());
-                } else {
-                    Globals.rulePal = new RulePalette(frame, null);
-                }
-                Globals.rulePal.setVisible(true);
-            }
-        }
+        }       
+        checkTitle();
     }
     
-    private void newProofFromTeX() {
+    /**
+     * Helper function executed when the New Proof From TeX menu item is clicked.
+     * NB: This is the new version of this input dialog, since Proof Assistant
+     * 2.0. This (should) make full and correct use of the new NDFormula and
+     * NDAtom.
+     */
+    private void newProofFromTeXActions() {
         boolean finished = false;
             while (!finished) {
                 
@@ -1572,9 +1230,10 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
                         this.setTitle("Natural Deduction Planner");
                         finished = true;
                     } catch (IllegalArgumentException ex) {
+                        JOptionPane.showMessageDialog(this, ex.toString(), "Error", JOptionPane.ERROR_MESSAGE);
                         Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
-                        finished = false;
                     } catch (IndexOutOfBoundsException | MissingArityException ex) {
+                        JOptionPane.showMessageDialog(this, ex.toString(), "Error", JOptionPane.ERROR_MESSAGE);
                         Logger.getLogger(ProofFrame.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else if (s == null) {
@@ -1583,6 +1242,506 @@ public class ProofFrame extends JFrame implements ActionListener, ItemListener, 
             }
             checkTitle();
     }
+    
+    /**
+     * Helper function executed when the user requests a new proof.
+     */
+    private void newProofActions() {
+        boolean finished = false;
+        while (!finished) {
+            try {
+                String s = MyOptionPane.showFriendlyInputDialog();
+                if (s!= null && s.contains("ERROR:")) {
+                    throw new Exception(s.substring(s.indexOf("ERROR:"), s.indexOf(";")));
+                } else if  ( s!= null && inputIsGood(s)) {
+                    finished = true;
+                    s = parseInput(s);
+                    try {
+                        Globals.editable = true;
+                        Globals.lineNum = 0;
+                        Globals.specialLineNum = -10;
+                        resetStacks(); // Empty all the stacks
+//                    System.out.println("proofframe says " + Globals.terms.getListOfUsedTerms().contains("s"));
+                        Globals.terms.empty();
+//                    System.out.println("proofframe says " + Globals.terms.getListOfUsedTerms().contains("s"));
+                        Globals.currentGoalIndex = -1;
+                        Globals.currentResourceIndex = -1;
+                        Globals.assist = new ProofObject(s.split(","));
+                        Globals.proofArray = Globals.assist.getProofArray();
+                        panel = new ProofPanel(Globals.proofArray);
+                        Globals.scrollpane = new JScrollPane(panel);
+                        Globals.scrollpane.setBorder(null);
+                        Globals.scrollpane.getVerticalScrollBar().setUnitIncrement(scrollspeed);
+                        getContentPane().removeAll();
+                        getContentPane().add(Globals.scrollpane);
+                        getContentPane().add(status, BorderLayout.SOUTH);
+                        status.updateRuleSystem();
+//                    System.out.println("hi");
+                        status.setArityButtonToolTip();
+                        status.setDogsBodyText("");
+//                    setContentPane(Globals.scrollpane);
+
+
+                        revalidate();
+                        this.setTitle("Natural Deduction Planner");
+                    } catch (Exception exc) {
+                        JOptionPane.showMessageDialog(this, exc.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+                        exc.printStackTrace();
+                    }
+                } else if (s == null) {
+                    finished = true;
+                }
+            } catch (Exception exc) {
+                JOptionPane.showMessageDialog(this, exc.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                exc.printStackTrace();
+            }
+        }       
+        checkTitle();
+    }
+    
+    /**
+     * Helper function executed when the Export to TeX menu item is clicked.
+     */
+    private void exportTeXActions() {
+        JFrame export;
+        if (Globals.assist != null) {
+            export = new ExportFrame(Globals.assist.getTeXCodeString(),"Export to TeX","The TeX code below makes use of ndproof.sty.");
+            export.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }       
+    }
+    
+    /**
+     * Helper function executed when the Export as Text menu item is clicked.
+     */
+    private void exportTextActions() {
+        JFrame export;
+        if (Globals.assist != null) {
+            export = new ExportFrame(Globals.assist.getPlainTextString(),"Export to Plain Text","The plain text below will look best in a fixed-width font.");
+            export.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }       
+    }
+    
+    /**
+     * Helper function executed when the Export As PNG menu item is clicked.
+     */
+    private void exportPNGActions() {
+        if (Globals.assist != null) {
+                    
+            BufferedImage bi = panel.getImage();
+
+
+            int returnVal = pngFileChooser.showSaveDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                if (pngFileChooser.getFileFilter().accept(pngFileChooser.getSelectedFile())) {
+                    try{ImageIO.write(bi,"png",pngFileChooser.getSelectedFile());}catch (Exception exception) {}
+                } else {
+                    try{ImageIO.write(bi,"png",new File(pngFileChooser.getSelectedFile() + ".png"));}catch (Exception exception) {}
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+    
+    /**
+     * Helper function executed when the Export As GIF menu item is clicked.
+     */
+    private void exportGIFActions() {
+        if (Globals.assist != null) {
+            try {
+                BufferedImage bi = panel.getImage();
+                ImageOutputStream output = null;
+
+                int returnVal = gifFileChooser.showSaveDialog(this);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    if (gifFileChooser.getFileFilter().accept(gifFileChooser.getSelectedFile())) {
+                        try{output = new FileImageOutputStream(gifFileChooser.getSelectedFile());}catch (Exception exception) {}
+                    } else {
+                        try{output = new FileImageOutputStream(new File(gifFileChooser.getSelectedFile() + ".gif"));}catch (Exception exception) {}
+                    }
+                }
+
+                if (output!= null ) {
+                    GifSequenceWriter writer = new GifSequenceWriter(output, bi.getType(), 1000, true);
+
+                    resetProof();
+
+                    ArrayList<BufferedImage> frames = new ArrayList<>();
+                    for (int i = 0; !Globals.proofsForRedo.isEmpty(); i++) {
+                        frames.add(panel.getImage());
+                        actionPerformed(new ActionEvent(this, 1, "redoStep"));
+                    }
+                    int maxWidth = 0;
+                    int maxHeight = 0;
+                    for (int i = 0; i < frames.size(); i++) {
+                        if (frames.get(i).getWidth() > 0) {
+                            maxWidth = frames.get(i).getWidth();
+                        }
+                        if (frames.get(i).getHeight() > 0) {
+                            maxHeight = frames.get(i).getHeight();
+                        }
+                    }
+
+                    resetProof();
+                    int i = 0;
+                    while (!Globals.proofsForRedo.isEmpty()) {
+                        bi = panel.getImage(maxWidth, maxHeight);
+                        ImageIO.write(bi,"png",new File(i + ".png"));
+                        writer.writeToSequence(panel.getImage(maxWidth, maxHeight));
+                        actionPerformed(new ActionEvent(this, 1, "redoStep"));
+                        i++;
+                    }
+
+
+                    bi = panel.getImage(maxWidth, maxHeight);
+//                    System.out.println(Globals.assist.getProofArray().length);
+writer.writeToSequence(bi);
+writer.writeToSequence(bi);
+writer.writeToSequence(bi);
+writer.close();
+
+
+output.close();
+                }
+            } catch (IOException except) {
+                JOptionPane.showMessageDialog(this, "Export to GIF failed!", "Export Error", JOptionPane.ERROR_MESSAGE);
+                except.printStackTrace();
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+    
+    /**
+     * Helper function executed with a request to copy to the clipboard.
+     */
+    private void copyToClipboardActions() {
+        if (Globals.assist != null) {
+            Image bi = panel.getImage();
+            Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+            TransferableImage trans = new TransferableImage(bi);
+            clip.setContents(trans, this);
+
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to export!", "Export Error", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+    
+    /**
+     * Legacy helper function implementing the undo command for pre-2.0 style
+     * NDProofs.
+     * This version is legacy.
+     */
+    private void undoActionsLegacy() {
+        if (!Globals.proofsForUndo.isEmpty()) {
+            // Push to Redo
+            if (Globals.assist != null) {
+                NDLine[] proofArray = Globals.assist.getProofArray();
+                NDLine[] tempArray = new NDLine[proofArray.length];
+                for (int i = 0; i < proofArray.length; i++) {
+                    tempArray[i] = proofArray[i].clone();
+                }
+                Globals.proofsForRedo.push(tempArray);
+                Globals.goalsForRedo.push(Globals.currentGoalIndex);
+                Globals.resourcesForRedo.push(Globals.currentResourceIndex);
+                Globals.lineNumsForRedo.push(Globals.lineNum);
+                Globals.rulesUsedForRedo.push((HashSet<String>)Globals.rulesUsed.clone());
+                Globals.termsUsedForRedo.push((HashSet<String>)Globals.termsUsed.clone());
+            }
+
+            // Pop from Undo
+            NDLine[] prior = (NDLine[])Globals.proofsForUndo.pop();
+            Globals.assist = new ProofObject(prior);
+            Globals.setArities();
+            Globals.currentGoalIndex = (int)Globals.goalsForUndo.pop();
+//                System.out.println("popped " + Globals.currentGoalIndex);
+Globals.currentResourceIndex = (int)Globals.resourcesForUndo.pop();
+Globals.lineNum = (int)Globals.lineNumsForUndo.pop();
+//                System.out.println(Globals.rulesUsed.size());
+//                Iterator fun = Globals.rulesUsed.iterator();
+//            while(fun.hasNext()) {
+////                System.out.println(fun.next());
+//            }
+Globals.rulesUsed = (HashSet<String>)Globals.rulesUsedForUndo.pop();
+Globals.termsUsed = (HashSet<String>)Globals.termsUsedForUndo.pop();
+//                System.out.println("popped");
+
+// Set up proof
+Globals.terms.empty();
+panel.setProofArray(Globals.assist.getProofArray());
+Globals.proofArray = Globals.assist.getProofArray();
+Globals.terms.processNDLineArray(Globals.proofArray);
+panel.printLines();
+        }   undoItem.setEnabled(!Globals.proofsForUndo.isEmpty());
+        redoItem.setEnabled(!Globals.proofsForRedo.isEmpty());
+        status.setArityButtonToolTip();
+//            System.out.println("_____________________________________");
+//            Iterator fun = Globals.rulesUsed.iterator();
+//            while(fun.hasNext()) {
+////                System.out.println(fun.next());
+//            }
+        checkTitle();
+    }
+    
+    /**
+     * Legacy helper function implementing the redo command for pre-2.0 style
+     * NDProofs.
+     * This version is legacy.
+     */
+    private void redoActionsLegacy() {
+        if (!Globals.proofsForRedo.isEmpty()) {
+            // Push to Undo
+            if (Globals.assist != null) {
+                NDLine[] proofArray = Globals.assist.getProofArray();
+                NDLine[] tempArray = new NDLine[proofArray.length];
+                for (int i = 0; i < proofArray.length; i++) {
+                    tempArray[i] = proofArray[i].clone();
+                }
+                Globals.proofsForUndo.push(proofArray);
+                proofArray = tempArray;
+                Globals.goalsForUndo.push(Globals.currentGoalIndex);
+                Globals.resourcesForUndo.push(Globals.currentResourceIndex);
+                Globals.lineNumsForUndo.push(Globals.lineNum);
+                Globals.rulesUsedForUndo.push((HashSet<String>)Globals.rulesUsed.clone());
+                Globals.termsUsedForUndo.push((HashSet<String>)Globals.termsUsed.clone());
+            }
+
+            // Pop from Redo
+            NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
+            Globals.assist = new ProofObject(prior);
+            Globals.setArities();
+            Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
+            Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
+            Globals.lineNum = (int)Globals.lineNumsForRedo.pop();
+            Globals.rulesUsed = Globals.rulesUsedForRedo.pop();
+            Globals.termsUsed = Globals.termsUsedForRedo.pop();
+
+            // Set up proof
+            Globals.terms.empty();
+            panel.setProofArray(Globals.assist.getProofArray());
+            Globals.proofArray = Globals.assist.getProofArray();
+            Globals.terms.processNDLineArray(Globals.proofArray);
+            panel.printLines();
+        }   undoItem.setEnabled(!Globals.proofsForUndo.isEmpty());
+        redoItem.setEnabled(!Globals.proofsForRedo.isEmpty());
+        status.setArityButtonToolTip();
+        checkTitle();
+    }
+    
+    /**
+     * Helper function executed when the About menu item is clicked.
+     */
+    private void aboutActions() {
+        JOptionPane.showMessageDialog(this, "Natural Deduction Planner\n"
+                + "Version " + versionNum + "\n" 
+                + date + "\n\n" 
+                        + "Author: Declan Thompson", "About", 
+                        JOptionPane.INFORMATION_MESSAGE);
+        if (System.currentTimeMillis()-funTime < 2000) {
+            (new Thread(new Test())).start();
+        } else {
+            funTime = System.currentTimeMillis();
+        }   if (Globals.assist != null) {
+            Globals.assist.printProofArray();
+            Globals.assist.printProofArrayLines();
+        }   
+    }
+    
+    /** Helper function for debugging purposes.
+     * Executed when the Debug menu item is clicked.
+     */
+    private void debugActions() {
+        if (Globals.assist != null) {
+            Globals.assist.printProofArray();
+            Globals.assist.printProofArrayLines();
+        }   
+    }
+    
+    /**
+     * Helper function executed when a Zoom change is requested.
+     * @param requestType A String indicating the type of zoom change: must be 
+     *                      one of "increase", "decrease" or "adjust".
+     */
+    private void zoomActions(String requestType) {
+        float zoom = Globals.zoomFactor;
+        switch (requestType) {
+            case "adjust" :
+                zoom = (float)(MyOptionPane.showJSliderDialog(
+                        "Choose your zoom level", "Zoom", 50, 550, 
+                        (int)(panel.getZoomFactor()*100)))/100;
+                break;
+            case "increase" :
+                zoom = Globals.zoomFactor + (float)0.2;
+                break;
+            case "decrease" :
+                zoom = Globals.zoomFactor - (float)0.2;
+                break;
+        }
+        Globals.zoomFactor = zoom;
+        if (panel != null) {
+            panel.setZoomFactor(zoom);
+            panel.printLines();
+        } 
+    }
+    
+    /**
+     * Helper function executed when the Cut menu item is clicked.
+     */
+    private void cutActions() {
+        if (panel != null) {
+            if (Globals.currentGoalIndex < 0) {
+                JOptionPane.showMessageDialog(this, "Please select a current goal first!", "Cut Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                String newLine = MyOptionPane.showFriendlyLineInputDialog();
+                if (newLine != null && lineInputIsGood(newLine)) {
+                    newLine = parseInput(newLine);
+                    panel.cutALine(newLine);
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "There is no proof to cut in!", "Cut Error", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+    
+    /**
+     * Helper function executed when the Save menu item is clicked.
+     */
+    private void saveActions() {
+        int returnVal = myFileChooser.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            Charset charset = Charset.forName("UTF-8");
+            boolean makeItSo = true;
+            if (myFileChooser.getSelectedFile().exists()) {
+                int result = JOptionPane.showConfirmDialog(this, "File already exists!\nOverwrite?", "Save Proof", JOptionPane.YES_NO_OPTION);
+                if (result != JOptionPane.YES_OPTION) {
+                    makeItSo = false;
+                }
+            }
+            if (myFileChooser.getFileFilter().accept(myFileChooser.getSelectedFile()) && makeItSo) {
+                try (BufferedWriter writer = Files.newBufferedWriter(myFileChooser.getSelectedFile().toPath(), charset)) {
+                    saveProof(writer);
+                    writer.close();
+                } catch (IOException x) {
+                    System.err.format("IOException: %s%n", x);
+                    x.printStackTrace();
+                }
+            } else if (makeItSo) {
+                String extension = ((FileNameExtensionFilter)myFileChooser.getFileFilter()).getExtensions()[0];
+                try (BufferedWriter writer = Files.newBufferedWriter((new File (myFileChooser.getSelectedFile() + "." + extension)).toPath(), charset)) {
+                    saveProof(writer);
+                    writer.close();
+                } catch (IOException x) {
+                    System.err.format("IOException: %s%n", x);
+                    x.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Help function executed when the Open menu item is clicked.
+     */
+    private void openActions() {
+        int returnVal = myFileChooser.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            Charset charset = Charset.forName("UTF-8");
+            try (BufferedReader reader = Files.newBufferedReader(myFileChooser.getSelectedFile().toPath(), charset)) {
+                openProof(reader);
+                reader.close();
+                this.setTitle(myFileChooser.getSelectedFile().getName());
+                if (myFileChooser.getSelectedFile().getName().substring(myFileChooser.getSelectedFile().getName().lastIndexOf(".") + 1).equals("ndu")) {
+                    Globals.editable = false;
+
+                    // Push to Redo
+                    if (Globals.assist != null) {
+                        NDLine[] proofArray = Globals.assist.getProofArray();
+                        NDLine[] tempArray = new NDLine[proofArray.length];
+                        for (int i = 0; i < proofArray.length; i++) {
+                            tempArray[i] = proofArray[i].clone();
+                        }
+                        Globals.proofsForRedo.push(tempArray);
+                        Globals.goalsForRedo.push(Globals.currentGoalIndex);
+                        Globals.resourcesForRedo.push(Globals.currentResourceIndex);
+                        Globals.lineNumsForRedo.push(Globals.lineNum);
+                        Globals.rulesUsedForRedo.push((HashSet<String>)Globals.rulesUsed.clone());
+                        Globals.termsUsedForRedo.push((HashSet<String>)Globals.termsUsed.clone());
+                    }
+
+                    // Push all undo to redo
+                    while (!Globals.proofsForUndo.isEmpty()) {
+                        Globals.proofsForRedo.push(Globals.proofsForUndo.pop());
+                        Globals.goalsForRedo.push(Globals.goalsForUndo.pop());
+                        Globals.resourcesForRedo.push(Globals.resourcesForUndo.pop());
+                        Globals.lineNumsForRedo.push(Globals.lineNumsForUndo.pop());
+                        Globals.rulesUsedForRedo.push(Globals.rulesUsedForUndo.pop());
+                        Globals.termsUsedForRedo.push(Globals.termsUsedForUndo.pop());
+                    }
+
+
+                    // Pop from Redo
+                    NDLine[] prior = (NDLine[])Globals.proofsForRedo.pop();
+                    Globals.assist = new ProofObject(prior);
+                    Globals.setArities();
+                    Globals.currentGoalIndex = (int)Globals.goalsForRedo.pop();
+                    Globals.currentResourceIndex = (int)Globals.resourcesForRedo.pop();
+                    Globals.lineNum = (int)Globals.lineNumsForRedo.pop();
+                    Globals.rulesUsed = Globals.rulesUsedForRedo.pop();
+                    Globals.termsUsed = Globals.termsUsedForRedo.pop();
+
+                    // Set up proof
+                    Globals.terms.empty();
+                    panel.setProofArray(Globals.assist.getProofArray());
+                    Globals.proofArray = Globals.assist.getProofArray();
+                    Globals.terms.processNDLineArray(Globals.proofArray);
+                    panel.printLines();
+
+                    setUndoable(!Globals.proofsForUndo.isEmpty());
+                    setRedoable(!Globals.proofsForRedo.isEmpty());
+
+                    JPanel controlPanel = new JPanel();
+                    JButton nextButton = new JButton("Step forward");
+                    nextButton.addActionListener(this);
+                    nextButton.setActionCommand("redoStep");
+                    JButton backButton = new JButton("Step back");
+                    backButton.setSize(nextButton.getSize());
+                    backButton.addActionListener(this);
+                    backButton.setActionCommand("undoStep");
+                    controlPanel.add(backButton);
+                    controlPanel.add(nextButton);
+
+                    getContentPane().add(controlPanel, BorderLayout.NORTH);
+                } else {
+                    Globals.editable = true;
+                }
+            } catch (IOException x) {
+                System.err.format("IOException: %s%n", x);
+            } catch (Exception x) {
+                JOptionPane.showMessageDialog(this, "File is corrupted!", "Open Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }       
+    }
+    
+    /**
+     * Helper function executed when the Rule Palette menu item is clicked.
+     */
+    private void showRulePaletteDialog() {
+        if (Globals.rulePal != null && Globals.rulePal.isVisible()) {
+            Globals.rulePal.dispose();
+        } else {
+            if (status != null) {
+                Globals.rulePal = new RulePalette(frame, status.getRuleSystemButton());
+            } else {
+                Globals.rulePal = new RulePalette(frame, null);
+            }
+            Globals.rulePal.setVisible(true);
+        }
+    }
+    
     
     private void resetProof() {
         // Push to Redo
